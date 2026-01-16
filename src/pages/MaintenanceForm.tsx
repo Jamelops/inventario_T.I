@@ -27,6 +27,7 @@ import { useData } from "@/contexts/DataContext";
 import { useMaintenanceTasks } from "@/hooks/useMaintenanceTasks";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { useToast } from "@/hooks/use-toast";
 import type { MaintenanceStatus, MaintenancePriority } from "@/types";
 
 const maintenanceSchema = z.object({
@@ -49,6 +50,7 @@ const MaintenanceForm = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { assets } = useData();
   const { maintenanceTasks, loading: tasksLoading, addMaintenanceTask, updateMaintenanceTask, getMaintenanceTaskById } = useMaintenanceTasks();
   const { profile } = useAuth();
@@ -110,7 +112,7 @@ const MaintenanceForm = () => {
     try {
       if (isEditing && existingTask) {
         const asset = assets.find((a) => a.id === data.assetIds[0]);
-        await updateMaintenanceTask(existingTask.id, {
+        const success = await updateMaintenanceTask(existingTask.id, {
           assetId: data.assetIds[0],
           assetNome: asset?.nome || "Ativo desconhecido",
           descricao: data.descricao,
@@ -123,7 +125,13 @@ const MaintenanceForm = () => {
           situacaoEquipamento: data.situacaoEquipamento || undefined,
           observacao: data.observacao || undefined,
         });
-        navigate("/maintenance");
+        if (success) {
+          toast({
+            title: "Manutenção atualizada",
+            description: "A manutenção foi atualizada com sucesso.",
+          });
+          navigate("/maintenance");
+        }
       } else {
         // Create a maintenance task for each selected asset
         let successCount = 0;
@@ -146,9 +154,21 @@ const MaintenanceForm = () => {
           if (result) successCount++;
         }
         if (successCount > 0) {
+          toast({
+            title: "Manutenção criada",
+            description: successCount > 1 
+              ? `${successCount} manutenções foram adicionadas ao sistema.`
+              : "A manutenção foi adicionada ao sistema.",
+          });
           navigate("/maintenance");
         }
       }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar a manutenção.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

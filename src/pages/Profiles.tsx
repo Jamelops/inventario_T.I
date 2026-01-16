@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User, CheckCircle, Clock, XCircle, Shield } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface FullProfile {
   id: string;
@@ -27,6 +28,7 @@ interface UserRole {
 export default function Profiles() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profiles, setProfiles] = useState<FullProfile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
@@ -86,8 +88,17 @@ export default function Profiles() {
       .eq('user_id', userId);
 
     if (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o status do perfil.',
+        variant: 'destructive',
+      });
       return;
     }
+    toast({
+      title: 'Status atualizado',
+      description: 'O status do perfil foi atualizado com sucesso.',
+    });
     fetchProfiles();
   };
 
@@ -102,6 +113,11 @@ export default function Profiles() {
         .eq('user_id', userId);
 
       if (error) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível atualizar a permissão.',
+          variant: 'destructive',
+        });
         return;
       }
     } else {
@@ -110,10 +126,19 @@ export default function Profiles() {
         .insert({ user_id: userId, role });
 
       if (error) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível atualizar a permissão.',
+          variant: 'destructive',
+        });
         return;
       }
     }
 
+    toast({
+      title: 'Permissão atualizada',
+      description: 'A permissão foi atualizada com sucesso.',
+    });
     fetchUserRoles();
   };
 
