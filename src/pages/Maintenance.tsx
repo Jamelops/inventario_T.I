@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Plus, Calendar, User, MapPin, Clock, Info, Loader2 } from 'lucide-react';
+import { Plus, Calendar, User, MapPin, Clock, Info, Loader2, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PriorityBadge } from '@/components/shared/StatusBadge';
-import { ExportButton } from '@/components/shared/ExportButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MaintenanceStatus, maintenanceStatusLabels, MaintenanceTask, MaintenancePriority, priorityLabels } from '@/types';
@@ -97,10 +96,22 @@ export default function Maintenance() {
         breadcrumbs={[{ label: 'Manutenção' }]}
         actions={
           <div className="flex gap-2">
-            <ExportButton onExport={handleExportToExcel} />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportToExcel}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Exportar para Excel
+            </Button>
             {userCanEdit && (
-              <Button onClick={() => navigate('/maintenance/new')}>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button 
+                size="sm"
+                onClick={() => navigate('/maintenance/new')}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
                 Nova Tarefa
               </Button>
             )}
