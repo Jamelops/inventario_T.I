@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import logoMtu from '@/assets/logo-mtu.png';
+import logoMtu from '@/assets/logo-mtu.svg';
 
 const menuItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
