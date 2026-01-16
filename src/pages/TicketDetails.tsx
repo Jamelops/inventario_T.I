@@ -29,7 +29,6 @@ import { AddInteractionDialog } from "@/components/tickets/AddInteractionDialog"
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import {
   TicketStatus,
   ticketTypeLabels,
@@ -39,7 +38,6 @@ import {
 export default function TicketDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { getTicketById, getSupplierById, changeTicketStatus, duplicateTicket } = useTickets();
   const { profile } = useAuth();
 
@@ -57,19 +55,11 @@ export default function TicketDetails() {
 
   const handleStatusChange = async (newStatus: TicketStatus) => {
     await changeTicketStatus(ticket.id, newStatus, profile?.user_id || "", profile?.username || "Usuário");
-    toast({
-      title: "Status atualizado",
-      description: `O chamado foi atualizado para \"${ticketStatusLabels[newStatus]}\"`,
-    });
   };
 
   const handleDuplicate = async () => {
     const duplicated = await duplicateTicket(ticket.id, profile?.user_id || "", profile?.username || "Usuário");
     if (duplicated) {
-      toast({
-        title: "Chamado duplicado",
-        description: `Novo chamado criado.`,
-      });
       navigate(`/tickets/${duplicated.id}`);
     }
   };

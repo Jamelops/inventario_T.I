@@ -27,7 +27,6 @@ import { useData } from "@/contexts/DataContext";
 import { useMaintenanceTasks } from "@/hooks/useMaintenanceTasks";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { useToast } from "@/hooks/use-toast";
 import type { MaintenanceStatus, MaintenancePriority } from "@/types";
 
 const maintenanceSchema = z.object({
@@ -50,7 +49,6 @@ const MaintenanceForm = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { assets } = useData();
   const { maintenanceTasks, loading: tasksLoading, addMaintenanceTask, updateMaintenanceTask, getMaintenanceTaskById } = useMaintenanceTasks();
   const { profile } = useAuth();
@@ -126,10 +124,6 @@ const MaintenanceForm = () => {
           observacao: data.observacao || undefined,
         });
         if (success) {
-          toast({
-            title: "Manutenção atualizada",
-            description: "A manutenção foi atualizada com sucesso.",
-          });
           navigate("/maintenance");
         }
       } else {
@@ -154,21 +148,11 @@ const MaintenanceForm = () => {
           if (result) successCount++;
         }
         if (successCount > 0) {
-          toast({
-            title: "Manutenção criada",
-            description: successCount > 1 
-              ? `${successCount} manutenções foram adicionadas ao sistema.`
-              : "A manutenção foi adicionada ao sistema.",
-          });
           navigate("/maintenance");
         }
       }
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao salvar a manutenção.",
-        variant: "destructive",
-      });
+      console.error("Error saving maintenance:", error);
     } finally {
       setIsLoading(false);
     }
