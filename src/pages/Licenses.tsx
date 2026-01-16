@@ -39,18 +39,18 @@ export default function Licenses() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     const columns: ExportColumn[] = [
       { header: 'ID', key: 'id' },
       { header: 'Nome', key: 'nome' },
       { header: 'Tipo', key: 'tipo', format: (v) => licenseTypeLabels[v as LicenseType] || v },
       { header: 'Quantidade Total', key: 'quantidadeTotal' },
       { header: 'Em Uso', key: 'quantidadeUsada' },
-      { header: 'Disponível', key: 'quantidadeTotal', format: (v, row) => row.quantidadeTotal - row.quantidadeUsada },
+      { header: 'Disponível', key: 'quantidadeTotal', format: (v, row) => (row.quantidadeTotal - row.quantidadeUsada).toString() },
       { header: 'Status', key: 'status', format: (v) => licenseStatusLabels[v as LicenseStatus] || v },
       { header: 'Data de Vencimento', key: 'dataVencimento', format: (v) => formatDate(v) },
     ];
-    exportToExcel(filteredLicenses, columns, { filename: 'licencas' });
+    await exportToExcel(filteredLicenses, columns, { filename: 'licencas' });
   };
 
   const getUsagePercent = (used: number, total: number) => Math.round((used / total) * 100);
