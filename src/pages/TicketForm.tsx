@@ -27,7 +27,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { useTickets } from "@/contexts/TicketContext";
 import { useData } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import {
   TicketType,
   TicketPriority,
@@ -56,7 +55,6 @@ export default function TicketForm() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { tickets, suppliers, addTicket, updateTicket, getTicketById, getSupplierById } = useTickets();
   const { assets } = useData();
   const { profile } = useAuth();
@@ -139,21 +137,11 @@ export default function TicketForm() {
     };
 
     if (isEditing && existingTicket) {
-      const success = await updateTicket(id, ticketData);
-      if (success) {
-        toast({
-          title: "Chamado atualizado",
-          description: "O chamado foi atualizado com sucesso.",
-        });
-        navigate(`/tickets/${id}`);
-      }
+      await updateTicket(id, ticketData);
+      navigate(`/tickets/${id}`);
     } else {
       const newTicket = await addTicket(ticketData, supplier?.slaHoras);
       if (newTicket) {
-        toast({
-          title: "Chamado criado",
-          description: `Chamado criado com sucesso.`,
-        });
         navigate(`/tickets/${newTicket.id}`);
       }
     }
