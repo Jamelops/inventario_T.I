@@ -42,6 +42,7 @@ import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/Tic
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import {
   Ticket,
   TicketStatus,
@@ -55,6 +56,7 @@ export default function Tickets() {
   const navigate = useNavigate();
   const { tickets, suppliers, getSupplierById, changeTicketStatus } = useTickets();
   const { profile, canEdit } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const [search, setSearch] = useState("");
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
@@ -103,16 +105,21 @@ export default function Tickets() {
   };
 
   const handleExportToExcel = () => {
-    const columns: ExportColumn[] = [
-      { header: 'ID', key: 'id' },
-      { header: 'Título', key: 'titulo' },
-      { header: 'Fornecedor', key: 'fornecedorId', format: (v) => getSupplierName(v) },
-      { header: 'Status', key: 'status', format: (v) => ticketStatusLabels[v as TicketStatus] || v },
-      { header: 'Prioridade', key: 'prioridade', format: (v) => ticketPriorityLabels[v as TicketPriority] || v },
-      { header: 'SLA', key: 'slaDeadline', format: (v) => formatDateTime(v) },
-      { header: 'Criado em', key: 'dataCriacao', format: (v) => formatDateTime(v) },
-    ];
-    exportToExcel(sortedTickets, columns, { filename: 'chamados' });
+    try {
+      const columns: ExportColumn[] = [
+        { header: 'ID', key: 'id' },
+        { header: 'Título', key: 'titulo' },
+        { header: 'Fornecedor', key: 'fornecedorId', format: (v) => getSupplierName(v) },
+        { header: 'Status', key: 'status', format: (v) => ticketStatusLabels[v as TicketStatus] || v },
+        { header: 'Prioridade', key: 'prioridade', format: (v) => ticketPriorityLabels[v as TicketPriority] || v },
+        { header: 'SLA', key: 'slaDeadline', format: (v) => formatDateTime(v) },
+        { header: 'Criado em', key: 'dataCriacao', format: (v) => formatDateTime(v) },
+      ];
+      exportToExcel(sortedTickets, columns, { filename: 'chamados' });
+      showSuccess(`${sortedTickets.length} chamados exportados com sucesso!`);
+    } catch (error) {
+      showError('Erro ao exportar chamados. Tente novamente.');
+    }
   };
 
   // Mobile card view

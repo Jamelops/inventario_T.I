@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, Calendar, MoreHorizontal, Edit, Trash } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -20,6 +21,7 @@ import { exportToExcel, formatDate, ExportColumn } from '@/lib/export-to-excel';
 export default function Licenses() {
   const { licenses, licensesLoading } = useData();
   const { canEdit } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -40,17 +42,22 @@ export default function Licenses() {
   });
 
   const handleExportToExcel = () => {
-    const columns: ExportColumn[] = [
-      { header: 'ID', key: 'id' },
-      { header: 'Nome', key: 'nome' },
-      { header: 'Tipo', key: 'tipo', format: (v) => licenseTypeLabels[v as LicenseType] || v },
-      { header: 'Quantidade Total', key: 'quantidadeTotal' },
-      { header: 'Em Uso', key: 'quantidadeUsada' },
-      { header: 'Disponível', key: 'quantidadeTotal', format: (v, row) => row.quantidadeTotal - row.quantidadeUsada },
-      { header: 'Status', key: 'status', format: (v) => licenseStatusLabels[v as LicenseStatus] || v },
-      { header: 'Data de Vencimento', key: 'dataVencimento', format: (v) => formatDate(v) },
-    ];
-    exportToExcel(filteredLicenses, columns, { filename: 'licencas' });
+    try {
+      const columns: ExportColumn[] = [
+        { header: 'ID', key: 'id' },
+        { header: 'Nome', key: 'nome' },
+        { header: 'Tipo', key: 'tipo', format: (v) => licenseTypeLabels[v as LicenseType] || v },
+        { header: 'Quantidade Total', key: 'quantidadeTotal' },
+        { header: 'Em Uso', key: 'quantidadeUsada' },
+        { header: 'Disponível', key: 'quantidadeTotal', format: (v, row) => row.quantidadeTotal - row.quantidadeUsada },
+        { header: 'Status', key: 'status', format: (v) => licenseStatusLabels[v as LicenseStatus] || v },
+        { header: 'Data de Vencimento', key: 'dataVencimento', format: (v) => formatDate(v) },
+      ];
+      exportToExcel(filteredLicenses, columns, { filename: 'licencas' });
+      showSuccess(`${filteredLicenses.length} licenças exportadas com sucesso!`);
+    } catch (error) {
+      showError('Erro ao exportar licenças. Tente novamente.');
+    }
   };
 
   const getUsagePercent = (used: number, total: number) => Math.round((used / total) * 100);
