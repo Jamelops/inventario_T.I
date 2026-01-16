@@ -41,7 +41,7 @@ export default function Assets() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     const columns: ExportColumn[] = [
       { header: 'ID', key: 'id' },
       { header: 'Nome', key: 'nome' },
@@ -67,7 +67,7 @@ export default function Assets() {
       },
     ];
 
-    exportToExcel(filteredAssets, columns, { filename: 'ativos' });
+    await exportToExcel(filteredAssets, columns, { filename: 'ativos' });
   };
 
   return (
