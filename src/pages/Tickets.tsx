@@ -42,7 +42,6 @@ import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/Tic
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/contexts/ToastContext";
 import {
   Ticket,
   TicketStatus,
@@ -55,15 +54,13 @@ import { exportToExcel, formatDateTime, ExportColumn } from "@/lib/export-to-exc
 export default function Tickets() {
   const navigate = useNavigate();
   const { tickets, suppliers, getSupplierById, changeTicketStatus } = useTickets();
-  const { profile, canEdit } = useAuth();
-  const { showSuccess, showError } = useToast();
+  const { profile } = useAuth();
 
   const [search, setSearch] = useState("");
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
 
-  const userCanEdit = canEdit();
   const activeSuppliers = suppliers.filter(s => s.ativo);
 
   const filteredTickets = tickets.filter((ticket) => {
@@ -105,21 +102,16 @@ export default function Tickets() {
   };
 
   const handleExportToExcel = () => {
-    try {
-      const columns: ExportColumn[] = [
-        { header: 'ID', key: 'id' },
-        { header: 'Título', key: 'titulo' },
-        { header: 'Fornecedor', key: 'fornecedorId', format: (v) => getSupplierName(v) },
-        { header: 'Status', key: 'status', format: (v) => ticketStatusLabels[v as TicketStatus] || v },
-        { header: 'Prioridade', key: 'prioridade', format: (v) => ticketPriorityLabels[v as TicketPriority] || v },
-        { header: 'SLA', key: 'slaDeadline', format: (v) => formatDateTime(v) },
-        { header: 'Criado em', key: 'dataCriacao', format: (v) => formatDateTime(v) },
-      ];
-      exportToExcel(sortedTickets, columns, { filename: 'chamados' });
-      showSuccess(`${sortedTickets.length} chamados exportados com sucesso!`);
-    } catch (error) {
-      showError('Erro ao exportar chamados. Tente novamente.');
-    }
+    const columns: ExportColumn[] = [
+      { header: 'ID', key: 'id' },
+      { header: 'Título', key: 'titulo' },
+      { header: 'Fornecedor', key: 'fornecedorId', format: (v) => getSupplierName(v) },
+      { header: 'Status', key: 'status', format: (v) => ticketStatusLabels[v as TicketStatus] || v },
+      { header: 'Prioridade', key: 'prioridade', format: (v) => ticketPriorityLabels[v as TicketPriority] || v },
+      { header: 'SLA', key: 'slaDeadline', format: (v) => formatDateTime(v) },
+      { header: 'Criado em', key: 'dataCriacao', format: (v) => formatDateTime(v) },
+    ];
+    exportToExcel(sortedTickets, columns, { filename: 'chamados' });
   };
 
   // Mobile card view
@@ -175,15 +167,10 @@ export default function Tickets() {
           { label: "Chamados" },
         ]}
         actions={
-          userCanEdit && (
-            <div className="flex gap-2">
-              <ExportButton onExport={handleExportToExcel} />
-              <Button onClick={() => navigate("/tickets/new")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Chamado
-              </Button>
-            </div>
-          )
+          <Button onClick={() => navigate("/tickets/new")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Chamado
+          </Button>
         }
       />
 
@@ -196,7 +183,7 @@ export default function Tickets() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -247,6 +234,7 @@ export default function Tickets() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton onExport={handleExportToExcel} />
           </div>
         </CardContent>
       </Card>

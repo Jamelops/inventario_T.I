@@ -3,7 +3,6 @@ import { Plus, Calendar, User, MapPin, Clock, Info, Loader2 } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PriorityBadge } from '@/components/shared/StatusBadge';
 import { ExportButton } from '@/components/shared/ExportButton';
@@ -26,7 +25,6 @@ const columnColors: Record<MaintenanceStatus, string> = {
 export default function Maintenance() {
   const { maintenanceTasks, loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
   const { canEdit } = useAuth();
-  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
   const userCanEdit = canEdit();
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
@@ -71,22 +69,17 @@ export default function Maintenance() {
   };
 
   const handleExportToExcel = () => {
-    try {
-      const columns: ExportColumn[] = [
-        { header: 'ID', key: 'id' },
-        { header: 'Descrição', key: 'descricao' },
-        { header: 'Ativo Relacionado', key: 'assetNome' },
-        { header: 'Status', key: 'status', format: (v) => maintenanceStatusLabels[v as MaintenanceStatus] || v },
-        { header: 'Prioridade', key: 'prioridade', format: (v) => priorityLabels[v as MaintenancePriority] || v },
-        { header: 'Responsável', key: 'responsavel' },
-        { header: 'Data Agendada', key: 'dataAgendada', format: (v) => formatDate(v) },
-        { header: 'Data de Conclusão', key: 'dataConclusao', format: (v) => v ? formatDate(v) : '' },
-      ];
-      exportToExcel(maintenanceTasks, columns, { filename: 'manutencao' });
-      showSuccess(`${maintenanceTasks.length} tarefas de manutenção exportadas com sucesso!`);
-    } catch (error) {
-      showError('Erro ao exportar tarefas de manutenção. Tente novamente.');
-    }
+    const columns: ExportColumn[] = [
+      { header: 'ID', key: 'id' },
+      { header: 'Descrição', key: 'descricao' },
+      { header: 'Ativo Relacionado', key: 'assetNome' },
+      { header: 'Status', key: 'status', format: (v) => maintenanceStatusLabels[v as MaintenanceStatus] || v },
+      { header: 'Prioridade', key: 'prioridade', format: (v) => priorityLabels[v as MaintenancePriority] || v },
+      { header: 'Responsável', key: 'responsavel' },
+      { header: 'Data Agendada', key: 'dataAgendada', format: (v) => formatDate(v) },
+      { header: 'Data de Conclusão', key: 'dataConclusao', format: (v) => v ? formatDate(v) : '' },
+    ];
+    exportToExcel(maintenanceTasks, columns, { filename: 'manutencao' });
   };
 
   const getDaysInMaintenance = (dataAgendada: string) => {

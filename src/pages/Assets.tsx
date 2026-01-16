@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Wrench, Archive, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Download, Eye, Edit, Wrench, Archive, MoreHorizontal } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { ExportButton } from '@/components/shared/ExportButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,7 +18,6 @@ import { exportToExcel, formatCurrency, ExportColumn } from '@/lib/export-to-exc
 export default function Assets() {
   const { assets, assetsLoading } = useData();
   const { canEdit } = useAuth();
-  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -45,37 +42,32 @@ export default function Assets() {
   });
 
   const handleExportToExcel = () => {
-    try {
-      const columns: ExportColumn[] = [
-        { header: 'ID', key: 'id' },
-        { header: 'Nome', key: 'nome' },
-        { 
-          header: 'Categoria', 
-          key: 'categoria',
-          format: (value: any) => {
-            return categoryLabels[value as AssetCategory] || value;
-          }
-        },
-        { 
-          header: 'Status', 
-          key: 'status',
-          format: (value: any) => {
-            return statusLabels[value as AssetStatus] || value;
-          }
-        },
-        { header: 'Responsável', key: 'responsavel' },
-        { 
-          header: 'Valor', 
-          key: 'valor',
-          format: (value: any) => formatCurrency(value)
-        },
-      ];
+    const columns: ExportColumn[] = [
+      { header: 'ID', key: 'id' },
+      { header: 'Nome', key: 'nome' },
+      { 
+        header: 'Categoria', 
+        key: 'categoria',
+        format: (value: any) => {
+          return categoryLabels[value as AssetCategory] || value;
+        }
+      },
+      { 
+        header: 'Status', 
+        key: 'status',
+        format: (value: any) => {
+          return statusLabels[value as AssetStatus] || value;
+        }
+      },
+      { header: 'Responsável', key: 'responsavel' },
+      { 
+        header: 'Valor', 
+        key: 'valor',
+        format: (value: any) => formatCurrency(value)
+      },
+    ];
 
-      exportToExcel(filteredAssets, columns, { filename: 'ativos' });
-      showSuccess(`${filteredAssets.length} ativos exportados com sucesso!`);
-    } catch (error) {
-      showError('Erro ao exportar ativos. Tente novamente.');
-    }
+    exportToExcel(filteredAssets, columns, { filename: 'ativos' });
   };
 
   return (
@@ -83,55 +75,66 @@ export default function Assets() {
       <PageHeader 
         title="Inventário de Ativos"
         description={`${assets.length} ativos cadastrados`}
-        breadcrumbs={[{ label: 'Ativos' }]}
-        actions={
-          userCanEdit && (
-            <div className="flex gap-2">
-              <ExportButton onExport={handleExportToExcel} />
-              <Button onClick={() => navigate('/assets/new')}>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Ativo
-              </Button>
-            </div>
-          )
-        }
       />
       <div className="space-y-6">
-        {/* Filters */}
+        {/* Filters and Export */}
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, ID ou número de série..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
+            <div className="space-y-4">
+              {/* Search and Filters Row */}
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome, ID ou número de série..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as categorias</SelectItem>
+                    {Object.entries(categoryLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    {Object.entries(statusLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {Object.entries(categoryLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  {Object.entries(statusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Action Buttons Row */}
+              <div className="flex justify-between items-center gap-2">
+                <Button 
+                  size="sm"
+                  onClick={() => navigate('/assets/new')}
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Novo Ativo
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleExportToExcel}
+                  className="gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Exportar para Excel
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

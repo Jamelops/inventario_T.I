@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DataProvider } from "@/contexts/DataContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TicketProvider } from "@/contexts/TicketContext";
-import { ToastProvider } from "@/contexts/ToastContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Assets from "./pages/Assets";
@@ -95,13 +94,11 @@ const App = () => (
       <AuthProvider>
         <DataProvider>
           <TicketProvider>
-            <ToastProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </ToastProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
           </TicketProvider>
         </DataProvider>
       </AuthProvider>

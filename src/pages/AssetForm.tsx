@@ -53,9 +53,6 @@ const assetSchema = z.object({
 
 type AssetFormData = z.infer<typeof assetSchema>;
 
-const DEFAULT_CATEGORY: AssetCategory = "notebook";
-const DEFAULT_STATUS: AssetStatus = "ativo";
-
 const AssetForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -70,13 +67,13 @@ const AssetForm = () => {
     resolver: zodResolver(assetSchema),
     defaultValues: {
       nome: "",
-      categoria: DEFAULT_CATEGORY,
+      categoria: "notebook" as AssetCategory,
       numeroSerie: "",
       dataCompra: new Date().toISOString().split("T")[0],
       valor: 0,
       localizacao: "",
       responsavel: "",
-      status: DEFAULT_STATUS,
+      status: "ativo" as AssetStatus,
       descricao: "",
       especificacoes: {},
     },
@@ -93,66 +90,43 @@ const AssetForm = () => {
         localizacao: existingAsset.localizacao,
         responsavel: existingAsset.responsavel,
         status: existingAsset.status,
-        descricao: existingAsset.descricao ?? "",
-        especificacoes: existingAsset.especificacoes ?? {},
+        descricao: existingAsset.descricao || "",
+        especificacoes: existingAsset.especificacoes || {},
       });
     }
   }, [existingAsset, form]);
 
   const categoria = form.watch("categoria");
 
-  // Clean specifications by removing empty values
-  const cleanSpecifications = (specs: Record<string, any> | undefined) => {
-    if (!specs) return undefined;
-    const cleaned = Object.fromEntries(
-      Object.entries(specs).filter(([_, value]) => value && value.trim && value.trim() !== '')
-    );
-    return Object.keys(cleaned).length > 0 ? cleaned : undefined;
-  };
-
   const onSubmit = async (data: AssetFormData) => {
     setIsLoading(true);
     try {
-      const cleanedSpecs = cleanSpecifications(data.especificacoes);
-      const assetData = {
-        ...data,
-        especificacoes: cleanedSpecs,
-        descricao: data.descricao ?? undefined,
-      };
-
       if (isEditing && existingAsset) {
-        const success = await updateAsset(existingAsset.id, assetData);
+        const success = await updateAsset(existingAsset.id, {
+          ...data,
+          especificacoes: data.especificacoes,
+        });
         if (success) {
-          toast({
-            title: "Sucesso",
-            description: "Ativo atualizado com sucesso.",
-          });
           navigate("/assets");
-        } else {
-          toast({
-            title: "Erro",
-            description: "Falha ao atualizar o ativo.",
-            variant: "destructive",
-          });
         }
       } else {
-        const result = await addAsset(assetData);
+        const result = await addAsset({
+          nome: data.nome,
+          categoria: data.categoria,
+          numeroSerie: data.numeroSerie,
+          dataCompra: data.dataCompra,
+          valor: data.valor,
+          localizacao: data.localizacao,
+          responsavel: data.responsavel,
+          status: data.status,
+          descricao: data.descricao || undefined,
+          especificacoes: data.especificacoes,
+        });
         if (result) {
-          toast({
-            title: "Sucesso",
-            description: "Ativo cadastrado com sucesso.",
-          });
           navigate("/assets");
-        } else {
-          toast({
-            title: "Erro",
-            description: "Falha ao cadastrar o ativo.",
-            variant: "destructive",
-          });
         }
       }
     } catch (error) {
-      console.error('Form submission error:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao salvar o ativo.",
