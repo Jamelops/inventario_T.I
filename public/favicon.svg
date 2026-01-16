@@ -1,51 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
   <defs>
     <linearGradient id="bluGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0077B6;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#003D7A;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#001F3F;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1E90FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0066CC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003D99;stop-opacity:1" />
     </linearGradient>
-    <radialGradient id="sphereGrad" cx="30%" cy="30%" r="70%">
-      <stop offset="0%" style="stop-color:#00A8E8;stop-opacity:0.5" />
-      <stop offset="100%" style="stop-color:#001F3F;stop-opacity:1" />
+    <radialGradient id="sphereGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" style="stop-color:#4DB8FF;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#003D99;stop-opacity:1" />
     </radialGradient>
   </defs>
   
   <!-- Main blue circle -->
-  <circle cx="200" cy="200" r="190" fill="url(#bluGrad)"/>
+  <circle cx="200" cy="200" r="185" fill="url(#bluGrad)"/>
   
-  <!-- Sphere reflection effect -->
-  <circle cx="200" cy="200" r="190" fill="url(#sphereGrad)" opacity="0.7"/>
+  <!-- Sphere reflection -->
+  <circle cx="200" cy="200" r="185" fill="url(#sphereGrad)" opacity="0.8"/>
   
-  <!-- Yellow/Gold arc (top) -->
-  <path d="M 50 200 A 150 150 0 0 1 350 200" 
-        stroke="#F4C430" stroke-width="28" fill="none" stroke-linecap="round"/>
+  <!-- Yellow/Gold arc top -->
+  <path d="M 60 200 A 140 140 0 0 1 340 200" stroke="#FFD700" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   
-  <!-- Green arc (bottom-left) -->
-  <path d="M 50 200 A 150 150 0 0 0 200 350" 
-        stroke="#90EE90" stroke-width="28" fill="none" stroke-linecap="round"/>
+  <!-- Green arc bottom-left -->
+  <path d="M 60 200 A 140 140 0 0 0 200 340" stroke="#7CB342" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   
-  <!-- White outer border -->
-  <circle cx="200" cy="200" r="190" fill="none" stroke="white" stroke-width="10"/>
+  <!-- White border outer -->
+  <circle cx="200" cy="200" r="185" fill="none" stroke="white" stroke-width="12"/>
   
-  <!-- Inner white accent line -->
-  <circle cx="200" cy="200" r="180" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
+  <!-- White border inner -->
+  <circle cx="200" cy="200" r="173" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
   
-  <!-- MTU Text Group (compact for favicon) -->
-  <g>
-    <!-- M in white -->
-    <text x="95" y="230" font-family="Arial, Helvetica, sans-serif" font-size="110" font-weight="900" fill="white" text-anchor="middle" font-style="italic" letter-spacing="-6">
-      M
-    </text>
-    
-    <!-- T in bright blue -->
-    <text x="200" y="230" font-family="Arial, Helvetica, sans-serif" font-size="110" font-weight="900" fill="#00A8E8" text-anchor="middle" font-style="italic" letter-spacing="-6">
-      T
-    </text>
-    
-    <!-- U in white -->
-    <text x="305" y="230" font-family="Arial, Helvetica, sans-serif" font-size="110" font-weight="900" fill="white" text-anchor="middle" font-style="italic" letter-spacing="-6">
-      U
-    </text>
-  </g>
+  <!-- MTU Text (compact) -->
+  <text x="200" y="235" font-family="Arial, Helvetica, sans-serif" font-size="140" font-weight="900" fill="white" text-anchor="middle" font-style="italic" letter-spacing="-10">
+    <tspan fill="white">m</tspan><tspan fill="#1E90FF" font-size="145">TU</tspan>
+  </text>
 </svg>
