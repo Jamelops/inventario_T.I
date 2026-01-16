@@ -39,7 +39,7 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sidebar-foreground">TI Assets</span>
+              <span className="font-semibold text-sidebar-foreground">Inventario MTU</span>
               <span className="text-xs text-muted-foreground">Gestão de Ativos</span>
             </div>
           )}
