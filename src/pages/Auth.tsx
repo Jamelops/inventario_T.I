@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Clock, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
-import logoMtu from '@/assets/logo-mtu.png';
+import logoMtu from '@/assets/logo-mtu.svg';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -242,7 +242,7 @@ export default function Auth() {
                   <Input
                     id="login-password"
                     type="password"
-                    placeholder="••••••"
+                    placeholder="â¢â¢â¢â¢â¢â¢"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
@@ -283,7 +283,7 @@ export default function Auth() {
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="••••••"
+                    placeholder="â¢â¢â¢â¢â¢â¢"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     required
@@ -297,7 +297,7 @@ export default function Auth() {
                   <Input
                     id="signup-confirm"
                     type="password"
-                    placeholder="••••••"
+                    placeholder="â¢â¢â¢â¢â¢â¢"
                     value={signupConfirmPassword}
                     onChange={(e) => setSignupConfirmPassword(e.target.value)}
                     required
