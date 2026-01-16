@@ -10,12 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Save, User, Mail, Shield } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 export default function MyProfile() {
   const { user, profile, userRole, loading, fetchProfileUsernames } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [username, setUsername] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -43,18 +41,8 @@ export default function MyProfile() {
     setIsSaving(false);
 
     if (error) {
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o perfil.',
-        variant: 'destructive',
-      });
       return;
     }
-
-    toast({
-      title: 'Perfil atualizado',
-      description: 'Suas informações foram salvas com sucesso.',
-    });
 
     // Refresh usernames list
     fetchProfileUsernames();
