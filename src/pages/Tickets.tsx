@@ -42,6 +42,7 @@ import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/Tic
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import {
   Ticket,
   TicketStatus,
@@ -51,15 +52,27 @@ import {
 } from "@/types/tickets";
 import { exportToExcel, formatDateTime, ExportColumn } from "@/lib/export-to-excel";
 
+// Utility function for safe pluralization
+const formatPluralizedText = (count: number, singular: string, plural: string): string => {
+  return count !== 1 ? plural : singular;
+};
+
+// Type guard function to validate ticket status
+const isValidTicketStatus = (value: string): value is TicketStatus => {
+  return Object.keys(ticketStatusLabels).includes(value);
+};
+
 export default function Tickets() {
   const navigate = useNavigate();
   const { tickets, suppliers, getSupplierById, changeTicketStatus } = useTickets();
   const { profile } = useAuth();
+  const { toast } = useToast();
 
   const [search, setSearch] = useState("");
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
 
   const activeSuppliers = suppliers.filter(s => s.ativo);
 
@@ -80,8 +93,58 @@ export default function Tickets() {
     (a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
   );
 
-  const handleStatusChange = async (ticketId: string, newStatus: TicketStatus) => {
-    await changeTicketStatus(ticketId, newStatus, profile?.user_id || '', profile?.username || 'Usuário');
+  const handleStatusChange = async (ticketId: string, newStatus: string) => {
+    // Validate status is of correct type
+    if (!isValidTicketStatus(newStatus)) {
+      toast({
+        title: "Erro de valida\u00e7\u00e3o",
+        description: "Status inv\u00e1lido selecionado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Ensure user profile exists
+    if (!profile?.user_id || !profile?.username) {
+      toast({
+        title: "Erro de autentica\u00e7\u00e3o",
+        description: "N\u00e3o foi poss\u00edvel obter os dados do usu\u00e1rio.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdatingStatus(ticketId);
+    try {
+      const success = await changeTicketStatus(
+        ticketId,
+        newStatus as TicketStatus,
+        profile.user_id,
+        profile.username
+      );
+
+      if (success) {
+        toast({
+          title: "Sucesso",
+          description: `Status do chamado atualizado para ${ticketStatusLabels[newStatus as TicketStatus]}.`,
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "N\u00e3o foi poss\u00edvel atualizar o status do chamado.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error changing ticket status:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar o status.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingStatus(null);
+    }
   };
 
   const getSupplierIcon = (fornecedorId: string) => {
@@ -98,13 +161,13 @@ export default function Tickets() {
   };
 
   const getSupplierName = (fornecedorId: string) => {
-    return getSupplierById(fornecedorId)?.nome || 'Desconhecido';
+    return getSupplierById(fornecedorId)?.nome ?? 'Desconhecido';
   };
 
   const handleExportToExcel = () => {
     const columns: ExportColumn[] = [
       { header: 'ID', key: 'id' },
-      { header: 'Título', key: 'titulo' },
+      { header: 'T\u00edtulo', key: 'titulo' },
       { header: 'Fornecedor', key: 'fornecedorId', format: (v) => getSupplierName(v) },
       { header: 'Status', key: 'status', format: (v) => ticketStatusLabels[v as TicketStatus] || v },
       { header: 'Prioridade', key: 'prioridade', format: (v) => ticketPriorityLabels[v as TicketPriority] || v },
@@ -188,7 +251,7 @@ export default function Tickets() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por ID, título ou protocolo..."
+                  placeholder="Buscar por ID, t\u00edtulo ou protocolo..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -243,7 +306,7 @@ export default function Tickets() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">
-            {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''} encontrado{filteredTickets.length !== 1 ? 's' : ''}
+            {filteredTickets.length} chamado{formatPluralizedText(filteredTickets.length, '', 's')} encontrado{formatPluralizedText(filteredTickets.length, '', 's')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -253,13 +316,13 @@ export default function Tickets() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Título</TableHead>
+                  <TableHead>T\u00edtulo</TableHead>
                   <TableHead>Fornecedor</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Prioridade</TableHead>
                   <TableHead>SLA</TableHead>
                   <TableHead>Criado em</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right">A\u00e7\u00f5es</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -284,8 +347,8 @@ export default function Tickets() {
                           {Object.entries(ticketStatusLabels).map(([value, label]) => (
                             <DropdownMenuItem
                               key={value}
-                              onClick={() => handleStatusChange(ticket.id, value as TicketStatus)}
-                              disabled={ticket.status === value}
+                              onClick={() => handleStatusChange(ticket.id, value)}
+                              disabled={ticket.status === value || isUpdatingStatus === ticket.id}
                             >
                               {label}
                             </DropdownMenuItem>
