@@ -11,6 +11,7 @@ import {
   Wifi,
   Laptop,
   Building2,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { ExportButton } from "@/components/shared/ExportButton";
 import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
@@ -167,10 +167,25 @@ export default function Tickets() {
           { label: "Chamados" },
         ]}
         actions={
-          <Button onClick={() => navigate("/tickets/new")}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Chamado
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportToExcel}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Exportar para Excel
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => navigate("/tickets/new")}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Chamado
+            </Button>
+          </div>
         }
       />
 
@@ -183,7 +198,7 @@ export default function Tickets() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -234,7 +249,6 @@ export default function Tickets() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton onExport={handleExportToExcel} />
           </div>
         </CardContent>
       </Card>
