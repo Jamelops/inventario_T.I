@@ -2,35 +2,48 @@
   <defs>
     <linearGradient id="bluGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#1E90FF;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#0066CC;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#003D99;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#0077B6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003D7A;stop-opacity:1" />
     </linearGradient>
-    <radialGradient id="sphereGrad" cx="35%" cy="35%" r="65%">
-      <stop offset="0%" style="stop-color:#4DB8FF;stop-opacity:0.6" />
-      <stop offset="100%" style="stop-color:#003D99;stop-opacity:1" />
+    <radialGradient id="sphereGrad" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#66D9FF;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#003D7A;stop-opacity:1" />
     </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-opacity="0.3" flood-color="#000000"/>
+    </filter>
   </defs>
   
   <!-- Main blue circle -->
-  <circle cx="200" cy="200" r="185" fill="url(#bluGrad)"/>
+  <circle cx="200" cy="200" r="180" fill="url(#bluGrad)" filter="url(#shadow)"/>
   
-  <!-- Sphere reflection -->
-  <circle cx="200" cy="200" r="185" fill="url(#sphereGrad)" opacity="0.8"/>
+  <!-- Sphere effect -->
+  <circle cx="200" cy="200" r="180" fill="url(#sphereGrad)" opacity="0.75"/>
   
-  <!-- Yellow/Gold arc top -->
-  <path d="M 60 200 A 140 140 0 0 1 340 200" stroke="#FFD700" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Yellow/Gold arc (top) -->
+  <path d="M 55 200 A 145 145 0 0 1 345 200" 
+        stroke="#FFD700" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   
-  <!-- Green arc bottom-left -->
-  <path d="M 60 200 A 140 140 0 0 0 200 340" stroke="#7CB342" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Green arc (bottom-left) -->
+  <path d="M 55 200 A 145 145 0 0 0 200 345" 
+        stroke="#66BB6A" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   
-  <!-- White border outer -->
-  <circle cx="200" cy="200" r="185" fill="none" stroke="white" stroke-width="12"/>
+  <!-- White outer border -->
+  <circle cx="200" cy="200" r="180" fill="none" stroke="white" stroke-width="11"/>
   
-  <!-- White border inner -->
-  <circle cx="200" cy="200" r="173" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
+  <!-- Inner accent line -->
+  <circle cx="200" cy="200" r="169" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
   
-  <!-- MTU Text -->
-  <text x="200" y="235" font-family="Arial, Helvetica, sans-serif" font-size="160" font-weight="900" fill="white" text-anchor="middle" font-style="italic" letter-spacing="-12">
-    <tspan fill="white">m</tspan><tspan fill="#1E90FF" font-size="165">TU</tspan>
-  </text>
+  <!-- MTU Text - Italic Bold Style -->
+  <g>
+    <!-- White 'm' -->
+    <text x="115" y="235" font-family="Arial, Helvetica, sans-serif" font-size="155" font-weight="900" font-style="italic" fill="white" text-anchor="middle" letter-spacing="-10">
+      m
+    </text>
+    
+    <!-- Bright Blue 'TU' -->
+    <text x="255" y="235" font-family="Arial, Helvetica, sans-serif" font-size="160" font-weight="900" font-style="italic" fill="#00D4FF" text-anchor="middle" letter-spacing="-10">
+      TU
+    </text>
+  </g>
 </svg>
