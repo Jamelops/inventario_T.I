@@ -92,22 +92,22 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <DataProvider>
-          <TicketProvider>
-            <ToastProvider>
-              <Toaster />
-              <Sonner />
-              <ToastContainer />
-              <BrowserRouter>
+    <BrowserRouter>
+      <TooltipProvider>
+        <AuthProvider>
+          <DataProvider>
+            <TicketProvider>
+              <ToastProvider>
+                <Toaster />
+                <Sonner />
+                <ToastContainer />
                 <AppRoutes />
-              </BrowserRouter>
-            </ToastProvider>
-          </TicketProvider>
-        </DataProvider>
-      </AuthProvider>
-    </TooltipProvider>
+              </ToastProvider>
+            </TicketProvider>
+          </DataProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
