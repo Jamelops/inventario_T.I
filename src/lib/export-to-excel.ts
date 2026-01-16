@@ -7,9 +7,13 @@ export interface ExportColumn {
   key: string;
   header: string;
   width?: number;
-  formatter?: (value: any, row?: any) => string; // Função opcional para formatar o valor
+  format?: (value: any, row?: any) => string; // Função opcional para formatar o valor
 }
 
+// Interface para opções de exportação
+export interface ExportOptions {
+  filename: string;
+}
 
 // Função para formatar data
 export function formatDate(date: any): string {
@@ -46,15 +50,20 @@ export function formatCurrency(value: any): string {
   }).format(num);
 }
 
-// Função principal de exportação
+// Função principal de exportação - CORRIGIDA
 export async function exportToExcel(
   data: any[],
-  fileName: string,
-  columns?: ExportColumn[]
+  columns: ExportColumn[],
+  options: ExportOptions
 ) {
   try {
     if (!data || data.length === 0) {
       alert('Nenhum dado para exportar');
+      return;
+    }
+
+    if (!options || !options.filename) {
+      alert('Nome do arquivo não fornecido');
       return;
     }
 
@@ -99,9 +108,9 @@ export async function exportToExcel(
       finalColumns.forEach(col => {
         let value = item[col.key];
         
-        // Usar formatter customizado se existir
-        if (col.formatter) {
-          value = col.formatter(value);
+        // Usar format customizado se existir
+        if (col.format) {
+          value = col.format(value, item);
         } else {
           // Formatação automática por tipo
           if (value instanceof Date) {
@@ -127,13 +136,13 @@ export async function exportToExcel(
     
     // Usar método nativo do navegador para download
     const blob = new Blob([buffer], { 
-      type: 'application/vnd.ms-excel'
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
     
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${fileName}-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.download = `${options.filename}-${new Date().toISOString().split('T')[0]}.xlsx`;
     
     // Adicionar ao DOM, clicar e remover
     document.body.appendChild(link);
