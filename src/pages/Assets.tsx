@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Eye, Edit, Wrench, Archive, MoreHorizontal } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -19,6 +20,7 @@ import { exportToExcel, formatCurrency, ExportColumn } from '@/lib/export-to-exc
 export default function Assets() {
   const { assets, assetsLoading } = useData();
   const { canEdit } = useAuth();
+  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -43,32 +45,37 @@ export default function Assets() {
   });
 
   const handleExportToExcel = () => {
-    const columns: ExportColumn[] = [
-      { header: 'ID', key: 'id' },
-      { header: 'Nome', key: 'nome' },
-      { 
-        header: 'Categoria', 
-        key: 'categoria',
-        format: (value: any) => {
-          return categoryLabels[value as AssetCategory] || value;
-        }
-      },
-      { 
-        header: 'Status', 
-        key: 'status',
-        format: (value: any) => {
-          return statusLabels[value as AssetStatus] || value;
-        }
-      },
-      { header: 'Responsável', key: 'responsavel' },
-      { 
-        header: 'Valor', 
-        key: 'valor',
-        format: (value: any) => formatCurrency(value)
-      },
-    ];
+    try {
+      const columns: ExportColumn[] = [
+        { header: 'ID', key: 'id' },
+        { header: 'Nome', key: 'nome' },
+        { 
+          header: 'Categoria', 
+          key: 'categoria',
+          format: (value: any) => {
+            return categoryLabels[value as AssetCategory] || value;
+          }
+        },
+        { 
+          header: 'Status', 
+          key: 'status',
+          format: (value: any) => {
+            return statusLabels[value as AssetStatus] || value;
+          }
+        },
+        { header: 'Responsável', key: 'responsavel' },
+        { 
+          header: 'Valor', 
+          key: 'valor',
+          format: (value: any) => formatCurrency(value)
+        },
+      ];
 
-    exportToExcel(filteredAssets, columns, { filename: 'ativos' });
+      exportToExcel(filteredAssets, columns, { filename: 'ativos' });
+      showSuccess(`${filteredAssets.length} ativos exportados com sucesso!`);
+    } catch (error) {
+      showError('Erro ao exportar ativos. Tente novamente.');
+    }
   };
 
   return (
