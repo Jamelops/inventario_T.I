@@ -75,9 +75,30 @@ export default function Assets() {
       <PageHeader 
         title="Inventário de Ativos"
         description={`${assets.length} ativos cadastrados`}
+        actions={
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportToExcel}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Exportar para Excel
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => navigate('/assets/new')}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Novo Ativo
+            </Button>
+          </div>
+        }
       />
       <div className="space-y-6">
-        {/* Filters and Export */}
+        {/* Filters */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
@@ -114,26 +135,6 @@ export default function Assets() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              {/* Action Buttons Row */}
-              <div className="flex justify-between items-center gap-2">
-                <Button 
-                  size="sm"
-                  onClick={() => navigate('/assets/new')}
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Novo Ativo
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleExportToExcel}
-                  className="gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Exportar para Excel
-                </Button>
               </div>
             </div>
           </CardContent>
