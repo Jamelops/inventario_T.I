@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, Calendar, MoreHorizontal, Edit, Trash } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, MoreHorizontal, Edit, Trash, Download } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { ExportButton } from '@/components/shared/ExportButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -64,11 +63,21 @@ export default function Licenses() {
         actions={
           userCanEdit && (
             <div className="flex gap-2">
-              <ExportButton onExport={handleExportToExcel} />
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Licença
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleExportToExcel}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Exportar para Excel
               </Button>
+              <Link to="/licenses/new">
+                <Button size="sm" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Nova Licença
+                </Button>
+              </Link>
             </div>
           )
         }
