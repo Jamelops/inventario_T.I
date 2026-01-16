@@ -6,8 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DataProvider } from "@/contexts/DataContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TicketProvider } from "@/contexts/TicketContext";
-import { ToastProvider } from "@/contexts/ToastContext";
-import { ToastContainer } from "@/components/ui/toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Assets from "./pages/Assets";
@@ -92,22 +90,19 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <TooltipProvider>
-        <AuthProvider>
-          <DataProvider>
-            <TicketProvider>
-              <ToastProvider>
-                <Toaster />
-                <Sonner />
-                <ToastContainer />
-                <AppRoutes />
-              </ToastProvider>
-            </TicketProvider>
-          </DataProvider>
-        </AuthProvider>
-      </TooltipProvider>
-    </BrowserRouter>
+    <TooltipProvider>
+      <AuthProvider>
+        <DataProvider>
+          <TicketProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TicketProvider>
+        </DataProvider>
+      </AuthProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
