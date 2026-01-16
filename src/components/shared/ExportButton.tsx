@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 interface ExportButtonProps {
   onExport: () => void | Promise<void>;
@@ -19,23 +18,13 @@ export function ExportButton({
   className,
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
       await onExport();
-      toast({
-        title: 'Exportação concluída',
-        description: 'O arquivo foi baixado com sucesso.',
-      });
     } catch (error) {
       console.error('Export error:', error);
-      toast({
-        title: 'Erro na exportação',
-        description: 'Não foi possível gerar o arquivo. Tente novamente.',
-        variant: 'destructive',
-      });
     } finally {
       setIsExporting(false);
     }
