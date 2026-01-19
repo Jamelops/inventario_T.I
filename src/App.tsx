@@ -26,6 +26,7 @@ import Auth from "./pages/Auth";
 import Profiles from "./pages/Profiles";
 import MyProfile from "./pages/MyProfile";
 import NotFound from "./pages/NotFound";
+import { supabase } from '@/integrations/supabase/client';
 
 const queryClient = new QueryClient();
 
@@ -108,3 +109,14 @@ const App = () => (
 );
 
 export default App;
+
+async function testConnection() {
+  const { data, error } = await supabase
+    .from('ping_test' as any)
+    .select('*');
+
+  console.log('DATA:', data);
+  console.log('ERROR:', error);
+}
+
+testConnection();
