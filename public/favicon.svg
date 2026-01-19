@@ -1,46 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
   <defs>
     <linearGradient id="bluGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#1E90FF;stop-opacity:1" />
-      <stop offset="40%" style="stop-color:#0077B6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0066CC;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#003D7A;stop-opacity:1" />
     </linearGradient>
     <radialGradient id="sphereGrad" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" style="stop-color:#66D9FF;stop-opacity:0.5" />
+      <stop offset="0%" style="stop-color:#00BFFF;stop-opacity:0.6" />
       <stop offset="100%" style="stop-color:#003D7A;stop-opacity:1" />
     </radialGradient>
   </defs>
   
   <!-- Main blue circle -->
-  <circle cx="200" cy="200" r="180" fill="url(#bluGrad)"/>
+  <circle cx="250" cy="250" r="225" fill="url(#bluGrad)"/>
   
-  <!-- Sphere effect -->
-  <circle cx="200" cy="200" r="180" fill="url(#sphereGrad)" opacity="0.75"/>
+  <!-- Sphere reflection effect -->
+  <circle cx="250" cy="250" r="225" fill="url(#sphereGrad)" opacity="0.8"/>
   
   <!-- Yellow/Gold arc (top) -->
-  <path d="M 55 200 A 145 145 0 0 1 345 200" 
-        stroke="#FFD700" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 70 250 A 180 180 0 0 1 430 250" 
+        stroke="#FFD700" stroke-width="35" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   
   <!-- Green arc (bottom-left) -->
-  <path d="M 55 200 A 145 145 0 0 0 200 345" 
-        stroke="#66BB6A" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 70 250 A 180 180 0 0 0 250 430" 
+        stroke="#7CB342" stroke-width="35" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   
-  <!-- White outer border -->
-  <circle cx="200" cy="200" r="180" fill="none" stroke="white" stroke-width="11"/>
+  <!-- White border outer -->
+  <circle cx="250" cy="250" r="225" fill="none" stroke="white" stroke-width="14"/>
   
-  <!-- Inner accent line -->
-  <circle cx="200" cy="200" r="169" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
+  <!-- White border inner accent -->
+  <circle cx="250" cy="250" r="211" fill="none" stroke="white" stroke-width="3" opacity="0.4"/>
   
-  <!-- MTU Text - Compact for favicon -->
+  <!-- MTU Text Group (optimized for favicon) -->
   <g>
-    <!-- White 'm' -->
-    <text x="115" y="235" font-family="Arial, Helvetica, sans-serif" font-size="135" font-weight="900" font-style="italic" fill="white" text-anchor="middle" letter-spacing="-8">
+    <!-- First part 'm' in white italic -->
+    <text x="145" y="290" font-family="Arial, Helvetica, sans-serif" font-size="180" font-weight="900" font-style="italic" fill="white" text-anchor="middle" letter-spacing="-12">
       m
     </text>
     
-    <!-- Bright Blue 'TU' -->
-    <text x="255" y="235" font-family="Arial, Helvetica, sans-serif" font-size="140" font-weight="900" font-style="italic" fill="#00D4FF" text-anchor="middle" letter-spacing="-8">
+    <!-- Second part 'TU' in bright cyan/blue -->
+    <text x="335" y="290" font-family="Arial, Helvetica, sans-serif" font-size="190" font-weight="900" font-style="italic" fill="#00BFFF" text-anchor="middle" letter-spacing="-12">
       TU
+    </text>
+    
+    <!-- Small 'd' accent in cyan at the end -->
+    <text x="390" y="310" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="900" font-style="italic" fill="#00BFFF" text-anchor="middle" letter-spacing="-2">
+      d
     </text>
   </g>
 </svg>
