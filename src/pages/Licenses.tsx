@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, Calendar, MoreHorizontal, Edit, Trash, Download } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/useToast';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -19,6 +20,7 @@ import { exportToExcel, formatDate, ExportColumn } from '@/lib/export-to-excel';
 export default function Licenses() {
   const { licenses, licensesLoading } = useData();
   const { canEdit } = useAuth();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -49,7 +51,7 @@ export default function Licenses() {
       { header: 'Status', key: 'status', format: (v) => licenseStatusLabels[v as LicenseStatus] || v },
       { header: 'Data de Vencimento', key: 'dataVencimento', format: (v) => formatDate(v) },
     ];
-    await exportToExcel(filteredLicenses, columns, { filename: 'licencas' });
+    await exportToExcel(filteredLicenses, columns, { filename: 'licencas', toast });
   };
 
   const getUsagePercent = (used: number, total: number) => Math.round((used / total) * 100);
@@ -118,7 +120,7 @@ export default function Licenses() {
           <CardContent>
             <EmptyState
               title="Nenhuma licença encontrada"
-              description="Comece adicionando sua primeira licença de software"
+              description="Começe adicionando sua primeira licença de software"
             />
           </CardContent>
         </Card>
