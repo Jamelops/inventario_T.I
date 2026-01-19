@@ -3,6 +3,7 @@ import { Plus, Calendar, User, MapPin, Clock, Info, Loader2, Download } from 'lu
 import { useNavigate } from 'react-router-dom';
 import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/useToast';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PriorityBadge } from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ export default function Maintenance() {
   const { maintenanceTasks, loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
   const { canEdit } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const userCanEdit = canEdit();
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -78,7 +80,7 @@ export default function Maintenance() {
       { header: 'Data Agendada', key: 'dataAgendada', format: (v) => formatDate(v) },
       { header: 'Data de Conclusão', key: 'dataConclusao', format: (v) => v ? formatDate(v) : '' },
     ];
-    exportToExcel(maintenanceTasks, columns, { filename: 'manutencao' });
+    exportToExcel(maintenanceTasks, columns, { filename: 'manutencao', toast });
   };
 
   const getDaysInMaintenance = (dataAgendada: string) => {
