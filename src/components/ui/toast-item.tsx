@@ -15,7 +15,6 @@ const toastConfig = {
     icon: CheckCircle,
     iconColor: 'text-emerald-600 dark:text-emerald-400',
     textColor: 'text-emerald-900 dark:text-emerald-100',
-    progressBg: 'bg-emerald-500',
   },
   error: {
     bg: 'bg-red-50 dark:bg-red-950',
@@ -23,7 +22,6 @@ const toastConfig = {
     icon: AlertCircle,
     iconColor: 'text-red-600 dark:text-red-400',
     textColor: 'text-red-900 dark:text-red-100',
-    progressBg: 'bg-red-500',
   },
   warning: {
     bg: 'bg-amber-50 dark:bg-amber-950',
@@ -31,7 +29,6 @@ const toastConfig = {
     icon: AlertTriangle,
     iconColor: 'text-amber-600 dark:text-amber-400',
     textColor: 'text-amber-900 dark:text-amber-100',
-    progressBg: 'bg-amber-500',
   },
   info: {
     bg: 'bg-blue-50 dark:bg-blue-950',
@@ -39,7 +36,6 @@ const toastConfig = {
     icon: Info,
     iconColor: 'text-blue-600 dark:text-blue-400',
     textColor: 'text-blue-900 dark:text-blue-100',
-    progressBg: 'bg-blue-500',
   },
 };
 
@@ -103,24 +99,19 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
     >
       <div
         className={cn(
-          'w-96 max-w-md rounded-lg border p-4 shadow-lg overflow-hidden',
+          'w-96 max-w-md rounded-lg border p-4 shadow-lg',
           config.bg,
           config.border
         )}
       >
         <div className="flex items-start gap-3">
           <IconComponent className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconColor)} />
-          <div className="flex-1 min-w-0 overflow-visible">
+          <div className="flex-1 min-w-0">
             <p 
               className={cn(
                 'text-sm font-medium break-words whitespace-pre-wrap',
                 config.textColor
               )}
-              style={{
-                overflow: 'visible',
-                display: 'block',
-                width: '100%',
-              }}
               data-testid="toast-message"
               data-message={toast.message}
             >
@@ -140,18 +131,6 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
             <X className="h-4 w-4" />
           </button>
         </div>
-
-        {/* Progress bar embaixo do toast */}
-        {duration > 0 && (
-          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/5 -mx-4 -mb-4">
-            <div
-              className={cn('h-full transition-all', config.progressBg)}
-              style={{
-                width: `${progress}%`,
-              }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
