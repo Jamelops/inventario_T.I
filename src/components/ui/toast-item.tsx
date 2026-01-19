@@ -51,6 +51,19 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
   const IconComponent = config.icon;
   const duration = toast.duration || 4000;
 
+  // DEBUG: Log renderização
+  useEffect(() => {
+    console.log('%c[ToastItem] Renderizado', 'color: #2563eb; font-weight: bold;', {
+      id: toast.id,
+      type: toast.type,
+      message: toast.message,
+      messageLength: toast.message?.length || 0,
+      messageIsEmpty: !toast.message || toast.message.trim().length === 0,
+      duration,
+      config: Object.keys(config),
+    });
+  }, [toast, config]);
+
   useEffect(() => {
     if (duration <= 0) return;
 
@@ -77,16 +90,6 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
     }, 300);
   };
 
-  // Debug: Log da mensagem
-  React.useEffect(() => {
-    console.log('Toast Item Renderizado:', {
-      id: toast.id,
-      type: toast.type,
-      message: toast.message,
-      messageLength: toast.message?.length,
-    });
-  }, [toast]);
-
   return (
     <div
       className={cn(
@@ -106,17 +109,21 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
       >
         <div className="flex items-start gap-3">
           <IconComponent className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconColor)} />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-visible">
             <p 
-              className={cn('text-sm font-medium break-words whitespace-normal', config.textColor)}
+              className={cn(
+                'text-sm font-medium break-words whitespace-pre-wrap',
+                config.textColor
+              )}
               style={{
                 overflow: 'visible',
-                textOverflow: 'unset',
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
+                display: 'block',
+                width: '100%',
               }}
+              data-testid="toast-message"
+              data-message={toast.message}
             >
-              {toast.message}
+              {toast.message || '(mensagem vazia)'}
             </p>
           </div>
           <button
