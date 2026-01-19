@@ -6,7 +6,7 @@ export function ToastContainer() {
 
   return (
     <div
-      className="fixed top-4 right-4 z-[9999] flex flex-col pointer-events-none"
+      className="fixed top-16 right-4 z-[9999] flex flex-col pointer-events-none"
       role="region"
       aria-label="Notificações"
       aria-live="polite"
