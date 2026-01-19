@@ -242,7 +242,7 @@ export default function Auth() {
                   <Input
                     id="login-password"
                     type="password"
-                    placeholder="â¢â¢â¢â¢â¢â¢"
+                    placeholder="Digite sua senha"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
@@ -283,7 +283,7 @@ export default function Auth() {
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="â¢â¢â¢â¢â¢â¢"
+                    placeholder="Digite sua senha"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     required
@@ -297,7 +297,7 @@ export default function Auth() {
                   <Input
                     id="signup-confirm"
                     type="password"
-                    placeholder="â¢â¢â¢â¢â¢â¢"
+                    placeholder="Repita sua senha"
                     value={signupConfirmPassword}
                     onChange={(e) => setSignupConfirmPassword(e.target.value)}
                     required
