@@ -45,7 +45,6 @@ const toastConfig = {
 
 export function ToastItem({ toast, onClose }: ToastItemProps) {
   const [isExiting, setIsExiting] = useState(false);
-  const [progress, setProgress] = useState(100);
 
   const config = toastConfig[toast.type];
   const IconComponent = config.icon;
@@ -64,24 +63,16 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
     });
   }, [toast, config]);
 
+  // Auto-close com base na duração
   useEffect(() => {
     if (duration <= 0) return;
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 50));
-        return newProgress > 0 ? newProgress : 0;
-      });
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [duration]);
-
-  useEffect(() => {
-    if (progress <= 0) {
+    const timeout = setTimeout(() => {
       handleClose();
-    }
-  }, [progress]);
+    }, duration);
+
+    return () => clearTimeout(timeout);
+  }, [duration]);
 
   const handleClose = () => {
     setIsExiting(true);
@@ -140,18 +131,6 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
             <X className="h-4 w-4" />
           </button>
         </div>
-
-        {/* Progress bar */}
-        {duration > 0 && (
-          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/5">
-            <div
-              className={cn('h-full transition-all', config.progressBg)}
-              style={{
-                width: `${progress}%`,
-              }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
