@@ -1,5 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/ui/toast-container";
@@ -99,9 +97,9 @@ const App = () => (
         <DataProvider>
           <TicketProvider>
             <ToastProvider>
-              <Toaster />
-              <Sonner />
+              {/* Sistema de Toast Customizado */}
               <ToastContainer />
+              <ToastDebugger />
               <BrowserRouter>
                 <AppRoutes />
               </BrowserRouter>
