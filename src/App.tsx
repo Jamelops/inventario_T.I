@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/ui/toast-container";
+import { ToastDebugger } from "@/components/debug/ToastDebugger";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DataProvider } from "@/contexts/DataContext";
@@ -58,6 +59,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <AppLayout>
+              <ToastDebugger />
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/assets" element={<Assets />} />
