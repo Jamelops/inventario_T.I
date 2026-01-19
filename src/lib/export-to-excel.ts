@@ -49,7 +49,7 @@ export function formatCurrency(value: any): string {
   }).format(num);
 }
 
-// Função principal de exportação - COM DEBUG DETALHADO
+// Função principal de exportação
 export async function exportToExcel(
   data: any[],
   columns: ExportColumn[],
@@ -58,26 +58,13 @@ export async function exportToExcel(
   try {
     const toast = options?.toast;
 
-    // DEBUG SUPER DETALHADO
-    console.log('%c=== EXPORT-TO-EXCEL START ===', 'color: #ff0000; font-weight: bold; font-size: 14px;');
-    console.log('Toast recebido:', toast);
-    console.log('Toast tipo:', typeof toast);
-    console.log('Toast é função?', typeof toast?.success === 'function');
-    console.log('Métodos do toast:', toast ? Object.keys(toast) : 'SEM TOAST');
-    console.log('Data length:', data?.length);
-    console.log('Columns length:', columns?.length);
-    console.log('%c=== FIM DEBUG ===', 'color: #ff0000; font-weight: bold; font-size: 14px;');
-
     // Validação 1: Dados vazios
     if (!data || data.length === 0) {
       const message = 'Nenhum dado para exportar';
-      console.log('%cChamando toast.warning com:', 'color: orange; font-weight: bold;', message);
       
       if (toast && typeof toast.warning === 'function') {
-        console.log('✅ Toast.warning é função, chamando...');
-        toast.warning(message);
+        toast.warning(message, 5000);
       } else {
-        console.log('❌ Toast.warning NÃO é função ou toast está undefined');
         alert(message);
       }
       return;
@@ -86,13 +73,10 @@ export async function exportToExcel(
     // Validação 2: Filename vazio
     if (!options || !options.filename) {
       const message = 'Nome do arquivo não fornecido';
-      console.log('%cChamando toast.error com:', 'color: red; font-weight: bold;', message);
       
       if (toast && typeof toast.error === 'function') {
-        console.log('✅ Toast.error é função, chamando...');
-        toast.error(message);
+        toast.error(message, 5000);
       } else {
-        console.log('❌ Toast.error NÃO é função ou toast está undefined');
         alert(message);
       }
       return;
@@ -185,31 +169,24 @@ export async function exportToExcel(
       URL.revokeObjectURL(url);
     }, 100);
 
-    // Sucesso!
+    // ✅ SUCESSO - COM DURAÇÃO AUMENTADA (6 segundos)
     const successMessage = '✅ Arquivo exportado com sucesso!';
-    console.log('%cChamando toast.success com:', 'color: green; font-weight: bold;', successMessage);
     
     if (toast && typeof toast.success === 'function') {
-      console.log('✅ Toast.success é função, chamando...');
-      toast.success(successMessage);
+      toast.success(successMessage, 6000); // 6 segundos para o usuário ver
     } else {
-      console.log('❌ Toast.success NÃO é função ou toast está undefined');
       alert(successMessage);
     }
 
   } catch (error) {
-    console.error('❌ ERRO detalhado ao exportar para Excel:', error);
+    console.error('❌ ERRO ao exportar para Excel:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     const finalMessage = `❌ Erro ao exportar: ${errorMessage}`;
     
-    console.log('%cChamando toast.error com:', 'color: red; font-weight: bold;', finalMessage);
-    
     if (options.toast && typeof options.toast.error === 'function') {
-      console.log('✅ Toast.error é função, chamando...');
-      options.toast.error(finalMessage);
+      options.toast.error(finalMessage, 6000); // 6 segundos para o usuário ver
     } else {
-      console.log('❌ Toast.error NÃO é função ou toast está undefined');
       alert(finalMessage);
     }
   }
