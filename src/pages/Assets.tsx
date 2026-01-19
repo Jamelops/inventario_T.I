@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Download, Eye, Edit, Wrench, Archive, MoreHorizontal } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/useToast';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -19,6 +20,7 @@ export default function Assets() {
   const { assets, assetsLoading } = useData();
   const { canEdit } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -67,7 +69,7 @@ export default function Assets() {
       },
     ];
 
-    await exportToExcel(filteredAssets, columns, { filename: 'ativos' });
+    await exportToExcel(filteredAssets, columns, { filename: 'ativos', toast });
   };
 
   return (
