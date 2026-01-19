@@ -26,6 +26,7 @@ import Auth from "./pages/Auth";
 import Profiles from "./pages/Profiles";
 import MyProfile from "./pages/MyProfile";
 import NotFound from "./pages/NotFound";
+import { AdminRenumberIds } from '@/pages/AdminRenumberIds';
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ function AppRoutes() {
                 <Route path="/profiles" element={<Profiles />} />
                 <Route path="/my-profile" element={<MyProfile />} />
                 <Route path="*" element={<NotFound />} />
+                <Route path="/admin/renumber-ids" element={<AdminRenumberIds />} />
               </Routes>
             </AppLayout>
           </ProtectedRoute>
