@@ -58,20 +58,35 @@ export async function exportToExcel(
   try {
     const toast = options.toast;
 
+    // DEBUG: Log para verificar se o toast está sendo recebido
+    console.log('exportToExcel chamado com:', {
+      dataLength: data?.length,
+      columnsLength: columns?.length,
+      hasToast: !!toast,
+      toastType: typeof toast,
+      toastMethods: toast ? Object.keys(toast) : 'N/A',
+    });
+
     if (!data || data.length === 0) {
-      if (toast) {
-        toast.warning('Nenhum dado para exportar');
+      const message = 'Nenhum dado para exportar';
+      console.log('Toast warning:', message);
+      if (toast && typeof toast.warning === 'function') {
+        toast.warning(message);
       } else {
-        alert('Nenhum dado para exportar');
+        console.warn('Toast.warning não é uma função', { toast });
+        alert(message);
       }
       return;
     }
 
     if (!options || !options.filename) {
-      if (toast) {
-        toast.error('Nome do arquivo não fornecido');
+      const message = 'Nome do arquivo não fornecido';
+      console.log('Toast error:', message);
+      if (toast && typeof toast.error === 'function') {
+        toast.error(message);
       } else {
-        alert('Nome do arquivo não fornecido');
+        console.warn('Toast.error não é uma função', { toast });
+        alert(message);
       }
       return;
     }
@@ -163,21 +178,27 @@ export async function exportToExcel(
       URL.revokeObjectURL(url);
     }, 100);
 
-    if (toast) {
-      toast.success('Arquivo exportado com sucesso!');
+    const successMessage = 'Arquivo exportado com sucesso!';
+    console.log('Toast success:', successMessage);
+    if (toast && typeof toast.success === 'function') {
+      toast.success(successMessage);
     } else {
-      alert('Arquivo exportado com sucesso!');
+      console.warn('Toast.success não é uma função', { toast });
+      alert(successMessage);
     }
 
   } catch (error) {
     console.error('Erro detalhado ao exportar para Excel:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    const finalMessage = `Erro ao exportar: ${errorMessage}`;
     
-    if (options.toast) {
-      options.toast.error(`Erro ao exportar: ${errorMessage}`);
+    console.log('Toast error (catch):', finalMessage);
+    if (options.toast && typeof options.toast.error === 'function') {
+      options.toast.error(finalMessage);
     } else {
-      alert(`Erro ao exportar: ${errorMessage}`);
+      console.warn('Toast.error não é uma função', { toast: options.toast });
+      alert(finalMessage);
     }
   }
 }
