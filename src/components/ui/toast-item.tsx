@@ -93,12 +93,13 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
   return (
     <div
       className={cn(
-        'animate-in slide-in-from-top-2 fade-in-0 duration-300 mb-3',
+        'animate-in slide-in-from-top-2 fade-in-0 duration-300 mb-3 z-50 relative',
         isExiting && 'animate-out slide-out-to-top-2 fade-out-0 duration-300'
       )}
       role="alert"
       aria-live="polite"
       aria-atomic="true"
+      style={{ zIndex: 9999 }}
     >
       <div
         className={cn(
