@@ -1,5 +1,3 @@
-// src/lib/export-to-excel.ts
-
 import ExcelJS from 'exceljs';
 
 // Tipo CORRETO para configurar colunas customizadas
@@ -13,6 +11,7 @@ export interface ExportColumn {
 // Interface para opções de exportação
 export interface ExportOptions {
   filename: string;
+  toast?: any; // Toast hook passado como parâmetro
 }
 
 // Função para formatar data
@@ -50,20 +49,30 @@ export function formatCurrency(value: any): string {
   }).format(num);
 }
 
-// Função principal de exportação - CORRIGIDA
+// Função principal de exportação - CORRIGIDA COM TOAST
 export async function exportToExcel(
   data: any[],
   columns: ExportColumn[],
   options: ExportOptions
 ) {
   try {
+    const toast = options.toast;
+
     if (!data || data.length === 0) {
-      alert('Nenhum dado para exportar');
+      if (toast) {
+        toast.warning('Nenhum dado para exportar');
+      } else {
+        alert('Nenhum dado para exportar');
+      }
       return;
     }
 
     if (!options || !options.filename) {
-      alert('Nome do arquivo não fornecido');
+      if (toast) {
+        toast.error('Nome do arquivo não fornecido');
+      } else {
+        alert('Nome do arquivo não fornecido');
+      }
       return;
     }
 
@@ -154,11 +163,22 @@ export async function exportToExcel(
       URL.revokeObjectURL(url);
     }, 100);
 
-    alert('Arquivo exportado com sucesso!');
+    if (toast) {
+      toast.success('Arquivo exportado com sucesso!');
+    } else {
+      alert('Arquivo exportado com sucesso!');
+    }
 
   } catch (error) {
     console.error('Erro detalhado ao exportar para Excel:', error);
-    alert(`Erro ao exportar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    
+    if (options.toast) {
+      options.toast.error(`Erro ao exportar: ${errorMessage}`);
+    } else {
+      alert(`Erro ao exportar: ${errorMessage}`);
+    }
   }
 }
 
