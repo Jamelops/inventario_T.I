@@ -42,6 +42,7 @@ import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/Tic
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/useToast";
 import {
   Ticket,
   TicketStatus,
@@ -55,6 +56,7 @@ export default function Tickets() {
   const navigate = useNavigate();
   const { tickets, suppliers, getSupplierById, changeTicketStatus } = useTickets();
   const { profile } = useAuth();
+  const toast = useToast();
 
   const [search, setSearch] = useState("");
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
@@ -111,7 +113,7 @@ export default function Tickets() {
       { header: 'SLA', key: 'slaDeadline', format: (v) => formatDateTime(v) },
       { header: 'Criado em', key: 'dataCriacao', format: (v) => formatDateTime(v) },
     ];
-    exportToExcel(sortedTickets, columns, { filename: 'chamados' });
+    exportToExcel(sortedTickets, columns, { filename: 'chamados', toast });
   };
 
   // Mobile card view
