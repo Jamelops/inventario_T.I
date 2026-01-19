@@ -1,6 +1,6 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "@/contexts/ToastContext";
-import { ToastContainer } from "@/components/ui/toast-container";
+import { ToastBannerContainer } from "@/components/ui/toast-banner-container";
 import { ToastDebugger } from "@/components/debug/ToastDebugger";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -97,9 +97,8 @@ const App = () => (
         <DataProvider>
           <TicketProvider>
             <ToastProvider>
-              {/* Sistema de Toast Customizado */}
-              <ToastContainer />
-              <ToastDebugger />
+              {/* Sistema de Toast como Banner (debaixo do header) */}
+              <ToastBannerContainer />
               <BrowserRouter>
                 <AppRoutes />
               </BrowserRouter>
