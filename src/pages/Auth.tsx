@@ -20,7 +20,7 @@ const signupSchema = z.object({
   username: z.string()
     .min(3, 'Nome de usuário deve ter pelo menos 3 caracteres')
     .max(50, 'Nome de usuário muito longo')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Nome de usuário pode conter apenas letras, números e underscores'),
+    .regex(/^[a-zA-ZÀ-ÿ0-9\s]+$/, 'Nome de usuário pode conter apenas letras, números e espaços'),
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
   password: z.string()
     .min(10, 'Senha deve ter pelo menos 10 caracteres')
@@ -261,11 +261,14 @@ export default function Auth() {
                   <Input
                     id="signup-username"
                     type="text"
-                    placeholder="seu_usuario"
+                    placeholder="Bruno Lopes"
                     value={signupUsername}
                     onChange={(e) => setSignupUsername(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Use seu nome completo ou apelido
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
