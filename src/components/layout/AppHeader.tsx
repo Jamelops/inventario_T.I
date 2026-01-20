@@ -26,11 +26,11 @@ export function AppHeader() {
   const navigate = useNavigate();
   const { licenses } = useData();
   const { profile, userRole, signOut, isAdmin } = useAuth();
-  const { maintenanceTasks } = useMaintenanceTasks();
+  const { tasks } = useMaintenanceTasks();
 
   // Calculate notifications
   const expiringLicenses = licenses.filter(l => l.status === 'vencendo' || l.status === 'vencida').length;
-  const pendingMaintenance = maintenanceTasks.filter(t => t.status === 'pendente').length;
+  const pendingMaintenance = tasks.filter(t => t.status === 'pendente').length;
   const totalNotifications = expiringLicenses + pendingMaintenance;
 
   const handleSignOut = async () => {

@@ -1,115 +1,114 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { toast } from 'sonner';
 import { Category } from '@/types';
+import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-type DbCategory = Tables<'asset_categories'>;
-type DbCategoryInsert = TablesInsert<'asset_categories'>;
-type DbCategoryUpdate = TablesUpdate<'asset_categories'>;
+type DbCategory = Tables<'categories'>;
+type DbCategoryInsert = TablesInsert<'categories'>;
+type DbCategoryUpdate = TablesUpdate<'categories'>;
 
-const dbToCategory = (db: DbCategory): Category => ({
-  id: db.id,
-  nome: db.nome,
-  descricao: db.descricao || undefined,
-  icone: db.icone || undefined,
+const dbToCategory = (dbCategory: DbCategory): Category => ({
+  id: dbCategory.id,
+  nome: dbCategory.nome,
+  descricao: dbCategory.descricao || undefined,
+  cor: dbCategory.cor || '#6B7280',
 });
 
-const categoryToDbInsert = (
-  category: Omit<Category, 'id'>,
-  userId: string
-): DbCategoryInsert => ({
+const categoryToDbInsert = (category: Omit<Category, 'id'>): DbCategoryInsert => ({
   nome: category.nome,
   descricao: category.descricao || null,
-  icone: category.icone || null,
-  created_by: userId,
+  cor: category.cor || '#6B7280',
 });
 
 const categoryToDbUpdate = (updates: Partial<Category>): DbCategoryUpdate => {
-  const dbUpdates: DbCategoryUpdate = {};
-  if (updates.nome !== undefined) dbUpdates.nome = updates.nome;
-  if (updates.descricao !== undefined) dbUpdates.descricao = updates.descricao || null;
-  if (updates.icone !== undefined) dbUpdates.icone = updates.icone || null;
-  return dbUpdates;
+  const dbUpdate: DbCategoryUpdate = {};
+
+  if (updates.nome !== undefined) dbUpdate.nome = updates.nome;
+  if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao || null;
+  if (updates.cor !== undefined) dbUpdate.cor = updates.cor || '#6B7280';
+
+  return dbUpdate;
 };
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isApproved } = useAuth();
 
   const fetchCategories = useCallback(async () => {
-    setLoading(true);
+    if (!user || !isApproved) {
+      setCategories([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
-        .from('asset_categories')
+        .from('categories')
         .select('*')
         .order('nome', { ascending: true });
 
       if (error) throw error;
       setCategories((data || []).map(dbToCategory));
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to fetch categories:', error);
-      }
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+      toast.error('Erro ao carregar categorias');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user, isApproved]);
 
   useEffect(() => {
-    if (user) {
-      fetchCategories();
-    }
-  }, [user, fetchCategories]);
+    fetchCategories();
+  }, [fetchCategories]);
 
-  const addCategory = async (
-    category: Omit<Category, 'id'>
-  ): Promise<Category | null> => {
-    if (!user) return null;
+  const addCategory = async (category: Omit<Category, 'id'>): Promise<Category | null> => {
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return null;
+    }
 
     try {
-      const dbInsert = categoryToDbInsert(category, user.id);
       const { data, error } = await supabase
-        .from('asset_categories')
-        .insert(dbInsert)
+        .from('categories')
+        .insert(categoryToDbInsert(category))
         .select()
         .single();
 
       if (error) throw error;
 
       const newCategory = dbToCategory(data);
-      setCategories((prev) => [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome)));
+      setCategories(prev => [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome)));
+      toast.success('Categoria criada com sucesso');
       return newCategory;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to add category:', error);
-      }
+    } catch (error: any) {
+      console.error('Error adding category:', error);
+      toast.error('Erro ao criar categoria: ' + error.message);
       return null;
     }
   };
 
-  const updateCategory = async (
-    id: string,
-    updates: Partial<Category>
-  ): Promise<boolean> => {
+  const updateCategory = async (id: string, updates: Partial<Category>): Promise<boolean> => {
     try {
-      const dbUpdates = categoryToDbUpdate(updates);
       const { error } = await supabase
-        .from('asset_categories')
-        .update(dbUpdates)
+        .from('categories')
+        .update(categoryToDbUpdate(updates))
         .eq('id', id);
 
       if (error) throw error;
 
-      setCategories((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
-      );
+      setCategories(prev => prev.map(category =>
+        category.id === id
+          ? { ...category, ...updates }
+          : category
+      ));
+      toast.success('Categoria atualizada com sucesso');
       return true;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to update category:', error);
-      }
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      toast.error('Erro ao atualizar categoria: ' + error.message);
       return false;
     }
   };
@@ -117,24 +116,20 @@ export function useCategories() {
   const deleteCategory = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
-        .from('asset_categories')
+        .from('categories')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
 
-      setCategories((prev) => prev.filter((c) => c.id !== id));
+      setCategories(prev => prev.filter(category => category.id !== id));
+      toast.success('Categoria excluída com sucesso');
       return true;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to delete category:', error);
-      }
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      toast.error('Erro ao excluir categoria: ' + error.message);
       return false;
     }
-  };
-
-  const getCategoryById = (id: string): Category | undefined => {
-    return categories.find((c) => c.id === id);
   };
 
   return {
@@ -143,7 +138,6 @@ export function useCategories() {
     addCategory,
     updateCategory,
     deleteCategory,
-    getCategoryById,
     refetch: fetchCategories,
   };
 }

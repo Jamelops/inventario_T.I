@@ -9,15 +9,14 @@ type DbLicense = Tables<'licenses'>;
 type DbLicenseInsert = TablesInsert<'licenses'>;
 type DbLicenseUpdate = TablesUpdate<'licenses'>;
 
-// Convert database license to application License type
 const dbToLicense = (dbLicense: DbLicense): License => ({
   id: dbLicense.id,
   nome: dbLicense.nome,
-  tipo: dbLicense.tipo as any,
+  tipo: dbLicense.tipo,
   quantidadeTotal: dbLicense.quantidade_total,
   quantidadeUsada: dbLicense.quantidade_usada,
   dataVencimento: dbLicense.data_vencimento,
-  status: (dbLicense.status as any) || 'ativa',
+  status: dbLicense.status as any,
   fornecedor: dbLicense.fornecedor || undefined,
   chave: dbLicense.chave || undefined,
   notas: dbLicense.notas || undefined,
@@ -25,7 +24,6 @@ const dbToLicense = (dbLicense: DbLicense): License => ({
   dataAtualizacao: dbLicense.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
 });
 
-// Convert application License to database insert type
 const licenseToDbInsert = (license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>, userId: string): DbLicenseInsert => ({
   nome: license.nome,
   tipo: license.tipo,
@@ -39,7 +37,6 @@ const licenseToDbInsert = (license: Omit<License, 'id' | 'dataCriacao' | 'dataAt
   created_by: userId,
 });
 
-// Convert application License update to database update type
 const licenseToDbUpdate = (updates: Partial<License>): DbLicenseUpdate => {
   const dbUpdate: DbLicenseUpdate = {};
 
