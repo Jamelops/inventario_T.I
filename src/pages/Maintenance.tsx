@@ -23,7 +23,7 @@ const columnColors: Record<MaintenanceStatus, string> = {
 };
 
 export default function Maintenance() {
-  const { maintenanceTasks, loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
+  const { maintenanceTasks = [], loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
   const { canEdit } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -32,7 +32,7 @@ export default function Maintenance() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const getTasksByStatus = (status: MaintenanceStatus) => 
-    maintenanceTasks.filter(t => t.status === status);
+    (maintenanceTasks || []).filter(t => t.status === status);
 
   if (loading) {
     return (
@@ -80,7 +80,7 @@ export default function Maintenance() {
       { header: 'Data Agendada', key: 'dataAgendada', format: (v) => formatDate(v) },
       { header: 'Data de Conclusão', key: 'dataConclusao', format: (v) => v ? formatDate(v) : '' },
     ];
-    exportToExcel(maintenanceTasks, columns, { filename: 'manutencao', toast });
+    exportToExcel(maintenanceTasks || [], columns, { filename: 'manutencao', toast });
   };
 
   const getDaysInMaintenance = (dataAgendada: string) => {
