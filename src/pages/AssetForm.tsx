@@ -65,11 +65,11 @@ const AssetForm = () => {
   const { assets, addAsset, updateAsset } = useData();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Hook para formatação de valor
-  const { value: valorFormatado, handleChange: handleValorChange, getRawValue: getValorRaw } = useMoneyFormat();
-
   const isEditing = Boolean(id);
   const existingAsset = isEditing ? assets.find((a) => a.id === id) : null;
+
+  // Hook para formatação de valor
+  const moneyFormat = useMoneyFormat(existingAsset?.valor ?? 0);
 
   const form = useForm<AssetFormData>({
     resolver: zodResolver(assetSchema),
@@ -101,8 +101,11 @@ const AssetForm = () => {
         descricao: existingAsset.descricao ?? "",
         especificacoes: existingAsset.especificacoes ?? {},
       });
+      
+      // Atualiza o moneyFormat com o valor existente
+      moneyFormat.setRawValue(existingAsset.valor);
     }
-  }, [existingAsset, form]);
+  }, [existingAsset, form, moneyFormat]);
 
   const categoria = form.watch("categoria");
 
@@ -118,8 +121,8 @@ const AssetForm = () => {
   const onSubmit = async (data: AssetFormData) => {
     setIsLoading(true);
     try {
-      // Usa o valor formatado do hook
-      const valorReal = getValorRaw();
+      // Usa o valor raw do hook
+      const valorReal = moneyFormat.getRawValue();
 
       const cleanedSpecs = cleanSpecifications(data.especificacoes);
       const assetData = {
@@ -322,31 +325,22 @@ const AssetForm = () => {
                 />
 
                 {/* Campo de Valor com Formatação Monetária */}
-                <FormField
-                  control={form.control}
-                  name="valor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Valor (R$)
-                        <RequiredFieldIndicator required={true} />
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={valorFormatado}
-                          onChange={(e) => {
-                            handleValorChange(e);
-                          }}
-                          placeholder="R$ 0,00"
-                          className="font-mono"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>
+                    Valor (R$)
+                    <RequiredFieldIndicator required={true} />
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={moneyFormat.value}
+                      onChange={moneyFormat.handleChange}
+                      placeholder="R$ 0,00"
+                      className="font-mono"
+                    />
+                  </FormControl>
+                </FormItem>
 
                 <FormField
                   control={form.control}
