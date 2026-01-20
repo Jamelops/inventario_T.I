@@ -149,8 +149,6 @@ export default function Assets() {
               <EmptyState 
                 title="Nenhum ativo encontrado"
                 description="Comece adicionando um novo ativo ao sistema"
-                action={() => navigate('/assets/new')}
-                actionLabel="Novo Ativo"
               />
             ) : (
               <div className="overflow-x-auto">
