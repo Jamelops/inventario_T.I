@@ -121,68 +121,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let loadingTimeout: NodeJS.Timeout | null = null;
 
-    const initializeAuth = async () => {
-      try {
-        // Check for existing session
-        const { data: { session: existingSession } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (existingSession?.user) {
-          // Session exists, hydrate state
-          setSession(existingSession);
-          setUser(existingSession.user);
-          await loadUserData(existingSession.user.id);
-        } else {
-          // No session
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setUserRole(null);
-        }
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('Error initializing auth:', error);
-        }
-        // On error, assume no session
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setUserRole(null);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    // Initialize auth immediately
-    initializeAuth();
-
-    // Set up listener for auth state changes (login/logout in other tabs)
+    // Set up auth state listener - PRIMARY source of truth for auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
-        
+
         if (session?.user) {
+          // User is authenticated
           setSession(session);
           setUser(session.user);
           await loadUserData(session.user.id);
         } else {
+          // User is not authenticated
           setSession(null);
           setUser(null);
           setProfile(null);
           setUserRole(null);
         }
+
+        // Mark loading as complete
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
+    // Safety timeout: if auth state doesn't resolve within 10 seconds, assume no session
+    loadingTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        if (import.meta.env.DEV) {
+          console.warn('Auth state initialization timeout - assuming no session');
+        }
+        setLoading(false);
+      }
+    }, 10000);
+
     return () => {
       mounted = false;
+      if (loadingTimeout) clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loading]);
 
   const hasRole = (role: AppRole): boolean => {
     return userRole === role;
