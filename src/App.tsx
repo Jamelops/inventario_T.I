@@ -7,6 +7,7 @@ import { DataProvider } from "@/contexts/DataContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TicketProvider } from "@/contexts/TicketContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import Dashboard from "./pages/Dashboard";
 import Assets from "./pages/Assets";
 import AssetForm from "./pages/AssetForm";
@@ -34,11 +35,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!user) {
