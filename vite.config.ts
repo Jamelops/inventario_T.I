@@ -19,6 +19,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    host: '0.0.0.0',  // Expõe na rede automaticamente
+    port: 5173,
+    middlewareMode: false,
+  },
   build: {
     target: 'ES2020',
     minify: 'terser',
@@ -36,8 +41,5 @@ export default defineConfig({
         },
       },
     },
-  },
-  server: {
-    middlewareMode: false,
   },
 });
