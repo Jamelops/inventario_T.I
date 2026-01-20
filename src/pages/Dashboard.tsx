@@ -15,7 +15,7 @@ const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 
 export default function Dashboard() {
   const { assets, licenses, dashboardConfig, updateDashboardConfig, assetsLoading, licensesLoading } = useData();
-  const { maintenanceTasks, loading: maintenanceLoading } = useMaintenanceTasks();
+  const { tasks, loading: maintenanceLoading } = useMaintenanceTasks();
 
   if (assetsLoading || licensesLoading || maintenanceLoading) {
     return (
@@ -29,7 +29,7 @@ export default function Dashboard() {
   const totalAssets = assets.length;
   const assetsInMaintenance = assets.filter(a => a.status === 'manutencao').length;
   const expiredLicenses = licenses.filter(l => l.status === 'vencida' || l.status === 'vencendo').length;
-  const totalValue = assets.reduce((sum, a) => sum + a.valor, 0);
+  const totalValue = assets.reduce((sum, a) => sum + (a.valor || 0), 0);
 
   // Category distribution for pie chart
   const categoryData = Object.entries(
@@ -47,7 +47,7 @@ export default function Dashboard() {
     .filter(l => l.status === 'vencendo' || l.status === 'vencida')
     .slice(0, 5);
 
-  const pendingTasks = maintenanceTasks
+  const pendingTasks = tasks
     .filter(t => t.status === 'pendente' || t.status === 'em_andamento')
     .slice(0, 5);
 
