@@ -13,16 +13,16 @@ type DbLicenseUpdate = TablesUpdate<'licenses'>;
 const dbToLicense = (dbLicense: DbLicense): License => ({
   id: dbLicense.id,
   nome: dbLicense.nome,
-  tipo: dbLicense.tipo,
+  tipo: dbLicense.tipo as any,
   quantidadeTotal: dbLicense.quantidade_total,
   quantidadeUsada: dbLicense.quantidade_usada,
   dataVencimento: dbLicense.data_vencimento,
-  status: dbLicense.status,
+  status: (dbLicense.status as any) || 'ativa',
   fornecedor: dbLicense.fornecedor || undefined,
   chave: dbLicense.chave || undefined,
   notas: dbLicense.notas || undefined,
-  dataCriacao: dbLicense.created_at.split('T')[0],
-  dataAtualizacao: dbLicense.updated_at.split('T')[0],
+  dataCriacao: dbLicense.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+  dataAtualizacao: dbLicense.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
 });
 
 // Convert application License to database insert type
@@ -42,7 +42,7 @@ const licenseToDbInsert = (license: Omit<License, 'id' | 'dataCriacao' | 'dataAt
 // Convert application License update to database update type
 const licenseToDbUpdate = (updates: Partial<License>): DbLicenseUpdate => {
   const dbUpdate: DbLicenseUpdate = {};
-  
+
   if (updates.nome !== undefined) dbUpdate.nome = updates.nome;
   if (updates.tipo !== undefined) dbUpdate.tipo = updates.tipo;
   if (updates.quantidadeTotal !== undefined) dbUpdate.quantidade_total = updates.quantidadeTotal;
@@ -52,7 +52,7 @@ const licenseToDbUpdate = (updates: Partial<License>): DbLicenseUpdate => {
   if (updates.fornecedor !== undefined) dbUpdate.fornecedor = updates.fornecedor || null;
   if (updates.chave !== undefined) dbUpdate.chave = updates.chave || null;
   if (updates.notas !== undefined) dbUpdate.notas = updates.notas || null;
-  
+
   return dbUpdate;
 };
 
