@@ -136,7 +136,8 @@ export default function TicketForm() {
       responsavelId: profile?.user_id || "",
       responsavelNome: profile?.username || "Usuário",
       status: "aberto" as const,
-      data_criacao: isEditing ? existingTicket?.data_criacao || now : now,
+      dataCriacao: isEditing && existingTicket ? existingTicket.dataCriacao : now,
+      dataCriacao_iso: now,
     };
 
     if (isEditing && existingTicket) {
