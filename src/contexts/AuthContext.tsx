@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       // Log generic message only in development
       if (import.meta.env.DEV) {
-        console.error('Failed to fetch profile');
+        console.error('Failed to fetch profile', error);
       }
       return null;
     }
@@ -67,19 +67,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchUserRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .maybeSingle();
+    try {
+      // First, try to fetch directly (user can read own role)
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (error) {
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch user role:', error);
+        }
+        return null;
+      }
+
+      return data?.role as AppRole | null;
+    } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('Failed to fetch user role');
+        console.error('Error fetching user role:', err);
       }
       return null;
     }
-    return data?.role as AppRole | null;
   };
 
   const fetchProfileUsernames = async () => {
@@ -89,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       if (import.meta.env.DEV) {
-        console.error('Failed to fetch usernames');
+        console.error('Failed to fetch usernames', error);
       }
       return;
     }
