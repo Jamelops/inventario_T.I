@@ -51,12 +51,13 @@ const MaintenanceForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { assets = [] } = useData();
-  const { maintenanceTasks = [], loading: tasksLoading, addMaintenanceTask, updateMaintenanceTask, getMaintenanceTaskById } = useMaintenanceTasks();
+  // O hook retorna: tasks, loading, addTask, updateTask, deleteTask, getTaskById, refetch
+  const { tasks = [], loading: tasksLoading, addTask, updateTask, deleteTask, getTaskById } = useMaintenanceTasks();
   const { profile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const isEditing = Boolean(id);
-  const existingTask = isEditing && getMaintenanceTaskById ? getMaintenanceTaskById(id!) : null;
+  const existingTask = isEditing && getTaskById ? getTaskById(id!) : null;
 
   // useForm sempre chamado no topo, antes de qualquer if/return
   const form = useForm<MaintenanceFormData>({
@@ -113,7 +114,7 @@ const MaintenanceForm = () => {
     try {
       if (isEditing && existingTask) {
         const asset = assets.find((a) => a.id === data.assetIds[0]);
-        const success = await updateMaintenanceTask(existingTask.id, {
+        const success = await updateTask(existingTask.id, {
           assetId: data.assetIds[0],
           assetNome: asset?.nome || "Ativo desconhecido",
           descricao: data.descricao,
@@ -134,7 +135,7 @@ const MaintenanceForm = () => {
         let successCount = 0;
         for (const assetId of data.assetIds) {
           const asset = assets.find((a) => a.id === assetId);
-          const result = await addMaintenanceTask({
+          const result = await addTask({
             assetId: assetId,
             assetNome: asset?.nome || "Ativo desconhecido",
             descricao: data.descricao,
@@ -223,7 +224,7 @@ const MaintenanceForm = () => {
                           <SelectContent>
                             {(assets || []).map((asset) => (
                               <SelectItem key={asset.id} value={asset.id}>
-                                {asset.nome} ({asset.numeroSerie})
+                                {asset.nome}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -254,7 +255,7 @@ const MaintenanceForm = () => {
                                   className="rounded"
                                 />
                                 <span className="text-sm truncate">
-                                  {asset.nome} <span className="text-muted-foreground">({asset.numeroSerie})</span>
+                                  {asset.nome}
                                 </span>
                               </label>
                             );
