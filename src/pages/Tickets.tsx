@@ -54,7 +54,7 @@ import { exportToExcel, formatDateTime, ExportColumn } from "@/lib/export-to-exc
 
 export default function Tickets() {
   const navigate = useNavigate();
-  const { tickets, suppliers, getSupplierById, changeTicketStatus } = useTickets();
+  const { tickets = [], suppliers = [], getSupplierById, changeTicketStatus } = useTickets();
   const { profile } = useAuth();
   const toast = useToast();
 
@@ -63,9 +63,9 @@ export default function Tickets() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
 
-  const activeSuppliers = suppliers.filter(s => s.ativo);
+  const activeSuppliers = (suppliers || []).filter(s => s?.ativo);
 
-  const filteredTickets = tickets.filter((ticket) => {
+  const filteredTickets = (tickets || []).filter((ticket) => {
     const matchesSearch =
       ticket.titulo.toLowerCase().includes(search.toLowerCase()) ||
       ticket.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -83,11 +83,15 @@ export default function Tickets() {
   );
 
   const handleStatusChange = async (ticketId: string, newStatus: TicketStatus) => {
+    if (!profile) {
+      toast.error('Erro ao identificar o usuário');
+      return;
+    }
     await changeTicketStatus(ticketId, newStatus, profile?.user_id || '', profile?.username || 'Usuário');
   };
 
   const getSupplierIcon = (fornecedorId: string) => {
-    const supplier = getSupplierById(fornecedorId);
+    const supplier = getSupplierById?.(fornecedorId);
     if (!supplier) return <Laptop className="h-4 w-4 text-muted-foreground" />;
     
     if (supplier.categoria === 'operadora') {
@@ -100,7 +104,7 @@ export default function Tickets() {
   };
 
   const getSupplierName = (fornecedorId: string) => {
-    return getSupplierById(fornecedorId)?.nome || 'Desconhecido';
+    return getSupplierById?.(fornecedorId)?.nome || 'Desconhecido';
   };
 
   const handleExportToExcel = () => {
