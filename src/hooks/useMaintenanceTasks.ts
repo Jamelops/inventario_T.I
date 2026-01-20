@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { MaintenanceTask } from '@/types';
+import { MaintenanceTask, MaintenanceStatus } from '@/types';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 type DbTask = Tables<'maintenance_tasks'>;
@@ -165,16 +165,23 @@ export function useMaintenanceTasks() {
     }
   };
 
+  const moveMaintenanceTask = async (id: string, newStatus: MaintenanceStatus): Promise<boolean> => {
+    return await updateTask(id, { status: newStatus });
+  };
+
   const getTaskById = (id: string): MaintenanceTask | undefined => {
     return tasks.find(task => task.id === id);
   };
 
   return {
     tasks,
+    maintenanceTasks: tasks, // Alias para compatibilidade com Maintenance.tsx
     loading,
     addTask,
     updateTask,
+    updateMaintenanceTask: updateTask, // Alias para compatibilidade com Maintenance.tsx
     deleteTask,
+    moveMaintenanceTask, // Nova função para drag-and-drop
     getTaskById,
     refetch: fetchTasks,
   };
