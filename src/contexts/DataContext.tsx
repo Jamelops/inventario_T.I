@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Asset, License, Category, DashboardConfig } from '@/types';
 import { useAssets } from '@/hooks/useAssets';
 import { useLicenses } from '@/hooks/useLicenses';
-import { useCategories } from '@/hooks/useCategories';
 
 interface DataContextType {
   // Assets
@@ -20,13 +19,6 @@ interface DataContextType {
   updateLicense: (id: string, license: Partial<License>) => Promise<boolean>;
   deleteLicense: (id: string) => Promise<boolean>;
   getLicenseById: (id: string) => License | undefined;
-  
-  // Categories (using Supabase)
-  categories: Category[];
-  categoriesLoading: boolean;
-  addCategory: (category: Omit<Category, 'id'>) => Promise<Category | null>;
-  updateCategory: (id: string, category: Partial<Category>) => Promise<boolean>;
-  deleteCategory: (id: string) => Promise<boolean>;
   
   // Dashboard
   dashboardConfig: DashboardConfig;
@@ -68,15 +60,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     getLicenseById 
   } = useLicenses();
 
-  // Use Supabase hook for categories
-  const {
-    categories,
-    loading: categoriesLoading,
-    addCategory,
-    updateCategory,
-    deleteCategory,
-  } = useCategories();
-
   // Keep dashboard config in localStorage (user preferences only)
   const [dashboardConfig, setDashboardConfig] = useState<DashboardConfig>(defaultDashboardConfig);
 
@@ -115,11 +98,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateLicense,
       deleteLicense,
       getLicenseById: getLicenseByIdWrapper,
-      categories,
-      categoriesLoading,
-      addCategory,
-      updateCategory,
-      deleteCategory,
       dashboardConfig,
       updateDashboardConfig,
     }}>
