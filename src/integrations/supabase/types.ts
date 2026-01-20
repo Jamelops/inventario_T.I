@@ -17,34 +17,217 @@ export type Database = {
           id: string
           created_at: string
           updated_at: string
-          name: string
-          serial_number: string
-          category: string
+          nome: string
+          numero_serie: string
+          categoria: string
           status: string
-          location: string
-          user_id: string
+          localizacao: string
+          user_id?: string
+          valor?: number
+          responsavel?: string
+          descricao?: string
+          fornecedor?: string
+          tags?: string[] | null
+          especificacoes?: Json | null
+          data_compra?: string | null
+          created_by?: string | null
         }
         Insert: {
           id?: string
           created_at?: string
           updated_at?: string
-          name: string
-          serial_number: string
-          category: string
+          nome: string
+          numero_serie: string
+          categoria: string
           status: string
-          location: string
-          user_id: string
+          localizacao: string
+          user_id?: string
+          valor?: number
+          responsavel?: string
+          descricao?: string | null
+          fornecedor?: string | null
+          tags?: string[] | null
+          especificacoes?: Json | null
+          data_compra?: string | null
+          created_by?: string | null
         }
         Update: {
           id?: string
           created_at?: string
           updated_at?: string
-          name?: string
-          serial_number?: string
-          category?: string
+          nome?: string
+          numero_serie?: string
+          categoria?: string
           status?: string
-          location?: string
+          localizacao?: string
           user_id?: string
+          valor?: number
+          responsavel?: string
+          descricao?: string | null
+          fornecedor?: string | null
+          tags?: string[] | null
+          especificacoes?: Json | null
+          data_compra?: string | null
+          created_by?: string | null
+        }
+      }
+      licenses: {
+        Row: {
+          id: string
+          nome: string
+          tipo: string
+          quantidade_total: number
+          quantidade_usada: number
+          data_vencimento: string
+          status?: string
+          fornecedor?: string | null
+          chave?: string | null
+          notas?: string | null
+          created_by?: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          tipo: string
+          quantidade_total: number
+          quantidade_usada: number
+          data_vencimento: string
+          status?: string
+          fornecedor?: string | null
+          chave?: string | null
+          notas?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          tipo?: string
+          quantidade_total?: number
+          quantidade_usada?: number
+          data_vencimento?: string
+          status?: string
+          fornecedor?: string | null
+          chave?: string | null
+          notas?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      maintenance_tasks: {
+        Row: {
+          id: string
+          asset_id?: string | null
+          asset_nome?: string | null
+          descricao: string
+          responsavel: string
+          responsavel_email?: string | null
+          prioridade: string
+          status: string
+          data_agendada: string
+          data_conclusao?: string | null
+          notas?: string | null
+          local_manutencao?: string | null
+          situacao_equipamento?: string | null
+          observacao?: string | null
+          created_by?: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          asset_id?: string | null
+          asset_nome?: string | null
+          descricao: string
+          responsavel: string
+          responsavel_email?: string | null
+          prioridade: string
+          status: string
+          data_agendada: string
+          data_conclusao?: string | null
+          notas?: string | null
+          local_manutencao?: string | null
+          situacao_equipamento?: string | null
+          observacao?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          asset_id?: string | null
+          asset_nome?: string | null
+          descricao?: string
+          responsavel?: string
+          responsavel_email?: string | null
+          prioridade?: string
+          status?: string
+          data_agendada?: string
+          data_conclusao?: string | null
+          notas?: string | null
+          local_manutencao?: string | null
+          situacao_equipamento?: string | null
+          observacao?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tickets: {
+        Row: {
+          id: string
+          titulo: string
+          descricao: string
+          prioridade: string
+          status: string
+          responsavel?: string | null
+          responsavel_email?: string | null
+          departamento?: string | null
+          solucao?: string | null
+          data_criacao: string
+          data_conclusao?: string | null
+          tempo_resolucao?: number | null
+          created_by?: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          titulo: string
+          descricao: string
+          prioridade: string
+          status: string
+          responsavel?: string | null
+          responsavel_email?: string | null
+          departamento?: string | null
+          solucao?: string | null
+          data_criacao: string
+          data_conclusao?: string | null
+          tempo_resolucao?: number | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          titulo?: string
+          descricao?: string
+          prioridade?: string
+          status?: string
+          responsavel?: string | null
+          responsavel_email?: string | null
+          departamento?: string | null
+          solucao?: string | null
+          data_criacao?: string
+          data_conclusao?: string | null
+          tempo_resolucao?: number | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
       profiles: {
