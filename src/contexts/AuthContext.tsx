@@ -50,19 +50,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (error) {
+      if (error) throw error;
+      return data as Profile | null;
+    } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('Failed to fetch profile', error);
+        console.error('Failed to fetch profile:', error);
       }
       return null;
     }
-    return data as Profile | null;
   };
 
   const fetchUserRole = async (userId: string) => {
@@ -73,37 +75,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (error) {
-        if (import.meta.env.DEV) {
-          console.error('Failed to fetch user role:', error);
-        }
-        return null;
-      }
-
+      if (error) throw error;
       return data?.role as AppRole | null;
-    } catch (err) {
+    } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('Error fetching user role:', err);
+        console.error('Failed to fetch user role:', error);
       }
       return null;
     }
   };
 
   const fetchProfileUsernames = async () => {
-    const { data, error } = await supabase
-      .rpc('get_all_usernames');
-
-    if (error) {
+    try {
+      const { data, error } = await supabase.rpc('get_all_usernames');
+      if (error) throw error;
+      setProfileUsernames(data as ProfileUsername[]);
+    } catch (error) {
       if (import.meta.env.DEV) {
-        console.error('Failed to fetch usernames', error);
+        console.error('Failed to fetch usernames:', error);
       }
-      return;
     }
-    setProfileUsernames(data as ProfileUsername[]);
   };
 
   const loadUserData = async (userId: string) => {
     try {
+      // Fetch profile and role in parallel (FAST)
       const [profileData, roleData] = await Promise.all([
         fetchProfile(userId),
         fetchUserRole(userId)
@@ -111,7 +107,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setProfile(profileData);
       setUserRole(roleData);
-      await fetchProfileUsernames();
+      
+      // Fetch usernames in background (not blocking)
+      fetchProfileUsernames().catch(err => {
+        if (import.meta.env.DEV) console.error('Usernames fetch failed:', err);
+      });
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Error loading user data:', error);
@@ -132,6 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // User is authenticated
           setSession(session);
           setUser(session.user);
+          
+          // Start loading data immediately
           await loadUserData(session.user.id);
         } else {
           // User is not authenticated
@@ -148,15 +150,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Safety timeout: if auth state doesn't resolve within 10 seconds, assume no session
+    // Safety timeout: if auth state doesn't resolve within 8 seconds, assume no session
     loadingTimeout = setTimeout(() => {
       if (mounted && loading) {
         if (import.meta.env.DEV) {
-          console.warn('Auth state initialization timeout - assuming no session');
+          console.warn('Auth state initialization timeout');
         }
         setLoading(false);
       }
-    }, 10000);
+    }, 8000);
 
     return () => {
       mounted = false;
