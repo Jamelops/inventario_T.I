@@ -41,6 +41,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper: Timeout promise wrapper
+const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    )
+  ]);
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -52,11 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const { data, error } = await withTimeout(
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle(),
+        3000 // 3 second timeout
+      );
 
       if (error) throw error;
       
@@ -76,11 +89,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserRole = async (userId: string): Promise<AppRole | null> => {
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const { data, error } = await withTimeout(
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .maybeSingle(),
+        3000 // 3 second timeout
+      );
 
       if (error) throw error;
       
@@ -102,7 +118,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfileUsernames = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_all_usernames');
+      const { data, error } = await withTimeout(
+        supabase.rpc('get_all_usernames'),
+        5000 // 5 second timeout for RPC
+      );
       if (error) throw error;
       
       // Cache the result (1 hour TTL)
@@ -119,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
     let loadingTimeout: NodeJS.Timeout | null = null;
     let deferredFetchTimeout: NodeJS.Timeout | null = null;
+    let profileLoadTimeout: NodeJS.Timeout | null = null;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -147,22 +167,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setLoading(false);
           }
           
-          // BACKGROUND: Fetch fresh data to update cache
-          try {
-            const [profileData, roleData] = await Promise.all([
-              fetchProfile(session.user.id),
-              fetchUserRole(session.user.id)
-            ]);
-            
-            if (mounted) {
-              setProfile(profileData);
-              setUserRole(roleData);
+          // BACKGROUND: Fetch fresh data with timeout
+          if (profileLoadTimeout) clearTimeout(profileLoadTimeout);
+          profileLoadTimeout = setTimeout(async () => {
+            try {
+              const [profileData, roleData] = await Promise.allSettled([
+                fetchProfile(session.user.id),
+                fetchUserRole(session.user.id)
+              ]);
+              
+              if (mounted) {
+                if (profileData.status === 'fulfilled') setProfile(profileData.value);
+                if (roleData.status === 'fulfilled') setUserRole(roleData.value);
+              }
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error fetching user data:', error);
+              }
             }
-          } catch (error) {
-            if (import.meta.env.DEV) {
-              console.error('Error fetching user data:', error);
-            }
-          }
+          }, 100);
           
           // DEFERRED: Fetch usernames after UI renders
           if (deferredFetchTimeout) clearTimeout(deferredFetchTimeout);
@@ -190,20 +213,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Safety timeout: 4 seconds max (cache should load instantly)
+    // Safety timeout: 2 seconds max (loading state should be false by then)
     loadingTimeout = setTimeout(() => {
       if (mounted && loading) {
         if (import.meta.env.DEV) {
-          console.warn('Auth state initialization timeout');
+          console.warn('Auth state initialization timeout - forcing loading off');
         }
         setLoading(false);
       }
-    }, 4000);
+    }, 2000);
 
     return () => {
       mounted = false;
       if (loadingTimeout) clearTimeout(loadingTimeout);
       if (deferredFetchTimeout) clearTimeout(deferredFetchTimeout);
+      if (profileLoadTimeout) clearTimeout(profileLoadTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -265,7 +289,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // CRITICAL: Manually trigger auth state update if onAuthStateChange doesn't fire
-      // This ensures UI updates immediately after login
       if (data.session) {
         // Manually restore from cache
         const cachedProfile = await authCache.get('profile').catch(() => null);
@@ -275,11 +298,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(data.user);
         if (cachedProfile) setProfile(cachedProfile);
         if (cachedRole) setUserRole(cachedRole);
-        setLoading(false);
+        setLoading(false); // CRITICAL: Always set to false to unblock UI
         
-        // Fetch fresh data in background
-        fetchProfile(data.user.id).then(p => setProfile(p));
-        fetchUserRole(data.user.id).then(r => setUserRole(r));
+        // Fetch fresh data in background with timeout
+        fetchProfile(data.user.id)
+          .then(p => setProfile(p))
+          .catch(err => console.error('Profile fetch error:', err));
+        fetchUserRole(data.user.id)
+          .then(r => setUserRole(r))
+          .catch(err => console.error('Role fetch error:', err));
         
         // Fetch usernames deferred
         setTimeout(() => {
