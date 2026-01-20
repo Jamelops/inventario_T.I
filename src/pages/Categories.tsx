@@ -30,7 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Category } from '@/types';
 
 export default function Categories() {
-  const { categories, addCategory, updateCategory, deleteCategory, assets } = useData();
+  const { categories = [], addCategory, updateCategory, deleteCategory, assets = [] } = useData();
   const { canEdit } = useAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
