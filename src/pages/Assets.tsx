@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Download, Eye, Edit, Wrench, Archive, MoreHorizontal } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
@@ -12,9 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { categoryLabels, AssetCategory, AssetStatus, statusLabels } from '@/types';
 import { exportToExcel, formatCurrency, ExportColumn } from '@/lib/export-to-excel';
+import { toHumanizedId, generateHumanizedId } from '@/lib/humanizedId';
 
 export default function Assets() {
   const { assets, assetsLoading } = useData();
@@ -26,6 +26,13 @@ export default function Assets() {
   const [statusFilter, setStatusFilter] = useState('all');
   const userCanEdit = canEdit();
 
+  // Gerar IDs humanizados para todos os ativos
+  useMemo(() => {
+    assets.forEach(asset => {
+      generateHumanizedId(asset.id, asset.categoria);
+    });
+  }, [assets]);
+
   if (assetsLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -35,8 +42,10 @@ export default function Assets() {
   }
 
   const filteredAssets = assets.filter(asset => {
+    const humanizedId = toHumanizedId(asset.id, asset.categoria);
     const matchesSearch = asset.nome.toLowerCase().includes(search.toLowerCase()) ||
       asset.id.toLowerCase().includes(search.toLowerCase()) ||
+      humanizedId.toLowerCase().includes(search.toLowerCase()) ||
       asset.numeroSerie.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || asset.categoria === categoryFilter;
     const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
@@ -109,7 +118,7 @@ export default function Assets() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por nome, ID ou número de série..."
+                    placeholder="Buscar por nome, ID, ID humanizado ou número de série..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9"
@@ -155,7 +164,7 @@ export default function Assets() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead>ID Humanizado</TableHead>
                       <TableHead>Nome</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Status</TableHead>
@@ -165,63 +174,66 @@ export default function Assets() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAssets.map(asset => (
-                      <TableRow 
-                        key={asset.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => navigate(`/assets/${asset.id}`)}
-                      >
-                        <TableCell className="font-mono text-sm">{asset.id}</TableCell>
-                        <TableCell className="font-medium">{asset.nome}</TableCell>
-                        <TableCell>{categoryLabels[asset.categoria]}</TableCell>
-                        <TableCell>
-                          <StatusBadge status={asset.status} />
-                        </TableCell>
-                        <TableCell>{asset.responsavel}</TableCell>
-                        <TableCell>R$ {asset.valor.toLocaleString('pt-BR')}</TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem 
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  navigate(`/assets/${asset.id}`); 
-                                }}
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Visualizar
-                              </DropdownMenuItem>
-                              {userCanEdit && (
-                                <>
-                                  <DropdownMenuItem 
-                                    onClick={(e) => { 
-                                      e.stopPropagation(); 
-                                      navigate(`/assets/${asset.id}/edit`); 
-                                    }}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Wrench className="w-4 h-4 mr-2" />
-                                    Manutenção
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Archive className="w-4 h-4 mr-2" />
-                                    Arquivar
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredAssets.map(asset => {
+                      const humanizedId = toHumanizedId(asset.id, asset.categoria);
+                      return (
+                        <TableRow 
+                          key={asset.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => navigate(`/assets/${asset.id}`)}
+                        >
+                          <TableCell className="font-bold text-base text-primary">{humanizedId}</TableCell>
+                          <TableCell className="font-medium">{asset.nome}</TableCell>
+                          <TableCell>{categoryLabels[asset.categoria]}</TableCell>
+                          <TableCell>
+                            <StatusBadge status={asset.status} />
+                          </TableCell>
+                          <TableCell>{asset.responsavel}</TableCell>
+                          <TableCell>R$ {asset.valor.toLocaleString('pt-BR')}</TableCell>
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem 
+                                  onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    navigate(`/assets/${asset.id}`); 
+                                  }}
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Visualizar
+                                </DropdownMenuItem>
+                                {userCanEdit && (
+                                  <>
+                                    <DropdownMenuItem 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        navigate(`/assets/${asset.id}/edit`); 
+                                      }}
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      <Wrench className="w-4 h-4 mr-2" />
+                                      Manutenção
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      <Archive className="w-4 h-4 mr-2" />
+                                      Arquivar
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -232,3 +244,6 @@ export default function Assets() {
     </>
   );
 }
+
+// Importar DropdownMenu
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
