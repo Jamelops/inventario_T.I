@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, CheckCircle, Clock, XCircle, Shield } from 'lucide-react';
+import { User, CheckCircle, Clock, XCircle, Shield, Mail } from 'lucide-react';
 
 interface FullProfile {
   id: string;
@@ -30,6 +30,7 @@ export default function Profiles() {
   const [profiles, setProfiles] = useState<FullProfile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
+  const [activatingEmail, setActivatingEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -89,6 +90,33 @@ export default function Profiles() {
       return;
     }
     fetchProfiles();
+  };
+
+  const activateUserEmail = async (userEmail: string) => {
+    setActivatingEmail(userEmail);
+    try {
+      const { data, error } = await supabase.rpc('confirm_user_email', {
+        user_email: userEmail,
+      });
+
+      if (error) {
+        console.error('Erro ao ativar email:', error);
+        alert('Erro ao ativar email do usuário');
+        return;
+      }
+
+      if (data?.success) {
+        alert('Email ativado com sucesso!');
+        fetchProfiles();
+      } else {
+        alert(data?.error || 'Erro desconhecido');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao ativar email');
+    } finally {
+      setActivatingEmail(null);
+    }
   };
 
   const updateUserRole = async (userId: string, role: 'admin' | 'manager' | 'viewer') => {
@@ -194,23 +222,35 @@ export default function Profiles() {
                   <p className="text-xs text-muted-foreground">
                     Solicitado em {new Date(profile.created_at).toLocaleDateString('pt-BR')}
                   </p>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => updateProfileStatus(profile.user_id, 'approved')}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => updateProfileStatus(profile.user_id, 'approved')}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Aprovar
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => updateProfileStatus(profile.user_id, 'rejected')}
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Rejeitar
+                      </Button>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => activateUserEmail(profile.email)}
+                      disabled={activatingEmail === profile.email}
                     >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Aprovar
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive"
-                      className="flex-1"
-                      onClick={() => updateProfileStatus(profile.user_id, 'rejected')}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Rejeitar
+                      <Mail className="h-4 w-4 mr-1" />
+                      {activatingEmail === profile.email ? 'Ativando...' : 'Ativar Email'}
                     </Button>
                   </div>
                 </CardContent>
