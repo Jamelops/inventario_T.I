@@ -106,40 +106,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+    let authInitialized = false;
+
+    // Set up auth state listener - this is the source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+        
+        authInitialized = true;
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Defer profile fetch with setTimeout
+
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id).then(setProfile);
-            fetchUserRole(session.user.id).then(setUserRole);
-            fetchProfileUsernames();
-          }, 0);
+          try {
+            const [profileData, roleData] = await Promise.all([
+              fetchProfile(session.user.id),
+              fetchUserRole(session.user.id)
+            ]);
+            
+            if (mounted) {
+              setProfile(profileData);
+              setUserRole(roleData);
+              await fetchProfileUsernames();
+            }
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error fetching user data:', error);
+            }
+          }
         } else {
           setProfile(null);
           setUserRole(null);
         }
+        
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Check for existing session immediately
+    // This ensures we catch the session before the listener fires
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (!mounted) return;
       
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
-        fetchUserRole(session.user.id).then(setUserRole);
-        fetchProfileUsernames();
+      // If getSession found a session but listener hasn't fired yet,
+      // update state immediately
+      if (currentSession && !authInitialized) {
+        setSession(currentSession);
+        setUser(currentSession.user);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Role checking functions
@@ -203,6 +227,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setUserRole(null);
+    setSession(null);
+    setUser(null);
     toast({
       title: "Logout realizado",
       description: "Até logo!",
