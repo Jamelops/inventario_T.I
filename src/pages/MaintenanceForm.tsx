@@ -47,24 +47,18 @@ const maintenanceSchema = z.object({
 type MaintenanceFormData = z.infer<typeof maintenanceSchema>;
 
 const MaintenanceForm = () => {
+  // TODOS OS HOOKS AQUI NO TOPO - NUNCA MUDAR DE ORDEM
   const { id } = useParams();
   const navigate = useNavigate();
-  const { assets } = useData();
-  const { maintenanceTasks, loading: tasksLoading, addMaintenanceTask, updateMaintenanceTask, getMaintenanceTaskById } = useMaintenanceTasks();
+  const { assets = [] } = useData();
+  const { maintenanceTasks = [], loading: tasksLoading, addMaintenanceTask, updateMaintenanceTask, getMaintenanceTaskById } = useMaintenanceTasks();
   const { profile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const isEditing = Boolean(id);
-  const existingTask = isEditing ? getMaintenanceTaskById(id!) : null;
+  const existingTask = isEditing && getMaintenanceTaskById ? getMaintenanceTaskById(id!) : null;
 
-  if (tasksLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
+  // useForm sempre chamado no topo, antes de qualquer if/return
   const form = useForm<MaintenanceFormData>({
     resolver: zodResolver(maintenanceSchema),
     defaultValues: {
@@ -82,6 +76,7 @@ const MaintenanceForm = () => {
     },
   });
 
+  // useEffect para preencher dados de edição
   useEffect(() => {
     if (existingTask) {
       form.reset({
@@ -98,11 +93,20 @@ const MaintenanceForm = () => {
         observacao: existingTask.observacao || "",
       });
     } else if (profile) {
-      // Auto-fill with current user info for new maintenance
+      // Auto-fill com info do usuário atual para nova manutenção
       form.setValue("responsavel", profile.username);
       form.setValue("responsavelEmail", profile.email);
     }
   }, [existingTask, profile, form]);
+
+  // Agora sim, verificação de loading
+  if (tasksLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const onSubmit = async (data: MaintenanceFormData) => {
     setIsLoading(true);
@@ -126,7 +130,7 @@ const MaintenanceForm = () => {
           navigate("/maintenance");
         }
       } else {
-        // Create a maintenance task for each selected asset
+        // Criar tarefa de manutenção para cada ativo selecionado
         let successCount = 0;
         for (const assetId of data.assetIds) {
           const asset = assets.find((a) => a.id === assetId);
@@ -217,7 +221,7 @@ const MaintenanceForm = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {assets.map((asset) => (
+                            {(assets || []).map((asset) => (
                               <SelectItem key={asset.id} value={asset.id}>
                                 {asset.nome} ({asset.numeroSerie})
                               </SelectItem>
@@ -226,7 +230,7 @@ const MaintenanceForm = () => {
                         </Select>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-3 border rounded-md max-h-48 overflow-y-auto">
-                          {assets.map((asset) => {
+                          {(assets || []).map((asset) => {
                             const isSelected = field.value.includes(asset.id);
                             return (
                               <label
