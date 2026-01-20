@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { User, CheckCircle, Clock, XCircle, Shield, Mail } from 'lucide-react';
 
 interface FullProfile {
@@ -27,6 +28,7 @@ interface UserRole {
 export default function Profiles() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profiles, setProfiles] = useState<FullProfile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
@@ -95,25 +97,40 @@ export default function Profiles() {
   const activateUserEmail = async (userEmail: string) => {
     setActivatingEmail(userEmail);
     try {
-      const { data, error } = await supabase.rpc('confirm_user_email', {
+      const { data, error: supabaseError } = await supabase.rpc('confirm_user_email', {
         user_email: userEmail,
       });
 
-      if (error) {
-        console.error('Erro ao ativar email:', error);
-        alert('Erro ao ativar email do usuário');
+      if (supabaseError) {
+        console.error('Erro ao ativar email:', supabaseError);
+        toast({
+          title: 'Erro',
+          description: 'Erro ao ativar email do usuário',
+          variant: 'destructive',
+        });
         return;
       }
 
       if (data?.success) {
-        alert('Email ativado com sucesso!');
+        toast({
+          title: 'Sucesso',
+          description: 'Email ativado com sucesso!',
+        });
         fetchProfiles();
       } else {
-        alert(data?.error || 'Erro desconhecido');
+        toast({
+          title: 'Erro',
+          description: data?.error || 'Erro desconhecido ao ativar email',
+          variant: 'destructive',
+        });
       }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao ativar email');
+    } catch (err) {
+      console.error('Erro:', err);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao ativar email',
+        variant: 'destructive',
+      });
     } finally {
       setActivatingEmail(null);
     }
