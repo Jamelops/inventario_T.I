@@ -12,20 +12,20 @@ type DbAssetUpdate = TablesUpdate<'assets'>;
 // Convert database asset to application Asset type
 const dbToAsset = (dbAsset: DbAsset): Asset => ({
   id: dbAsset.id,
-  nome: dbAsset.nome,
-  categoria: dbAsset.categoria,
-  status: dbAsset.status,
-  numeroSerie: dbAsset.numero_serie,
-  dataCompra: dbAsset.data_compra,
-  valor: dbAsset.valor,
-  localizacao: dbAsset.localizacao,
-  responsavel: dbAsset.responsavel,
+  nome: dbAsset.nome || '',
+  categoria: dbAsset.categoria as any || 'outros',
+  status: dbAsset.status as any || 'ativo',
+  numeroSerie: dbAsset.numero_serie || '',
+  dataCompra: dbAsset.data_compra || '',
+  valor: dbAsset.valor || 0,
+  localizacao: dbAsset.localizacao || '',
+  responsavel: dbAsset.responsavel || '',
   descricao: dbAsset.descricao || undefined,
   fornecedor: dbAsset.fornecedor || undefined,
   tags: dbAsset.tags || undefined,
   especificacoes: dbAsset.especificacoes as HardwareSpecs | undefined,
-  dataCriacao: dbAsset.created_at.split('T')[0],
-  dataAtualizacao: dbAsset.updated_at.split('T')[0],
+  dataCriacao: dbAsset.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+  dataAtualizacao: dbAsset.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
 });
 
 // Convert application Asset to database insert type
@@ -35,7 +35,7 @@ const assetToDbInsert = (asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualiza
   status: asset.status,
   numero_serie: asset.numeroSerie,
   data_compra: asset.dataCompra,
-  valor: asset.valor,
+  valor: asset.valor || 0,
   localizacao: asset.localizacao,
   responsavel: asset.responsavel,
   descricao: asset.descricao || null,
@@ -43,25 +43,26 @@ const assetToDbInsert = (asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualiza
   tags: asset.tags || null,
   especificacoes: asset.especificacoes ? JSON.parse(JSON.stringify(asset.especificacoes)) : null,
   created_by: userId,
+  user_id: userId,
 });
 
 // Convert application Asset update to database update type
 const assetToDbUpdate = (updates: Partial<Asset>): DbAssetUpdate => {
   const dbUpdate: DbAssetUpdate = {};
-  
+
   if (updates.nome !== undefined) dbUpdate.nome = updates.nome;
   if (updates.categoria !== undefined) dbUpdate.categoria = updates.categoria;
   if (updates.status !== undefined) dbUpdate.status = updates.status;
   if (updates.numeroSerie !== undefined) dbUpdate.numero_serie = updates.numeroSerie;
   if (updates.dataCompra !== undefined) dbUpdate.data_compra = updates.dataCompra;
-  if (updates.valor !== undefined) dbUpdate.valor = updates.valor;
+  if (updates.valor !== undefined) dbUpdate.valor = updates.valor || 0;
   if (updates.localizacao !== undefined) dbUpdate.localizacao = updates.localizacao;
   if (updates.responsavel !== undefined) dbUpdate.responsavel = updates.responsavel;
   if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao || null;
   if (updates.fornecedor !== undefined) dbUpdate.fornecedor = updates.fornecedor || null;
   if (updates.tags !== undefined) dbUpdate.tags = updates.tags || null;
   if (updates.especificacoes !== undefined) dbUpdate.especificacoes = updates.especificacoes ? JSON.parse(JSON.stringify(updates.especificacoes)) : null;
-  
+
   return dbUpdate;
 };
 
