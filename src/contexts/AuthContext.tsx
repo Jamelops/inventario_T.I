@@ -57,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     if (error) {
-      // Log generic message only in development
       if (import.meta.env.DEV) {
         console.error('Failed to fetch profile', error);
       }
@@ -68,7 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserRole = async (userId: string) => {
     try {
-      // First, try to fetch directly (user can read own role)
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -92,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchProfileUsernames = async () => {
-    // Use the secure RPC function that only returns usernames
     const { data, error } = await supabase
       .rpc('get_all_usernames');
 
@@ -105,60 +102,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfileUsernames(data as ProfileUsername[]);
   };
 
+  const loadUserData = async (userId: string) => {
+    try {
+      const [profileData, roleData] = await Promise.all([
+        fetchProfile(userId),
+        fetchUserRole(userId)
+      ]);
+      
+      setProfile(profileData);
+      setUserRole(roleData);
+      await fetchProfileUsernames();
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error loading user data:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
-    let authInitialized = false;
 
-    // Set up auth state listener - this is the source of truth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+    const initializeAuth = async () => {
+      try {
+        // Check for existing session
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
         
-        authInitialized = true;
-        setSession(session);
-        setUser(session?.user ?? null);
+        if (!mounted) return;
 
-        if (session?.user) {
-          try {
-            const [profileData, roleData] = await Promise.all([
-              fetchProfile(session.user.id),
-              fetchUserRole(session.user.id)
-            ]);
-            
-            if (mounted) {
-              setProfile(profileData);
-              setUserRole(roleData);
-              await fetchProfileUsernames();
-            }
-          } catch (error) {
-            if (import.meta.env.DEV) {
-              console.error('Error fetching user data:', error);
-            }
-          }
+        if (existingSession?.user) {
+          // Session exists, hydrate state
+          setSession(existingSession);
+          setUser(existingSession.user);
+          await loadUserData(existingSession.user.id);
         } else {
+          // No session
+          setSession(null);
+          setUser(null);
           setProfile(null);
           setUserRole(null);
         }
-        
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Error initializing auth:', error);
+        }
+        // On error, assume no session
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setUserRole(null);
+      } finally {
         if (mounted) {
           setLoading(false);
         }
       }
-    );
+    };
 
-    // Check for existing session immediately
-    // This ensures we catch the session before the listener fires
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      if (!mounted) return;
-      
-      // If getSession found a session but listener hasn't fired yet,
-      // update state immediately
-      if (currentSession && !authInitialized) {
-        setSession(currentSession);
-        setUser(currentSession.user);
-        setLoading(false);
+    // Initialize auth immediately
+    initializeAuth();
+
+    // Set up listener for auth state changes (login/logout in other tabs)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        
+        if (session?.user) {
+          setSession(session);
+          setUser(session.user);
+          await loadUserData(session.user.id);
+        } else {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setUserRole(null);
+        }
       }
-    });
+    );
 
     return () => {
       mounted = false;
@@ -166,7 +184,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Role checking functions
   const hasRole = (role: AppRole): boolean => {
     return userRole === role;
   };
