@@ -35,6 +35,7 @@ import {
   ticketPriorityLabels,
   supplierCategoryLabels,
 } from "@/types/tickets";
+import { addHours } from "date-fns";
 
 const ticketSchema = z.object({
   titulo: z.string().min(3, "Título deve ter no mínimo 3 caracteres").max(200, "Título deve ter no máximo 200 caracteres"),
@@ -56,7 +57,7 @@ export default function TicketForm() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { tickets, suppliers, addTicket, updateTicket, getTicketById, getSupplierById } = useTickets();
+  const { suppliers, addTicket, updateTicket, getTicketById, getSupplierById } = useTickets();
   const { assets = [] } = useData();
   const { profile } = useAuth();
 
@@ -114,6 +115,11 @@ export default function TicketForm() {
     const asset = assets.find((a) => a.id === data.assetId);
     const supplier = getSupplierById(data.fornecedorId);
     const now = new Date().toISOString();
+    const nowDate = new Date();
+
+    // Calculate SLA deadline based on supplier SLA hours
+    const slaHours = supplier?.slaHoras || 24; // Default 24h if not found
+    const slaDeadline = addHours(nowDate, slaHours).toISOString();
 
     const ticketData = {
       titulo: data.titulo.trim(),
@@ -137,7 +143,7 @@ export default function TicketForm() {
       responsavelNome: profile?.username || "Usuário",
       status: "aberto" as const,
       dataCriacao: isEditing && existingTicket ? existingTicket.dataCriacao : now,
-      dataCriacao_iso: now,
+      slaDeadline: isEditing && existingTicket ? existingTicket.slaDeadline : slaDeadline,
     };
 
     if (isEditing && existingTicket) {
