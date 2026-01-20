@@ -12,12 +12,13 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Security: Use sessionStorage instead of localStorage to prevent XSS attacks
-// Tokens are only stored for the current browser session
+// Security: Use localStorage to persist sessions across page reloads
+// This allows users to remain logged in when they refresh the page
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: sessionStorage,     // ✅ Session-only storage (cleared on browser close)
-    persistSession: false,        // ✅ No persistence between sessions
-    autoRefreshToken: true,       // ✅ Auto-refresh access token before expiry
+    storage: localStorage,        // ✅ Persist sessions across page reloads
+    persistSession: true,          // ✅ CRITICAL: Enable session persistence
+    autoRefreshToken: true,        // ✅ Auto-refresh access token before expiry
+    detectSessionInUrl: true,      // ✅ Detect session in URL (for OAuth redirects)
   }
 });
