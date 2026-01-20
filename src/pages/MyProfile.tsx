@@ -113,13 +113,16 @@ export default function MyProfile() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Nome de Exibição</Label>
+                <Label htmlFor="username">Nome de Usuário</Label>
                 <Input
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Seu nome de exibição"
+                  placeholder="Digite seu nome"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Este nome será exibido em todo o sistema.
+                </p>
               </div>
 
               <div className="space-y-2">
