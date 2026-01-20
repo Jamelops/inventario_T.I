@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string): Promise<AppRole | null> => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -97,33 +97,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loadUserData = async (userId: string) => {
-    try {
-      // Fetch profile and role in parallel (FAST)
-      const [profileData, roleData] = await Promise.all([
-        fetchProfile(userId),
-        fetchUserRole(userId)
-      ]);
-      
-      setProfile(profileData);
-      setUserRole(roleData);
-      
-      // Fetch usernames in background (not blocking)
-      fetchProfileUsernames().catch(err => {
-        if (import.meta.env.DEV) console.error('Usernames fetch failed:', err);
-      });
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error loading user data:', error);
-      }
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
     let loadingTimeout: NodeJS.Timeout | null = null;
+    let deferredFetchTimeout: NodeJS.Timeout | null = null;
 
-    // Set up auth state listener - PRIMARY source of truth for auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -133,24 +111,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(session);
           setUser(session.user);
           
-          // Start loading data immediately
-          await loadUserData(session.user.id);
+          // CRITICAL: Fetch ONLY profile + role in parallel (minimal, fast)
+          try {
+            const [profileData, roleData] = await Promise.all([
+              fetchProfile(session.user.id),
+              fetchUserRole(session.user.id)
+            ]);
+            
+            if (mounted) {
+              setProfile(profileData);
+              setUserRole(roleData);
+              setLoading(false);
+            }
+          } catch (error) {
+            if (mounted) {
+              setLoading(false);
+            }
+          }
+          
+          // DEFERRED: Fetch usernames AFTER UI renders (not blocking)
+          // Use setTimeout with 0 delay to queue after current task
+          if (deferredFetchTimeout) clearTimeout(deferredFetchTimeout);
+          deferredFetchTimeout = setTimeout(() => {
+            if (mounted) {
+              fetchProfileUsernames().catch(err => {
+                if (import.meta.env.DEV) console.error('Usernames fetch failed:', err);
+              });
+            }
+          }, 100); // Small delay to ensure UI renders first
         } else {
           // User is not authenticated
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setUserRole(null);
-        }
-
-        // Mark loading as complete
-        if (mounted) {
-          setLoading(false);
+          if (mounted) {
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setUserRole(null);
+            setLoading(false);
+          }
         }
       }
     );
 
-    // Safety timeout: if auth state doesn't resolve within 8 seconds, assume no session
+    // Safety timeout: 5 seconds max
     loadingTimeout = setTimeout(() => {
       if (mounted && loading) {
         if (import.meta.env.DEV) {
@@ -158,14 +160,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false);
       }
-    }, 8000);
+    }, 5000);
 
     return () => {
       mounted = false;
       if (loadingTimeout) clearTimeout(loadingTimeout);
+      if (deferredFetchTimeout) clearTimeout(deferredFetchTimeout);
       subscription.unsubscribe();
     };
-  }, [loading]);
+  }, []);
 
   const hasRole = (role: AppRole): boolean => {
     return userRole === role;
