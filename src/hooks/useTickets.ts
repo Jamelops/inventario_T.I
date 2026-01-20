@@ -2,58 +2,55 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { Ticket, TicketInteraction, TicketStatus } from '@/types/tickets';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 type DbTicket = Tables<'tickets'>;
 type DbTicketInsert = TablesInsert<'tickets'>;
 type DbTicketUpdate = TablesUpdate<'tickets'>;
 
-export interface Ticket {
-  id: string;
-  titulo: string;
-  descricao: string;
-  prioridade: 'alta' | 'media' | 'baixa';
-  status: 'aberto' | 'em_andamento' | 'resolvido' | 'fechado';
-  responsavel?: string;
-  responsavelEmail?: string;
-  departamento?: string;
-  solucao?: string;
-  dataCriacao: string;
-  dataConclusao?: string;
-  tempoResolucao?: number;
-  dataCriacao_iso: string;
-  dataAtualizacao_iso: string;
-}
-
 const dbToTicket = (dbTicket: DbTicket): Ticket => ({
   id: dbTicket.id,
   titulo: dbTicket.titulo,
   descricao: dbTicket.descricao,
+  fornecedorId: dbTicket.fornecedor_id,
+  tipo: dbTicket.tipo as any,
   prioridade: dbTicket.prioridade as any,
   status: dbTicket.status as any,
-  responsavel: dbTicket.responsavel || undefined,
-  responsavelEmail: dbTicket.responsavel_email || undefined,
-  departamento: dbTicket.departamento || undefined,
-  solucao: dbTicket.solucao || undefined,
+  unidade: dbTicket.unidade,
+  assetId: dbTicket.asset_id || undefined,
+  assetNome: dbTicket.asset_nome || undefined,
+  protocoloExterno: dbTicket.protocolo_externo || undefined,
+  contatoFornecedor: dbTicket.contato_fornecedor || undefined,
+  responsavelId: dbTicket.responsavel_id || '',
+  responsavelNome: dbTicket.responsavel_nome || 'Usuário',
+  slaDeadline: dbTicket.sla_deadline,
   dataCriacao: dbTicket.data_criacao,
-  dataConclusao: dbTicket.data_conclusao || undefined,
-  tempoResolucao: dbTicket.tempo_resolucao || undefined,
-  dataCriacao_iso: dbTicket.created_at,
-  dataAtualizacao_iso: dbTicket.updated_at,
+  dataAtualizacao: dbTicket.updated_at,
+  dataResolucao: dbTicket.data_resolucao || undefined,
+  interactions: (dbTicket.interactions as TicketInteraction[]) || [],
 });
 
-const ticketToDbInsert = (ticket: Omit<Ticket, 'id' | 'dataCriacao_iso' | 'dataAtualizacao_iso'>, userId: string): DbTicketInsert => ({
+const ticketToDbInsert = (
+  ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>,
+  userId: string
+): DbTicketInsert => ({
   titulo: ticket.titulo,
   descricao: ticket.descricao,
+  fornecedor_id: ticket.fornecedorId,
+  tipo: ticket.tipo,
   prioridade: ticket.prioridade,
   status: ticket.status,
-  responsavel: ticket.responsavel || null,
-  responsavel_email: ticket.responsavelEmail || null,
-  departamento: ticket.departamento || null,
-  solucao: ticket.solucao || null,
+  unidade: ticket.unidade,
+  asset_id: ticket.assetId || null,
+  asset_nome: ticket.assetNome || null,
+  protocolo_externo: ticket.protocoloExterno || null,
+  contato_fornecedor: ticket.contatoFornecedor || null,
+  responsavel_id: ticket.responsavelId,
+  responsavel_nome: ticket.responsavelNome,
+  sla_deadline: ticket.slaDeadline,
   data_criacao: ticket.dataCriacao,
-  data_conclusao: ticket.dataConclusao || null,
-  tempo_resolucao: ticket.tempoResolucao || null,
+  data_resolucao: ticket.dataResolucao || null,
   created_by: userId,
 });
 
@@ -62,15 +59,20 @@ const ticketToDbUpdate = (updates: Partial<Ticket>): DbTicketUpdate => {
 
   if (updates.titulo !== undefined) dbUpdate.titulo = updates.titulo;
   if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao;
+  if (updates.fornecedorId !== undefined) dbUpdate.fornecedor_id = updates.fornecedorId;
+  if (updates.tipo !== undefined) dbUpdate.tipo = updates.tipo;
   if (updates.prioridade !== undefined) dbUpdate.prioridade = updates.prioridade;
   if (updates.status !== undefined) dbUpdate.status = updates.status;
-  if (updates.responsavel !== undefined) dbUpdate.responsavel = updates.responsavel || null;
-  if (updates.responsavelEmail !== undefined) dbUpdate.responsavel_email = updates.responsavelEmail || null;
-  if (updates.departamento !== undefined) dbUpdate.departamento = updates.departamento || null;
-  if (updates.solucao !== undefined) dbUpdate.solucao = updates.solucao || null;
+  if (updates.unidade !== undefined) dbUpdate.unidade = updates.unidade;
+  if (updates.assetId !== undefined) dbUpdate.asset_id = updates.assetId || null;
+  if (updates.assetNome !== undefined) dbUpdate.asset_nome = updates.assetNome || null;
+  if (updates.protocoloExterno !== undefined) dbUpdate.protocolo_externo = updates.protocoloExterno || null;
+  if (updates.contatoFornecedor !== undefined) dbUpdate.contato_fornecedor = updates.contatoFornecedor || null;
+  if (updates.responsavelId !== undefined) dbUpdate.responsavel_id = updates.responsavelId;
+  if (updates.responsavelNome !== undefined) dbUpdate.responsavel_nome = updates.responsavelNome;
+  if (updates.slaDeadline !== undefined) dbUpdate.sla_deadline = updates.slaDeadline;
   if (updates.dataCriacao !== undefined) dbUpdate.data_criacao = updates.dataCriacao;
-  if (updates.dataConclusao !== undefined) dbUpdate.data_conclusao = updates.dataConclusao || null;
-  if (updates.tempoResolucao !== undefined) dbUpdate.tempo_resolucao = updates.tempoResolucao || null;
+  if (updates.dataResolucao !== undefined) dbUpdate.data_resolucao = updates.dataResolucao || null;
 
   return dbUpdate;
 };
@@ -107,7 +109,10 @@ export function useTickets() {
     fetchTickets();
   }, [fetchTickets]);
 
-  const addTicket = async (ticket: Omit<Ticket, 'id' | 'dataCriacao_iso' | 'dataAtualizacao_iso'>): Promise<Ticket | null> => {
+  const addTicket = async (
+    ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>,
+    supplierSlaHours?: number
+  ): Promise<Ticket | null> => {
     if (!user) {
       toast.error('Usuário não autenticado');
       return null;
@@ -142,11 +147,11 @@ export function useTickets() {
 
       if (error) throw error;
 
-      setTickets(prev => prev.map(ticket =>
-        ticket.id === id
-          ? { ...ticket, ...updates }
-          : ticket
-      ));
+      setTickets(prev =>
+        prev.map(ticket =>
+          ticket.id === id ? { ...ticket, ...updates } : ticket
+        )
+      );
       toast.success('Chamado atualizado com sucesso');
       return true;
     } catch (error: any) {
@@ -179,6 +184,79 @@ export function useTickets() {
     return tickets.find(ticket => ticket.id === id);
   };
 
+  const changeTicketStatus = async (
+    id: string,
+    newStatus: TicketStatus,
+    userId: string,
+    userName: string
+  ): Promise<boolean> => {
+    const ticket = getTicketById(id);
+    if (!ticket) return false;
+
+    try {
+      const updates: Partial<Ticket> = { status: newStatus };
+      if (newStatus === 'resolvido') {
+        updates.dataResolucao = new Date().toISOString();
+      }
+
+      return await updateTicket(id, updates);
+    } catch (error: any) {
+      console.error('Error changing ticket status:', error);
+      return false;
+    }
+  };
+
+  const addInteraction = async (
+    ticketId: string,
+    interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>
+  ): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('ticket_interactions')
+        .insert({
+          ticket_id: ticketId,
+          user_id: interaction.userId,
+          user_name: interaction.userName,
+          message: interaction.message,
+          type: interaction.type,
+        });
+
+      if (error) throw error;
+      await fetchTickets();
+      return true;
+    } catch (error: any) {
+      console.error('Error adding interaction:', error);
+      return false;
+    }
+  };
+
+  const duplicateTicket = async (
+    id: string,
+    userId: string,
+    userName: string,
+    supplierSlaHours?: number
+  ): Promise<Ticket | null> => {
+    const ticket = getTicketById(id);
+    if (!ticket) return null;
+
+    const { id: _, ...ticketData } = ticket;
+    const duplicated = await addTicket(
+      {
+        ...ticketData,
+        titulo: `${ticketData.titulo} (Cópia)`,
+        status: 'aberto',
+        dataCriacao: new Date().toISOString(),
+      },
+      supplierSlaHours
+    );
+
+    return duplicated;
+  };
+
+  const getTicketsByAssetId = (assetId: string): Ticket[] => {
+    return tickets.filter(ticket => ticket.assetId === assetId);
+  };
+
   return {
     tickets,
     loading,
@@ -186,6 +264,10 @@ export function useTickets() {
     updateTicket,
     deleteTicket,
     getTicketById,
+    changeTicketStatus,
+    addInteraction,
+    duplicateTicket,
+    getTicketsByAssetId,
     refetch: fetchTickets,
   };
 }
