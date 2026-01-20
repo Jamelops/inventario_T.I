@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-interface BreadcrumbItem {
+interface BreadcrumbItemType {
   label: string;
   href?: string;
 }
@@ -18,7 +18,7 @@ interface BreadcrumbItem {
 interface PageHeaderProps {
   title: string;
   description?: string;
-  breadcrumbs?: BreadcrumbItem[];
+  breadcrumbs?: BreadcrumbItemType[];
   actions?: ReactNode;
 }
 
@@ -36,18 +36,22 @@ export function PageHeader({ title, description, breadcrumbs, actions }: PageHea
               </BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumbs.map((item, index) => (
-              <BreadcrumbItem key={index}>
-                <BreadcrumbSeparator>
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </BreadcrumbSeparator>
-                {item.href ? (
-                  <BreadcrumbLink asChild>
-                    <Link to={item.href}>{item.label}</Link>
-                  </BreadcrumbLink>
-                ) : (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                )}
-              </BreadcrumbItem>
+              <>
+                <BreadcrumbItem key={`separator-${index}`}>
+                  <BreadcrumbSeparator>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </BreadcrumbSeparator>
+                </BreadcrumbItem>
+                <BreadcrumbItem key={`item-${index}`}>
+                  {item.href ? (
+                    <BreadcrumbLink asChild>
+                      <Link to={item.href}>{item.label}</Link>
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
+              </>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
