@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/ui/toast-container";
@@ -8,6 +9,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TicketProvider } from "@/contexts/TicketContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { loadHumanizedIdMapping } from "@/lib/humanizedId";
 import Dashboard from "./pages/Dashboard";
 import Assets from "./pages/Assets";
 import AssetForm from "./pages/AssetForm";
@@ -85,6 +87,15 @@ function AppRoutes() {
   );
 }
 
+const AppContent = () => {
+  useEffect(() => {
+    // Carrega os IDs humanizados ao inicializar a app
+    loadHumanizedIdMapping();
+  }, []);
+
+  return <AppRoutes />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -94,7 +105,7 @@ const App = () => (
             <ToastProvider>
               <ToastContainer />
               <BrowserRouter>
-                <AppRoutes />
+                <AppContent />
               </BrowserRouter>
             </ToastProvider>
           </TicketProvider>
