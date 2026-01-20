@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useData } from "@/contexts/DataContext";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HardwareSpecsForm } from "@/components/assets/HardwareSpecsForm";
+import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
 import { useToast } from "@/hooks/use-toast";
 import type { AssetStatus, AssetCategory } from "@/types";
 
@@ -204,13 +205,19 @@ const AssetForm = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Dica sobre campos obrigatórios */}
+              <RequiredFieldsHint />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="nome"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome do Ativo</FormLabel>
+                      <FormLabel>
+                        Nome do Ativo
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: Notebook Dell Latitude" {...field} />
                       </FormControl>
@@ -224,7 +231,10 @@ const AssetForm = () => {
                   name="categoria"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Categoria</FormLabel>
+                      <FormLabel>
+                        Categoria
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -249,7 +259,10 @@ const AssetForm = () => {
                   name="numeroSerie"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de Série</FormLabel>
+                      <FormLabel>
+                        Número de Série
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: SN-2024-001" {...field} />
                       </FormControl>
@@ -288,7 +301,10 @@ const AssetForm = () => {
                   name="dataCompra"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data de Compra</FormLabel>
+                      <FormLabel>
+                        Data de Compra
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -302,7 +318,10 @@ const AssetForm = () => {
                   name="valor"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Valor (R$)</FormLabel>
+                      <FormLabel>
+                        Valor (R$)
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -322,7 +341,10 @@ const AssetForm = () => {
                   name="localizacao"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Localização</FormLabel>
+                      <FormLabel>
+                        Localização
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: Sala TI - 3º Andar" {...field} />
                       </FormControl>
@@ -336,7 +358,10 @@ const AssetForm = () => {
                   name="responsavel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Responsável</FormLabel>
+                      <FormLabel>
+                        Responsável
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: João Silva" {...field} />
                       </FormControl>
