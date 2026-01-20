@@ -29,6 +29,7 @@ import { HardwareSpecsForm } from "@/components/assets/HardwareSpecsForm";
 import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
 import { useToast } from "@/hooks/use-toast";
 import { useMoneyFormat } from "@/hooks/useMoneyFormat";
+import { useAuth } from "@/contexts/AuthContext";
 import type { AssetStatus, AssetCategory } from "@/types";
 
 const assetSchema = z.object({
@@ -62,6 +63,7 @@ const AssetForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { assets, addAsset, updateAsset } = useData();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -123,11 +125,12 @@ const AssetForm = () => {
     return {
       nome: data.nome,
       categoria: data.categoria,
-      numero_serie_custom: data.numeroSerie,  // Map numeroSerie -> numero_serie_custom
-      data_compra: data.dataCompra,           // Map dataCompra -> data_compra
+      numero_serie_custom: data.numeroSerie,
+      data_compra: data.dataCompra,
       valor: valor,
       localizacao: data.localizacao,
       responsavel: data.responsavel,
+      responsavel_id: user?.id,  // ✅ Map current user ID to responsavel_id
       status: data.status,
       descricao: data.descricao ?? undefined,
       especificacoes: cleanSpecifications(data.especificacoes),
