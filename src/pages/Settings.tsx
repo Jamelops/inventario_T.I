@@ -15,9 +15,9 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function Settings() {
-  const { categories } = useData();
+  const { categories = [] } = useData();
   const { userRole, isAdmin } = useAuth();
-  const { suppliers } = useTickets();
+  const { suppliers = [] } = useTickets();
   
   const activeSuppliers = suppliers.filter(s => s.ativo);
 
@@ -63,7 +63,7 @@ export default function Settings() {
                 <FolderOpen className="h-5 w-5" />
                 Categorias de Ativos
               </CardTitle>
-              <CardDescription>{categories.length} categorias configuradas</CardDescription>
+              <CardDescription>{categories?.length || 0} categorias configuradas</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
               <Link to="/categories">
@@ -74,18 +74,24 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {categories.slice(0, 4).map(cat => (
-                <div key={cat.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <p className="font-medium text-sm">{cat.nome}</p>
-                    <p className="text-xs text-muted-foreground">{cat.descricao}</p>
-                  </div>
-                </div>
-              ))}
-              {categories.length > 4 && (
-                <p className="text-sm text-muted-foreground text-center">
-                  +{categories.length - 4} categorias...
-                </p>
+              {categories && categories.length > 0 ? (
+                <>
+                  {categories.slice(0, 4).map(cat => (
+                    <div key={cat.id} className="flex items-center justify-between rounded-lg border p-3">
+                      <div>
+                        <p className="font-medium text-sm">{cat.nome}</p>
+                        <p className="text-xs text-muted-foreground">{cat.descricao}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {categories.length > 4 && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      +{categories.length - 4} categorias...
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma categoria configurada</p>
               )}
             </div>
           </CardContent>
@@ -98,7 +104,7 @@ export default function Settings() {
                 <Building2 className="h-5 w-5" />
                 Fornecedores de Chamados
               </CardTitle>
-              <CardDescription>{activeSuppliers.length} fornecedores ativos</CardDescription>
+              <CardDescription>{activeSuppliers?.length || 0} fornecedores ativos</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
               <Link to="/settings/suppliers">
@@ -109,18 +115,24 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {activeSuppliers.slice(0, 4).map(supplier => (
-                <div key={supplier.id} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <p className="font-medium text-sm">{supplier.nome}</p>
-                    <p className="text-xs text-muted-foreground">SLA: {supplier.slaHoras} horas</p>
-                  </div>
-                </div>
-              ))}
-              {activeSuppliers.length > 4 && (
-                <p className="text-sm text-muted-foreground text-center">
-                  +{activeSuppliers.length - 4} fornecedores...
-                </p>
+              {activeSuppliers && activeSuppliers.length > 0 ? (
+                <>
+                  {activeSuppliers.slice(0, 4).map(supplier => (
+                    <div key={supplier.id} className="flex items-center justify-between rounded-lg border p-3">
+                      <div>
+                        <p className="font-medium text-sm">{supplier.nome}</p>
+                        <p className="text-xs text-muted-foreground">SLA: {supplier.slaHoras} horas</p>
+                      </div>
+                    </div>
+                  ))}
+                  {activeSuppliers.length > 4 && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      +{activeSuppliers.length - 4} fornecedores...
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum fornecedor ativo</p>
               )}
             </div>
           </CardContent>
