@@ -118,19 +118,30 @@ const AssetForm = () => {
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   };
 
+  // Map form data to database column names
+  const mapFormDataToDatabase = (data: AssetFormData, valor: number) => {
+    return {
+      nome: data.nome,
+      categoria: data.categoria,
+      numero_serie_custom: data.numeroSerie,  // Map numeroSerie -> numero_serie_custom
+      data_compra: data.dataCompra,           // Map dataCompra -> data_compra
+      valor: valor,
+      localizacao: data.localizacao,
+      responsavel: data.responsavel,
+      status: data.status,
+      descricao: data.descricao ?? undefined,
+      especificacoes: cleanSpecifications(data.especificacoes),
+    };
+  };
+
   const onSubmit = async (data: AssetFormData) => {
     setIsLoading(true);
     try {
       // Usa o valor raw do hook
       const valorReal = moneyFormat.getRawValue();
 
-      const cleanedSpecs = cleanSpecifications(data.especificacoes);
-      const assetData = {
-        ...data,
-        valor: valorReal,
-        especificacoes: cleanedSpecs,
-        descricao: data.descricao ?? undefined,
-      };
+      // Map form data to database column names
+      const assetData = mapFormDataToDatabase(data, valorReal);
 
       if (isEditing && existingAsset) {
         const success = await updateAsset(existingAsset.id, assetData);
