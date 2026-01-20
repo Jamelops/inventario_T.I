@@ -36,18 +36,20 @@ export function PageHeader({ title, description, breadcrumbs, actions }: PageHea
               </BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumbs.map((item, index) => (
-              <BreadcrumbItem key={`breadcrumb-${index}-${item.label}`}>
+              <React.Fragment key={`breadcrumb-${index}-${item.label}`}>
                 <BreadcrumbSeparator>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </BreadcrumbSeparator>
-                {item.href ? (
-                  <BreadcrumbLink asChild>
-                    <Link to={item.href}>{item.label}</Link>
-                  </BreadcrumbLink>
-                ) : (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                )}
-              </BreadcrumbItem>
+                <BreadcrumbItem>
+                  {item.href ? (
+                    <BreadcrumbLink asChild>
+                      <Link to={item.href}>{item.label}</Link>
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
