@@ -322,27 +322,31 @@ const AssetForm = () => {
                 />
 
                 {/* Campo de Valor com Formatação Monetária */}
-                <FormItem>
-                  <FormLabel>
-                    Valor (R$)
-                    <RequiredFieldIndicator required={true} />
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={valorFormatado}
-                      onChange={(e) => {
-                        handleValorChange(e);
-                        // Atualiza o form com o valor raw
-                        const rawValue = valorFormatado ? parseFloat(valorFormatado.replace(/\D/g, '')) / 100 : 0;
-                        form.setValue('valor', rawValue);
-                      }}
-                      placeholder="R$ 0,00"
-                      className="font-mono"
-                    />
-                  </FormControl>
-                </FormItem>
+                <FormField
+                  control={form.control}
+                  name="valor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Valor (R$)
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={valorFormatado}
+                          onChange={(e) => {
+                            handleValorChange(e);
+                          }}
+                          placeholder="R$ 0,00"
+                          className="font-mono"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
