@@ -124,6 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (!mounted) return;
 
+        if (import.meta.env.DEV) {
+          console.log('Auth state changed:', event, session?.user?.id);
+        }
+
         if (session?.user) {
           // INSTANT: Restore from cache while fetching new data
           const cachedProfile = await authCache.get('profile').catch(() => null);
@@ -131,6 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const cachedUsernames = await authCache.get('usernames').catch(() => null);
           
           if (mounted) {
+            // Set user and session immediately
+            setSession(session);
+            setUser(session.user);
+            
             if (cachedProfile) setProfile(cachedProfile);
             if (cachedRole) setUserRole(cachedRole);
             if (cachedUsernames) setProfileUsernames(cachedUsernames);
@@ -165,12 +173,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               });
             }
           }, 150);
-          
-          // Set user immediately
-          if (mounted) {
-            setSession(session);
-            setUser(session.user);
-          }
         } else {
           // User is not authenticated
           if (mounted) {
@@ -245,21 +247,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      return { error };
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Sign in error:', error);
+        }
+        return { error };
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('Sign in successful:', data.user?.id);
+      }
+
+      // CRITICAL: Manually trigger auth state update if onAuthStateChange doesn't fire
+      // This ensures UI updates immediately after login
+      if (data.session) {
+        // Manually restore from cache
+        const cachedProfile = await authCache.get('profile').catch(() => null);
+        const cachedRole = await authCache.get('role').catch(() => null);
+        
+        setSession(data.session);
+        setUser(data.user);
+        if (cachedProfile) setProfile(cachedProfile);
+        if (cachedRole) setUserRole(cachedRole);
+        setLoading(false);
+        
+        // Fetch fresh data in background
+        fetchProfile(data.user.id).then(p => setProfile(p));
+        fetchUserRole(data.user.id).then(r => setUserRole(r));
+        
+        // Fetch usernames deferred
+        setTimeout(() => {
+          fetchProfileUsernames();
+        }, 200);
+      }
+
+      toast({
+        title: "Login realizado!",
+        description: "Bem-vindo de volta.",
+      });
+
+      return { error: null };
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Sign in exception:', error);
+      }
+      return { error: error as Error };
     }
-
-    toast({
-      title: "Login realizado!",
-      description: "Bem-vindo de volta.",
-    });
-
-    return { error: null };
   };
 
   const signOut = async () => {
