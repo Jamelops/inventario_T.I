@@ -57,7 +57,7 @@ export default function TicketForm() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { tickets, suppliers, addTicket, updateTicket, getTicketById, getSupplierById } = useTickets();
-  const { assets } = useData();
+  const { assets = [] } = useData();
   const { profile } = useAuth();
 
   const isEditing = !!id;
@@ -113,6 +113,7 @@ export default function TicketForm() {
   const onSubmit = async (data: TicketFormData) => {
     const asset = assets.find((a) => a.id === data.assetId);
     const supplier = getSupplierById(data.fornecedorId);
+    const now = new Date().toISOString();
 
     const ticketData = {
       titulo: data.titulo.trim(),
@@ -135,6 +136,7 @@ export default function TicketForm() {
       responsavelId: profile?.user_id || "",
       responsavelNome: profile?.username || "Usuário",
       status: "aberto" as const,
+      data_criacao: isEditing ? existingTicket?.data_criacao || now : now,
     };
 
     if (isEditing && existingTicket) {
