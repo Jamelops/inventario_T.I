@@ -1,354 +1,182 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tables, TablesInsert, TablesUpdate, Json } from '@/integrations/supabase/types';
-import {
-  Ticket,
-  TicketInteraction,
-  TicketStatus,
-  TicketType,
-  TicketPriority,
-  SupplierContact,
-} from '@/types/tickets';
+import { toast } from 'sonner';
+import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 type DbTicket = Tables<'tickets'>;
 type DbTicketInsert = TablesInsert<'tickets'>;
 type DbTicketUpdate = TablesUpdate<'tickets'>;
-type DbTicketInteraction = Tables<'ticket_interactions'>;
-type DbTicketInteractionInsert = TablesInsert<'ticket_interactions'>;
 
-const dbToTicket = (db: DbTicket, interactions: TicketInteraction[] = []): Ticket => ({
-  id: db.id,
-  titulo: db.titulo,
-  descricao: db.descricao,
-  fornecedorId: db.fornecedor_id || '',
-  tipo: db.tipo as TicketType,
-  status: db.status as TicketStatus,
-  prioridade: db.prioridade as TicketPriority,
-  unidade: db.unidade,
-  assetId: db.asset_id || undefined,
-  assetNome: db.asset_nome || undefined,
-  protocoloExterno: db.protocolo_externo || undefined,
-  contatoFornecedor: db.contato_fornecedor as SupplierContact | undefined,
-  responsavelId: db.responsavel_id || '',
-  responsavelNome: db.responsavel_nome,
-  slaDeadline: db.sla_deadline,
-  dataCriacao: db.created_at,
-  dataAtualizacao: db.updated_at,
-  dataResolucao: db.data_resolucao || undefined,
-  interactions,
+export interface Ticket {
+  id: string;
+  titulo: string;
+  descricao: string;
+  prioridade: 'alta' | 'media' | 'baixa';
+  status: 'aberto' | 'em_andamento' | 'resolvido' | 'fechado';
+  responsavel?: string;
+  responsavelEmail?: string;
+  departamento?: string;
+  solucao?: string;
+  dataCriacao: string;
+  dataConclusao?: string;
+  tempoResolucao?: number;
+  dataCriacao_iso: string;
+  dataAtualizacao_iso: string;
+}
+
+const dbToTicket = (dbTicket: DbTicket): Ticket => ({
+  id: dbTicket.id,
+  titulo: dbTicket.titulo,
+  descricao: dbTicket.descricao,
+  prioridade: dbTicket.prioridade as any,
+  status: dbTicket.status as any,
+  responsavel: dbTicket.responsavel || undefined,
+  responsavelEmail: dbTicket.responsavel_email || undefined,
+  departamento: dbTicket.departamento || undefined,
+  solucao: dbTicket.solucao || undefined,
+  dataCriacao: dbTicket.data_criacao,
+  dataConclusao: dbTicket.data_conclusao || undefined,
+  tempoResolucao: dbTicket.tempo_resolucao || undefined,
+  dataCriacao_iso: dbTicket.created_at,
+  dataAtualizacao_iso: dbTicket.updated_at,
 });
 
-const dbToInteraction = (db: DbTicketInteraction): TicketInteraction => ({
-  id: db.id,
-  ticketId: db.ticket_id,
-  userId: db.user_id || '',
-  userName: db.user_name,
-  message: db.message,
-  type: db.type as TicketInteraction['type'],
-  createdAt: db.created_at,
+const ticketToDbInsert = (ticket: Omit<Ticket, 'id' | 'dataCriacao_iso' | 'dataAtualizacao_iso'>, userId: string): DbTicketInsert => ({
+  titulo: ticket.titulo,
+  descricao: ticket.descricao,
+  prioridade: ticket.prioridade,
+  status: ticket.status,
+  responsavel: ticket.responsavel || null,
+  responsavel_email: ticket.responsavelEmail || null,
+  departamento: ticket.departamento || null,
+  solucao: ticket.solucao || null,
+  data_criacao: ticket.dataCriacao,
+  data_conclusao: ticket.dataConclusao || null,
+  tempo_resolucao: ticket.tempoResolucao || null,
+  created_by: userId,
 });
 
-const calculateSLADeadline = (createdAt: Date, slaHours: number): string => {
-  const deadline = new Date(createdAt);
-  deadline.setHours(deadline.getHours() + slaHours);
-  return deadline.toISOString();
+const ticketToDbUpdate = (updates: Partial<Ticket>): DbTicketUpdate => {
+  const dbUpdate: DbTicketUpdate = {};
+
+  if (updates.titulo !== undefined) dbUpdate.titulo = updates.titulo;
+  if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao;
+  if (updates.prioridade !== undefined) dbUpdate.prioridade = updates.prioridade;
+  if (updates.status !== undefined) dbUpdate.status = updates.status;
+  if (updates.responsavel !== undefined) dbUpdate.responsavel = updates.responsavel || null;
+  if (updates.responsavelEmail !== undefined) dbUpdate.responsavel_email = updates.responsavelEmail || null;
+  if (updates.departamento !== undefined) dbUpdate.departamento = updates.departamento || null;
+  if (updates.solucao !== undefined) dbUpdate.solucao = updates.solucao || null;
+  if (updates.dataCriacao !== undefined) dbUpdate.data_criacao = updates.dataCriacao;
+  if (updates.dataConclusao !== undefined) dbUpdate.data_conclusao = updates.dataConclusao || null;
+  if (updates.tempoResolucao !== undefined) dbUpdate.tempo_resolucao = updates.tempoResolucao || null;
+
+  return dbUpdate;
 };
 
-export function useTickets(slaHours: number = 72) {
+export function useTickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isApproved } = useAuth();
 
   const fetchTickets = useCallback(async () => {
-    setLoading(true);
+    if (!user || !isApproved) {
+      setTickets([]);
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Fetch tickets
-      const { data: ticketsData, error: ticketsError } = await supabase
+      const { data, error } = await supabase
         .from('tickets')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (ticketsError) throw ticketsError;
-
-      // Fetch interactions for all tickets
-      const ticketIds = (ticketsData || []).map((t) => t.id);
-      let interactionsMap: Record<string, TicketInteraction[]> = {};
-
-      if (ticketIds.length > 0) {
-        const { data: interactionsData, error: interactionsError } = await supabase
-          .from('ticket_interactions')
-          .select('*')
-          .in('ticket_id', ticketIds)
-          .order('created_at', { ascending: true });
-
-        if (interactionsError) throw interactionsError;
-
-        interactionsMap = (interactionsData || []).reduce((acc, int) => {
-          const interaction = dbToInteraction(int);
-          if (!acc[interaction.ticketId]) {
-            acc[interaction.ticketId] = [];
-          }
-          acc[interaction.ticketId].push(interaction);
-          return acc;
-        }, {} as Record<string, TicketInteraction[]>);
-      }
-
-      setTickets(
-        (ticketsData || []).map((t) => dbToTicket(t, interactionsMap[t.id] || []))
-      );
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to fetch tickets:', error);
-      }
+      if (error) throw error;
+      setTickets((data || []).map(dbToTicket));
+    } catch (error: any) {
+      console.error('Error fetching tickets:', error);
+      toast.error('Erro ao carregar chamados');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user, isApproved]);
 
   useEffect(() => {
-    if (user) {
-      fetchTickets();
-    }
-  }, [user, fetchTickets]);
+    fetchTickets();
+  }, [fetchTickets]);
 
-  const addTicket = async (
-    ticketData: Omit<Ticket, 'id' | 'dataCriacao' | 'dataAtualizacao' | 'interactions' | 'slaDeadline'>,
-    supplierSlaHours?: number
-  ): Promise<Ticket | null> => {
-    if (!user) return null;
+  const addTicket = async (ticket: Omit<Ticket, 'id' | 'dataCriacao_iso' | 'dataAtualizacao_iso'>): Promise<Ticket | null> => {
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return null;
+    }
 
     try {
-      const now = new Date();
-      const sla = supplierSlaHours || slaHours;
-
-      const dbInsert: DbTicketInsert = {
-        titulo: ticketData.titulo,
-        descricao: ticketData.descricao,
-        fornecedor_id: ticketData.fornecedorId || null,
-        tipo: ticketData.tipo,
-        status: ticketData.status || 'aberto',
-        prioridade: ticketData.prioridade || 'media',
-        unidade: ticketData.unidade,
-        asset_id: ticketData.assetId || null,
-        asset_nome: ticketData.assetNome || null,
-        protocolo_externo: ticketData.protocoloExterno || null,
-        contato_fornecedor: (ticketData.contatoFornecedor || {}) as Json,
-        responsavel_id: ticketData.responsavelId || user.id,
-        responsavel_nome: ticketData.responsavelNome,
-        sla_deadline: calculateSLADeadline(now, sla),
-        created_by: user.id,
-      };
-
       const { data, error } = await supabase
         .from('tickets')
-        .insert(dbInsert)
+        .insert(ticketToDbInsert(ticket, user.id))
         .select()
         .single();
 
       if (error) throw error;
 
-      const newTicket = dbToTicket(data, []);
-      setTickets((prev) => [newTicket, ...prev]);
+      const newTicket = dbToTicket(data);
+      setTickets(prev => [newTicket, ...prev]);
+      toast.success('Chamado criado com sucesso');
       return newTicket;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to add ticket:', error);
-      }
+    } catch (error: any) {
+      console.error('Error adding ticket:', error);
+      toast.error('Erro ao criar chamado: ' + error.message);
       return null;
     }
   };
 
   const updateTicket = async (id: string, updates: Partial<Ticket>): Promise<boolean> => {
     try {
-      const dbUpdates: DbTicketUpdate = {};
-      if (updates.titulo !== undefined) dbUpdates.titulo = updates.titulo;
-      if (updates.descricao !== undefined) dbUpdates.descricao = updates.descricao;
-      if (updates.fornecedorId !== undefined) dbUpdates.fornecedor_id = updates.fornecedorId || null;
-      if (updates.tipo !== undefined) dbUpdates.tipo = updates.tipo;
-      if (updates.status !== undefined) dbUpdates.status = updates.status;
-      if (updates.prioridade !== undefined) dbUpdates.prioridade = updates.prioridade;
-      if (updates.unidade !== undefined) dbUpdates.unidade = updates.unidade;
-      if (updates.assetId !== undefined) dbUpdates.asset_id = updates.assetId || null;
-      if (updates.assetNome !== undefined) dbUpdates.asset_nome = updates.assetNome || null;
-      if (updates.protocoloExterno !== undefined) dbUpdates.protocolo_externo = updates.protocoloExterno || null;
-      if (updates.contatoFornecedor !== undefined) dbUpdates.contato_fornecedor = (updates.contatoFornecedor || {}) as Json;
-      if (updates.responsavelId !== undefined) dbUpdates.responsavel_id = updates.responsavelId || null;
-      if (updates.responsavelNome !== undefined) dbUpdates.responsavel_nome = updates.responsavelNome;
-      if (updates.dataResolucao !== undefined) dbUpdates.data_resolucao = updates.dataResolucao || null;
-
-      const { error } = await supabase.from('tickets').update(dbUpdates).eq('id', id);
+      const { error } = await supabase
+        .from('tickets')
+        .update(ticketToDbUpdate(updates))
+        .eq('id', id);
 
       if (error) throw error;
 
-      setTickets((prev) =>
-        prev.map((t) =>
-          t.id === id ? { ...t, ...updates, dataAtualizacao: new Date().toISOString() } : t
-        )
-      );
+      setTickets(prev => prev.map(ticket =>
+        ticket.id === id
+          ? { ...ticket, ...updates }
+          : ticket
+      ));
+      toast.success('Chamado atualizado com sucesso');
       return true;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to update ticket:', error);
-      }
+    } catch (error: any) {
+      console.error('Error updating ticket:', error);
+      toast.error('Erro ao atualizar chamado: ' + error.message);
       return false;
     }
   };
 
   const deleteTicket = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase.from('tickets').delete().eq('id', id);
+      const { error } = await supabase
+        .from('tickets')
+        .delete()
+        .eq('id', id);
 
       if (error) throw error;
 
-      setTickets((prev) => prev.filter((t) => t.id !== id));
+      setTickets(prev => prev.filter(ticket => ticket.id !== id));
+      toast.success('Chamado excluído com sucesso');
       return true;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to delete ticket:', error);
-      }
+    } catch (error: any) {
+      console.error('Error deleting ticket:', error);
+      toast.error('Erro ao excluir chamado: ' + error.message);
       return false;
     }
   };
 
   const getTicketById = (id: string): Ticket | undefined => {
-    return tickets.find((t) => t.id === id);
-  };
-
-  const changeTicketStatus = async (
-    id: string,
-    newStatus: TicketStatus,
-    userId: string,
-    userName: string
-  ): Promise<boolean> => {
-    try {
-      const now = new Date().toISOString();
-      const isResolved = newStatus === 'resolvido' || newStatus === 'encerrado';
-
-      // Update ticket status
-      const { error: ticketError } = await supabase
-        .from('tickets')
-        .update({
-          status: newStatus,
-          data_resolucao: isResolved ? now : null,
-        })
-        .eq('id', id);
-
-      if (ticketError) throw ticketError;
-
-      // Add status change interaction
-      const interactionInsert: DbTicketInteractionInsert = {
-        ticket_id: id,
-        user_id: userId,
-        user_name: userName,
-        message: `Status alterado para "${newStatus}"`,
-        type: 'mudanca_status',
-      };
-
-      const { data: interactionData, error: interactionError } = await supabase
-        .from('ticket_interactions')
-        .insert(interactionInsert)
-        .select()
-        .single();
-
-      if (interactionError) throw interactionError;
-
-      const newInteraction = dbToInteraction(interactionData);
-
-      setTickets((prev) =>
-        prev.map((t) => {
-          if (t.id !== id) return t;
-          return {
-            ...t,
-            status: newStatus,
-            dataAtualizacao: now,
-            dataResolucao: isResolved ? now : t.dataResolucao,
-            interactions: [...t.interactions, newInteraction],
-          };
-        })
-      );
-      return true;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to change ticket status:', error);
-      }
-      return false;
-    }
-  };
-
-  const addInteraction = async (
-    ticketId: string,
-    interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>
-  ): Promise<boolean> => {
-    try {
-      const interactionInsert: DbTicketInteractionInsert = {
-        ticket_id: ticketId,
-        user_id: interaction.userId,
-        user_name: interaction.userName,
-        message: interaction.message,
-        type: interaction.type,
-      };
-
-      const { data, error } = await supabase
-        .from('ticket_interactions')
-        .insert(interactionInsert)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const newInteraction = dbToInteraction(data);
-
-      setTickets((prev) =>
-        prev.map((t) => {
-          if (t.id !== ticketId) return t;
-          return {
-            ...t,
-            interactions: [...t.interactions, newInteraction],
-            dataAtualizacao: new Date().toISOString(),
-          };
-        })
-      );
-      return true;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to add interaction:', error);
-      }
-      return false;
-    }
-  };
-
-  const duplicateTicket = async (
-    id: string,
-    userId: string,
-    userName: string,
-    supplierSlaHours?: number
-  ): Promise<Ticket | null> => {
-    const original = getTicketById(id);
-    if (!original) return null;
-
-    return addTicket(
-      {
-        titulo: `[Cópia] ${original.titulo}`,
-        descricao: original.descricao,
-        fornecedorId: original.fornecedorId,
-        tipo: original.tipo,
-        status: 'aberto',
-        prioridade: original.prioridade,
-        unidade: original.unidade,
-        assetId: original.assetId,
-        assetNome: original.assetNome,
-        protocoloExterno: undefined,
-        contatoFornecedor: original.contatoFornecedor,
-        responsavelId: userId,
-        responsavelNome: userName,
-      },
-      supplierSlaHours
-    );
-  };
-
-  const getTicketsByAssetId = (assetId: string): Ticket[] => {
-    return tickets.filter((t) => t.assetId === assetId);
+    return tickets.find(ticket => ticket.id === id);
   };
 
   return {
@@ -358,10 +186,6 @@ export function useTickets(slaHours: number = 72) {
     updateTicket,
     deleteTicket,
     getTicketById,
-    changeTicketStatus,
-    addInteraction,
-    duplicateTicket,
-    getTicketsByAssetId,
     refetch: fetchTickets,
   };
 }
