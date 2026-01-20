@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { authCache } from '@/lib/authCache';
 
 interface Profile {
   id: string;
@@ -58,6 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) throw error;
+      
+      // Cache the result (24 hour TTL)
+      if (data) {
+        await authCache.set('profile', data, 24 * 60 * 60 * 1000).catch(() => {});
+      }
+      
       return data as Profile | null;
     } catch (error) {
       if (import.meta.env.DEV) {
@@ -76,7 +83,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) throw error;
-      return data?.role as AppRole | null;
+      
+      const role = data?.role as AppRole | null;
+      
+      // Cache the result (24 hour TTL)
+      if (role) {
+        await authCache.set('role', role, 24 * 60 * 60 * 1000).catch(() => {});
+      }
+      
+      return role;
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to fetch user role:', error);
@@ -89,6 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase.rpc('get_all_usernames');
       if (error) throw error;
+      
+      // Cache the result (1 hour TTL)
+      await authCache.set('usernames', data, 60 * 60 * 1000).catch(() => {});
       setProfileUsernames(data as ProfileUsername[]);
     } catch (error) {
       if (import.meta.env.DEV) {
@@ -107,11 +125,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
 
         if (session?.user) {
-          // User is authenticated
-          setSession(session);
-          setUser(session.user);
+          // INSTANT: Restore from cache while fetching new data
+          const cachedProfile = await authCache.get('profile').catch(() => null);
+          const cachedRole = await authCache.get('role').catch(() => null);
+          const cachedUsernames = await authCache.get('usernames').catch(() => null);
           
-          // CRITICAL: Fetch ONLY profile + role in parallel (minimal, fast)
+          if (mounted) {
+            if (cachedProfile) setProfile(cachedProfile);
+            if (cachedRole) setUserRole(cachedRole);
+            if (cachedUsernames) setProfileUsernames(cachedUsernames);
+            
+            // Show UI immediately with cached data
+            setLoading(false);
+          }
+          
+          // BACKGROUND: Fetch fresh data to update cache
           try {
             const [profileData, roleData] = await Promise.all([
               fetchProfile(session.user.id),
@@ -121,16 +149,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (mounted) {
               setProfile(profileData);
               setUserRole(roleData);
-              setLoading(false);
             }
           } catch (error) {
-            if (mounted) {
-              setLoading(false);
+            if (import.meta.env.DEV) {
+              console.error('Error fetching user data:', error);
             }
           }
           
-          // DEFERRED: Fetch usernames AFTER UI renders (not blocking)
-          // Use setTimeout with 0 delay to queue after current task
+          // DEFERRED: Fetch usernames after UI renders
           if (deferredFetchTimeout) clearTimeout(deferredFetchTimeout);
           deferredFetchTimeout = setTimeout(() => {
             if (mounted) {
@@ -138,7 +164,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (import.meta.env.DEV) console.error('Usernames fetch failed:', err);
               });
             }
-          }, 100); // Small delay to ensure UI renders first
+          }, 150);
+          
+          // Set user immediately
+          if (mounted) {
+            setSession(session);
+            setUser(session.user);
+          }
         } else {
           // User is not authenticated
           if (mounted) {
@@ -146,13 +178,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setProfile(null);
             setUserRole(null);
+            setProfileUsernames([]);
             setLoading(false);
+            
+            // Clear cache on logout
+            authCache.clear().catch(() => {});
           }
         }
       }
     );
 
-    // Safety timeout: 5 seconds max
+    // Safety timeout: 4 seconds max (cache should load instantly)
     loadingTimeout = setTimeout(() => {
       if (mounted && loading) {
         if (import.meta.env.DEV) {
@@ -160,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false);
       }
-    }, 5000);
+    }, 4000);
 
     return () => {
       mounted = false;
@@ -232,6 +268,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserRole(null);
     setSession(null);
     setUser(null);
+    setProfileUsernames([]);
+    
+    // Clear cache on logout
+    await authCache.clear().catch(() => {});
+    
     toast({
       title: "Logout realizado",
       description: "Até logo!",
