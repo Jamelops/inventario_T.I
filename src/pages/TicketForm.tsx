@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useData } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -179,12 +180,18 @@ export default function TicketForm() {
                 <CardTitle>Informações do Chamado</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Dica sobre campos obrigatórios */}
+                <RequiredFieldsHint />
+
                 <FormField
                   control={form.control}
                   name="titulo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Título *</FormLabel>
+                      <FormLabel>
+                        Título
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: Link de internet fora na filial Centro" {...field} />
                       </FormControl>
@@ -198,7 +205,10 @@ export default function TicketForm() {
                   name="descricao"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Descrição Detalhada *</FormLabel>
+                      <FormLabel>
+                        Descrição Detalhada
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Descreva o problema em detalhes..."
@@ -217,7 +227,10 @@ export default function TicketForm() {
                     name="fornecedorId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Fornecedor *</FormLabel>
+                        <FormLabel>
+                          Fornecedor
+                          <RequiredFieldIndicator required={true} />
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -254,7 +267,10 @@ export default function TicketForm() {
                     name="tipo"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tipo *</FormLabel>
+                        <FormLabel>
+                          Tipo
+                          <RequiredFieldIndicator required={true} />
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -279,7 +295,10 @@ export default function TicketForm() {
                     name="prioridade"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Prioridade *</FormLabel>
+                        <FormLabel>
+                          Prioridade
+                          <RequiredFieldIndicator required={true} />
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -304,7 +323,10 @@ export default function TicketForm() {
                     name="unidade"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Unidade/Filial *</FormLabel>
+                        <FormLabel>
+                          Unidade/Filial
+                          <RequiredFieldIndicator required={true} />
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="Ex: Filial Centro" {...field} />
                         </FormControl>
