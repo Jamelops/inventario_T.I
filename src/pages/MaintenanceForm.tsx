@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,6 +27,7 @@ import { useData } from "@/contexts/DataContext";
 import { useMaintenanceTasks } from "@/hooks/useMaintenanceTasks";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
 import type { MaintenanceStatus, MaintenancePriority } from "@/types";
 
 const maintenanceSchema = z.object({
@@ -47,7 +48,6 @@ type MaintenanceFormData = z.infer<typeof maintenanceSchema>;
 
 const MaintenanceForm = () => {
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { assets } = useData();
   const { maintenanceTasks, loading: tasksLoading, addMaintenanceTask, updateMaintenanceTask, getMaintenanceTaskById } = useMaintenanceTasks();
@@ -56,7 +56,6 @@ const MaintenanceForm = () => {
 
   const isEditing = Boolean(id);
   const existingTask = isEditing ? getMaintenanceTaskById(id!) : null;
-  const preselectedAssetId = searchParams.get("assetId");
 
   if (tasksLoading) {
     return (
@@ -69,7 +68,7 @@ const MaintenanceForm = () => {
   const form = useForm<MaintenanceFormData>({
     resolver: zodResolver(maintenanceSchema),
     defaultValues: {
-      assetIds: preselectedAssetId ? [preselectedAssetId] : [],
+      assetIds: [],
       descricao: "",
       prioridade: "media" as MaintenancePriority,
       status: "pendente" as MaintenanceStatus,
@@ -194,6 +193,9 @@ const MaintenanceForm = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Dica sobre campos obrigatórios */}
+              <RequiredFieldsHint />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -202,6 +204,7 @@ const MaintenanceForm = () => {
                     <FormItem className="md:col-span-2">
                       <FormLabel>
                         {isEditing ? "Ativo" : "Ativos (selecione um ou mais)"}
+                        <RequiredFieldIndicator required={true} />
                       </FormLabel>
                       {isEditing ? (
                         <Select 
@@ -269,7 +272,10 @@ const MaintenanceForm = () => {
                   name="responsavel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Responsável</FormLabel>
+                      <FormLabel>
+                        Responsável
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
@@ -290,15 +296,21 @@ const MaintenanceForm = () => {
                   name="responsavelEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email do Responsável</FormLabel>
+                      <FormLabel>
+                        Email do Responsável
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input 
-                          type="email" 
                           {...field} 
                           disabled 
-                          className="bg-muted"
+                          className="bg-muted" 
+                          type="email"
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        O email é preenchido automaticamente com seu email de usuário.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -309,7 +321,10 @@ const MaintenanceForm = () => {
                   name="prioridade"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Prioridade</FormLabel>
+                      <FormLabel>
+                        Prioridade
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -334,7 +349,10 @@ const MaintenanceForm = () => {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>
+                        Status
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -359,7 +377,10 @@ const MaintenanceForm = () => {
                   name="dataAgendada"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data Agendada</FormLabel>
+                      <FormLabel>
+                        Data Agendada
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -374,11 +395,14 @@ const MaintenanceForm = () => {
                 name="descricao"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descrição</FormLabel>
+                    <FormLabel>
+                      Descrição
+                      <RequiredFieldIndicator required={true} />
+                    </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Descreva o serviço a ser realizado..."
-                        className="min-h-[80px]"
+                        placeholder="Descreva o problema e a manutenção a ser realizada..."
+                        className="min-h-[120px]"
                         {...field}
                       />
                     </FormControl>
@@ -395,7 +419,7 @@ const MaintenanceForm = () => {
                     <FormItem>
                       <FormLabel>Local da Manutenção</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Laboratório TI, Terceirizado..." {...field} />
+                        <Input placeholder="Ex: Sala 101 - Térreo" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -409,7 +433,7 @@ const MaintenanceForm = () => {
                     <FormItem>
                       <FormLabel>Situação do Equipamento</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Aguardando peça, Em teste..." {...field} />
+                        <Input placeholder="Ex: Teclado com teclas presas" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -417,53 +441,51 @@ const MaintenanceForm = () => {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="observacao"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Observação</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Adicione observações sobre a manutenção..."
-                        className="min-h-[80px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 gap-6">
+                <FormField
+                  control={form.control}
+                  name="notas"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notas</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Notas adicionais sobre a manutenção..."
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="notas"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notas Adicionais</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Observações extras..."
-                        className="min-h-[80px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="observacao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Observação</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Observações finais..."
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/maintenance")}
-                >
+                <Button type="button" variant="outline" onClick={() => navigate("/maintenance")}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoading}>
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Salvando..." : isEditing ? "Atualizar" : "Salvar"}
+                  {isLoading ? "Salvando..." : isEditing ? "Atualizar" : "Criar Manutenção"}
                 </Button>
               </div>
             </form>
