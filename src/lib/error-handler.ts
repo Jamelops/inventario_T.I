@@ -4,7 +4,7 @@
  * Maps backend errors to user-friendly messages
  */
 
-import { useToast } from '@/hooks/useToast';
+import type { Toast } from 'sonner';
 
 export interface ApiError {
   message: string;
@@ -17,6 +17,7 @@ export interface HandleErrorOptions {
   showToast?: boolean;
   logToConsole?: boolean;
   fallbackMessage?: string;
+  toastFn?: (message: string) => void;
 }
 
 /**
@@ -86,12 +87,21 @@ const getUserMessage = (error: any): string => {
 /**
  * Main error handler function
  * Use this in try-catch blocks throughout the app
+ * 
+ * IMPORTANT: Pass toastFn from components to avoid Rules of Hooks violations
+ * Example:
+ *   const { toast } = useToast();
+ *   handleApiError(error, { showToast: true, toastFn: (msg) => toast.error(msg) });
  */
-export const handleApiError = (error: any, options: HandleErrorOptions = {}): ApiError => {
+export const handleApiError = (
+  error: any,
+  options: HandleErrorOptions = {}
+): ApiError => {
   const {
     showToast = true,
     logToConsole = import.meta.env.DEV,
     fallbackMessage = 'Erro ao processar requisição',
+    toastFn,
   } = options;
 
   // Log full error in development only
@@ -118,10 +128,9 @@ export const handleApiError = (error: any, options: HandleErrorOptions = {}): Ap
     code: error?.code,
   };
 
-  // Show toast notification
-  if (showToast) {
-    const { toast } = useToast();
-    toast.error(userMessage);
+  // Show toast notification if toastFn is provided
+  if (showToast && toastFn) {
+    toastFn(userMessage);
   }
 
   return apiError;
