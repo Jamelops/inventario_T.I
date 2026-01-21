@@ -11,15 +11,17 @@ interface DataContextType {
   updateAsset: (id: string, asset: Partial<Asset>) => Promise<boolean>;
   deleteAsset: (id: string) => Promise<boolean>;
   getAssetById: (id: string) => Asset | undefined;
-  
+
   // Licenses
   licenses: License[];
   licensesLoading: boolean;
-  addLicense: (license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>) => Promise<License | null>;
+  addLicense: (
+    license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>
+  ) => Promise<License | null>;
   updateLicense: (id: string, license: Partial<License>) => Promise<boolean>;
   deleteLicense: (id: string) => Promise<boolean>;
   getLicenseById: (id: string) => License | undefined;
-  
+
   // Dashboard
   dashboardConfig: DashboardConfig;
   updateDashboardConfig: (config: DashboardConfig) => void;
@@ -42,22 +44,22 @@ const defaultDashboardConfig: DashboardConfig = {
 
 export function DataProvider({ children }: { children: ReactNode }) {
   // Use Supabase hooks for assets and licenses
-  const { 
-    assets, 
-    loading: assetsLoading, 
-    addAsset, 
-    updateAsset, 
-    deleteAsset, 
-    getAssetById 
+  const {
+    assets,
+    loading: assetsLoading,
+    addAsset,
+    updateAsset,
+    deleteAsset,
+    getAssetById,
   } = useAssets();
-  
-  const { 
-    licenses, 
-    loading: licensesLoading, 
-    addLicense, 
-    updateLicense, 
+
+  const {
+    licenses,
+    loading: licensesLoading,
+    addLicense,
+    updateLicense,
     deleteLicense,
-    getLicenseById 
+    getLicenseById,
   } = useLicenses();
 
   // Keep dashboard config in localStorage (user preferences only)
@@ -81,26 +83,28 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Get license by id wrapper for backward compatibility
   const getLicenseByIdWrapper = (id: string): License | undefined => {
-    return licenses.find(license => license.id === id);
+    return licenses.find((license) => license.id === id);
   };
 
   return (
-    <DataContext.Provider value={{
-      assets,
-      assetsLoading,
-      addAsset,
-      updateAsset,
-      deleteAsset,
-      getAssetById,
-      licenses,
-      licensesLoading,
-      addLicense,
-      updateLicense,
-      deleteLicense,
-      getLicenseById: getLicenseByIdWrapper,
-      dashboardConfig,
-      updateDashboardConfig,
-    }}>
+    <DataContext.Provider
+      value={{
+        assets,
+        assetsLoading,
+        addAsset,
+        updateAsset,
+        deleteAsset,
+        getAssetById,
+        licenses,
+        licensesLoading,
+        addLicense,
+        updateLicense,
+        deleteLicense,
+        getLicenseById: getLicenseByIdWrapper,
+        dashboardConfig,
+        updateDashboardConfig,
+      }}
+    >
       {children}
     </DataContext.Provider>
   );

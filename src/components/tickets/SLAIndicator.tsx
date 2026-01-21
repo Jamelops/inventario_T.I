@@ -1,8 +1,8 @@
-import { differenceInHours, differenceInMinutes, isPast, format, isValid } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Clock, AlertTriangle, CheckCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TicketStatus } from "@/types/tickets";
+import { differenceInHours, differenceInMinutes, isPast, format, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { TicketStatus } from '@/types/tickets';
 
 interface SLAIndicatorProps {
   slaDeadline: string;
@@ -11,22 +11,27 @@ interface SLAIndicatorProps {
   showDetails?: boolean;
 }
 
-export function SLAIndicator({ slaDeadline, status, className, showDetails = false }: SLAIndicatorProps) {
+export function SLAIndicator({
+  slaDeadline,
+  status,
+  className,
+  showDetails = false,
+}: SLAIndicatorProps) {
   try {
     const deadline = new Date(slaDeadline);
-    
+
     // Validate that the date is valid
     if (!isValid(deadline)) {
       throw new Error('Invalid SLA deadline date');
     }
-    
+
     const now = new Date();
     const isResolved = status === 'resolvido' || status === 'encerrado';
     const isExpired = isPast(deadline) && !isResolved;
-    
+
     const hoursRemaining = differenceInHours(deadline, now);
     const minutesRemaining = differenceInMinutes(deadline, now) % 60;
-    
+
     const getStatusInfo = () => {
       if (isResolved) {
         return {
@@ -36,7 +41,7 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
           label: 'Resolvido',
         };
       }
-      
+
       if (isExpired) {
         const hoursOverdue = Math.abs(hoursRemaining);
         return {
@@ -46,7 +51,7 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
           label: `SLA estourado há ${hoursOverdue}h`,
         };
       }
-      
+
       if (hoursRemaining <= 4) {
         return {
           icon: Clock,
@@ -55,7 +60,7 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
           label: `${hoursRemaining}h ${minutesRemaining}m restantes`,
         };
       }
-      
+
       if (hoursRemaining <= 12) {
         return {
           icon: Clock,
@@ -64,7 +69,7 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
           label: `${hoursRemaining}h restantes`,
         };
       }
-      
+
       return {
         icon: Clock,
         color: 'text-muted-foreground',
@@ -78,8 +83,8 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
 
     if (showDetails) {
       return (
-        <div className={cn("space-y-1", className)}>
-          <div className={cn("flex items-center gap-2 text-sm", statusInfo.color)}>
+        <div className={cn('space-y-1', className)}>
+          <div className={cn('flex items-center gap-2 text-sm', statusInfo.color)}>
             <Icon className="h-4 w-4" />
             <span className="font-medium">{statusInfo.label}</span>
           </div>
@@ -93,7 +98,7 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
     return (
       <div
         className={cn(
-          "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
+          'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium',
           statusInfo.bgColor,
           statusInfo.color,
           className
@@ -105,13 +110,13 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
     );
   } catch (error) {
     console.error('Error in SLAIndicator:', error);
-    
+
     // Fallback UI when date is invalid
     return (
       <div
         className={cn(
-          "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
-          "bg-muted text-muted-foreground",
+          'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium',
+          'bg-muted text-muted-foreground',
           className
         )}
       >

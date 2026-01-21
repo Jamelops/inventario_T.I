@@ -53,7 +53,7 @@ export function ToastBanner({ toast, onClose }: ToastBannerProps) {
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 50));
+        const newProgress = prev - 100 / (duration / 50);
         return newProgress > 0 ? newProgress : 0;
       });
     }, 50);
@@ -89,12 +89,7 @@ export function ToastBanner({ toast, onClose }: ToastBannerProps) {
         <div className="flex items-center gap-3 px-4 py-3 container mx-auto max-w-full">
           <IconComponent className={cn('h-5 w-5 flex-shrink-0', config.iconColor)} />
           <div className="flex-1 min-w-0 overflow-visible">
-            <p 
-              className={cn(
-                'text-sm font-medium break-words',
-                config.textColor
-              )}
-            >
+            <p className={cn('text-sm font-medium break-words', config.textColor)}>
               {toast.message || '(mensagem vazia)'}
             </p>
           </div>

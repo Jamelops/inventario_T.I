@@ -16,22 +16,26 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Senha é obrigatória'),
 });
 
-const signupSchema = z.object({
-  username: z.string()
-    .min(3, 'Nome de usuário deve ter pelo menos 3 caracteres')
-    .max(50, 'Nome de usuário muito longo')
-    .regex(/^[a-zA-ZÀ-ÿ0-9\s]+$/, 'Nome de usuário pode conter apenas letras, números e espaços'),
-  email: z.string().email('Email inválido').max(255, 'Email muito longo'),
-  password: z.string()
-    .min(10, 'Senha deve ter pelo menos 10 caracteres')
-    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
-    .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Senhas não conferem",
-  path: ["confirmPassword"],
-});
+const signupSchema = z
+  .object({
+    username: z
+      .string()
+      .min(3, 'Nome de usuário deve ter pelo menos 3 caracteres')
+      .max(50, 'Nome de usuário muito longo')
+      .regex(/^[a-zA-ZÀ-ÿ0-9\s]+$/, 'Nome de usuário pode conter apenas letras, números e espaços'),
+    email: z.string().email('Email inválido').max(255, 'Email muito longo'),
+    password: z
+      .string()
+      .min(10, 'Senha deve ter pelo menos 10 caracteres')
+      .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+      .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+      .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Senhas não conferem',
+    path: ['confirmPassword'],
+  });
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -39,11 +43,11 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState(false);
-  
+
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
   // Signup form
   const [signupUsername, setSignupUsername] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
@@ -94,7 +98,7 @@ export default function Auth() {
         password: signupPassword,
         confirmPassword: signupConfirmPassword,
       });
-      
+
       if (!validation.success) {
         setError(validation.error.errors[0].message);
         setIsLoading(false);
@@ -138,7 +142,8 @@ export default function Auth() {
             </div>
             <CardTitle>Aguardando Aprovação</CardTitle>
             <CardDescription>
-              Sua conta foi criada com sucesso, mas ainda está pendente de aprovação por um administrador.
+              Sua conta foi criada com sucesso, mas ainda está pendente de aprovação por um
+              administrador.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -148,9 +153,9 @@ export default function Auth() {
                 Você receberá acesso assim que um administrador aprovar sua conta.
               </AlertDescription>
             </Alert>
-            <Button 
-              variant="outline" 
-              className="w-full" 
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={async () => {
                 await signUp('', '', ''); // This won't work, we need signOut
                 window.location.reload();
@@ -177,21 +182,17 @@ export default function Auth() {
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
             <CardTitle>Cadastro Realizado!</CardTitle>
-            <CardDescription>
-              Sua solicitação de cadastro foi enviada com sucesso.
-            </CardDescription>
+            <CardDescription>Sua solicitação de cadastro foi enviada com sucesso.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <Clock className="h-4 w-4" />
               <AlertDescription>
-                Aguarde a aprovação de um administrador para acessar o sistema. Você será notificado quando sua conta for aprovada.
+                Aguarde a aprovação de um administrador para acessar o sistema. Você será notificado
+                quando sua conta for aprovada.
               </AlertDescription>
             </Alert>
-            <Button 
-              className="w-full" 
-              onClick={() => setSignupSuccess(false)}
-            >
+            <Button className="w-full" onClick={() => setSignupSuccess(false)}>
               Voltar ao Login
             </Button>
           </CardContent>
@@ -217,13 +218,13 @@ export default function Auth() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Solicitar Acesso</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -253,7 +254,7 @@ export default function Auth() {
                 </Button>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
@@ -266,9 +267,7 @@ export default function Auth() {
                     onChange={(e) => setSignupUsername(e.target.value)}
                     required
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Use seu nome completo ou apelido
-                  </p>
+                  <p className="text-xs text-muted-foreground">Use seu nome completo ou apelido</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>

@@ -17,7 +17,9 @@ export function ToastProgressBar() {
     info: 'bg-blue-500',
   };
 
-  const progressColor = activeToast ? colorMap[activeToast.type as keyof typeof colorMap] : 'bg-gray-300';
+  const progressColor = activeToast
+    ? colorMap[activeToast.type as keyof typeof colorMap]
+    : 'bg-gray-300';
 
   // Anima a barra de progresso
   useEffect(() => {
@@ -30,7 +32,7 @@ export function ToastProgressBar() {
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 50));
+        const newProgress = prev - 100 / (duration / 50);
         return newProgress > 0 ? newProgress : 0;
       });
     }, 50);

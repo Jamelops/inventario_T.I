@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { ArrowLeft, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ArrowLeft, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -14,50 +14,64 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useData } from "@/contexts/DataContext";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { HardwareSpecsForm } from "@/components/assets/HardwareSpecsForm";
-import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
-import { useToast } from "@/hooks/use-toast";
-import { useMoneyFormat } from "@/hooks/useMoneyFormat";
-import { useAuth } from "@/contexts/AuthContext";
-import type { AssetStatus, AssetCategory } from "@/types";
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useData } from '@/contexts/DataContext';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { HardwareSpecsForm } from '@/components/assets/HardwareSpecsForm';
+import {
+  RequiredFieldIndicator,
+  RequiredFieldsHint,
+} from '@/components/shared/RequiredFieldIndicator';
+import { useToast } from '@/hooks/use-toast';
+import { useMoneyFormat } from '@/hooks/useMoneyFormat';
+import { useAuth } from '@/contexts/AuthContext';
+import type { AssetStatus, AssetCategory } from '@/types';
 
 const assetSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório").max(100, "Nome muito longo"),
-  categoria: z.enum(["notebook", "desktop", "servidor", "monitor", "impressora", "rede", "periferico", "outros"]),
-  numeroSerie: z.string().min(1, "Número de série é obrigatório"),
-  dataCompra: z.string().min(1, "Data de compra é obrigatória"),
-  valor: z.coerce.number().min(0, "Valor deve ser positivo"),
-  localizacao: z.string().min(1, "Localização é obrigatória"),
-  responsavel: z.string().min(1, "Responsável é obrigatório"),
-  status: z.enum(["ativo", "inativo", "manutencao", "arquivado"]),
+  nome: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
+  categoria: z.enum([
+    'notebook',
+    'desktop',
+    'servidor',
+    'monitor',
+    'impressora',
+    'rede',
+    'periferico',
+    'outros',
+  ]),
+  numeroSerie: z.string().min(1, 'Número de série é obrigatório'),
+  dataCompra: z.string().min(1, 'Data de compra é obrigatória'),
+  valor: z.coerce.number().min(0, 'Valor deve ser positivo'),
+  localizacao: z.string().min(1, 'Localização é obrigatória'),
+  responsavel: z.string().min(1, 'Responsável é obrigatório'),
+  status: z.enum(['ativo', 'inativo', 'manutencao', 'arquivado']),
   descricao: z.string().optional(),
-  especificacoes: z.object({
-    processador: z.string().optional(),
-    memoriaRam: z.string().optional(),
-    armazenamento: z.string().optional(),
-    tipoArmazenamento: z.enum(["SSD", "HDD", "NVMe", "RAID"]).optional(),
-    placaVideo: z.string().optional(),
-    sistemaOperacional: z.string().optional(),
-    portas: z.string().optional(),
-    garantiaAte: z.string().optional(),
-  }).optional(),
+  especificacoes: z
+    .object({
+      processador: z.string().optional(),
+      memoriaRam: z.string().optional(),
+      armazenamento: z.string().optional(),
+      tipoArmazenamento: z.enum(['SSD', 'HDD', 'NVMe', 'RAID']).optional(),
+      placaVideo: z.string().optional(),
+      sistemaOperacional: z.string().optional(),
+      portas: z.string().optional(),
+      garantiaAte: z.string().optional(),
+    })
+    .optional(),
 });
 
 type AssetFormData = z.infer<typeof assetSchema>;
 
-const DEFAULT_CATEGORY: AssetCategory = "notebook";
-const DEFAULT_STATUS: AssetStatus = "ativo";
+const DEFAULT_CATEGORY: AssetCategory = 'notebook';
+const DEFAULT_STATUS: AssetStatus = 'ativo';
 
 const AssetForm = () => {
   const { id } = useParams();
@@ -76,15 +90,15 @@ const AssetForm = () => {
   const form = useForm<AssetFormData>({
     resolver: zodResolver(assetSchema),
     defaultValues: {
-      nome: "",
+      nome: '',
       categoria: DEFAULT_CATEGORY,
-      numeroSerie: "",
-      dataCompra: new Date().toISOString().split("T")[0],
+      numeroSerie: '',
+      dataCompra: new Date().toISOString().split('T')[0],
       valor: 0,
-      localizacao: "",
-      responsavel: "",
+      localizacao: '',
+      responsavel: '',
       status: DEFAULT_STATUS,
-      descricao: "",
+      descricao: '',
       especificacoes: {},
     },
   });
@@ -100,16 +114,16 @@ const AssetForm = () => {
         localizacao: existingAsset.localizacao,
         responsavel: existingAsset.responsavel,
         status: existingAsset.status,
-        descricao: existingAsset.descricao ?? "",
+        descricao: existingAsset.descricao ?? '',
         especificacoes: existingAsset.especificacoes ?? {},
       });
-      
+
       // Atualiza o moneyFormat com o valor existente
       moneyFormat.setRawValue(existingAsset.valor);
     }
   }, [existingAsset, form, moneyFormat]);
 
-  const categoria = form.watch("categoria");
+  const categoria = form.watch('categoria');
 
   // Clean specifications by removing empty values
   const cleanSpecifications = (specs: Record<string, any> | undefined) => {
@@ -130,7 +144,7 @@ const AssetForm = () => {
       valor: valor,
       localizacao: data.localizacao,
       responsavel: data.responsavel,
-      responsavel_id: user?.id,  // ✅ Map current user ID to responsavel_id
+      responsavel_id: user?.id, // ✅ Map current user ID to responsavel_id
       status: data.status,
       descricao: data.descricao ?? undefined,
       especificacoes: cleanSpecifications(data.especificacoes),
@@ -150,39 +164,39 @@ const AssetForm = () => {
         const success = await updateAsset(existingAsset.id, assetData);
         if (success) {
           toast({
-            title: "Sucesso",
-            description: "Ativo atualizado com sucesso.",
+            title: 'Sucesso',
+            description: 'Ativo atualizado com sucesso.',
           });
-          navigate("/assets");
+          navigate('/assets');
         } else {
           toast({
-            title: "Erro",
-            description: "Falha ao atualizar o ativo.",
-            variant: "destructive",
+            title: 'Erro',
+            description: 'Falha ao atualizar o ativo.',
+            variant: 'destructive',
           });
         }
       } else {
         const result = await addAsset(assetData);
         if (result) {
           toast({
-            title: "Sucesso",
-            description: "Ativo cadastrado com sucesso.",
+            title: 'Sucesso',
+            description: 'Ativo cadastrado com sucesso.',
           });
-          navigate("/assets");
+          navigate('/assets');
         } else {
           toast({
-            title: "Erro",
-            description: "Falha ao cadastrar o ativo.",
-            variant: "destructive",
+            title: 'Erro',
+            description: 'Falha ao cadastrar o ativo.',
+            variant: 'destructive',
           });
         }
       }
     } catch (error) {
       console.error('Form submission error:', error);
       toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao salvar o ativo.",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'Ocorreu um erro ao salvar o ativo.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -190,35 +204,35 @@ const AssetForm = () => {
   };
 
   const statusOptions: { value: AssetStatus; label: string }[] = [
-    { value: "ativo", label: "Ativo" },
-    { value: "inativo", label: "Inativo" },
-    { value: "manutencao", label: "Em Manutenção" },
-    { value: "arquivado", label: "Arquivado" },
+    { value: 'ativo', label: 'Ativo' },
+    { value: 'inativo', label: 'Inativo' },
+    { value: 'manutencao', label: 'Em Manutenção' },
+    { value: 'arquivado', label: 'Arquivado' },
   ];
 
   const categoryOptions: { value: AssetCategory; label: string }[] = [
-    { value: "notebook", label: "Notebook" },
-    { value: "desktop", label: "Desktop" },
-    { value: "servidor", label: "Servidor" },
-    { value: "monitor", label: "Monitor" },
-    { value: "impressora", label: "Impressora" },
-    { value: "rede", label: "Equipamento de Rede" },
-    { value: "periferico", label: "Periférico" },
-    { value: "outros", label: "Outros" },
+    { value: 'notebook', label: 'Notebook' },
+    { value: 'desktop', label: 'Desktop' },
+    { value: 'servidor', label: 'Servidor' },
+    { value: 'monitor', label: 'Monitor' },
+    { value: 'impressora', label: 'Impressora' },
+    { value: 'rede', label: 'Equipamento de Rede' },
+    { value: 'periferico', label: 'Periférico' },
+    { value: 'outros', label: 'Outros' },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/assets")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <PageHeader
-          title={isEditing ? "Editar Ativo" : "Novo Ativo"}
+          title={isEditing ? 'Editar Ativo' : 'Novo Ativo'}
           description={
             isEditing
-              ? "Atualize as informações do ativo"
-              : "Preencha os dados para cadastrar um novo ativo"
+              ? 'Atualize as informações do ativo'
+              : 'Preencha os dados para cadastrar um novo ativo'
           }
         />
       </div>
@@ -413,16 +427,12 @@ const AssetForm = () => {
               <HardwareSpecsForm form={form} categoria={categoria} />
 
               <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/assets")}
-                >
+                <Button type="button" variant="outline" onClick={() => navigate('/assets')}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoading}>
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Salvando..." : isEditing ? "Atualizar" : "Salvar"}
+                  {isLoading ? 'Salvando...' : isEditing ? 'Atualizar' : 'Salvar'}
                 </Button>
               </div>
             </form>

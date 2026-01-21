@@ -1,11 +1,29 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MaintenanceTask, MaintenancePriority, MaintenanceStatus, priorityLabels, maintenanceStatusLabels } from '@/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  MaintenanceTask,
+  MaintenancePriority,
+  MaintenanceStatus,
+  priorityLabels,
+  maintenanceStatusLabels,
+} from '@/types';
 
 interface MaintenanceCardDialogProps {
   task: MaintenanceTask;
@@ -15,7 +33,13 @@ interface MaintenanceCardDialogProps {
   canEdit: boolean;
 }
 
-export function MaintenanceCardDialog({ task, open, onOpenChange, onSave, canEdit }: MaintenanceCardDialogProps) {
+export function MaintenanceCardDialog({
+  task,
+  open,
+  onOpenChange,
+  onSave,
+  canEdit,
+}: MaintenanceCardDialogProps) {
   const [localManutencionLocal, setLocalManutencionLocal] = useState(task.localManutencao || '');
   const [situacaoEquipamento, setSituacaoEquipamento] = useState(task.situacaoEquipamento || '');
   const [observacao, setObservacao] = useState(task.observacao || '');
@@ -52,15 +76,21 @@ export function MaintenanceCardDialog({ task, open, onOpenChange, onSave, canEdi
             </div>
             <div>
               <span className="text-muted-foreground">Dias em manutenção:</span>
-              <p className="font-medium text-amber-600">{diasEmManutencao > 0 ? diasEmManutencao : 0} dias</p>
+              <p className="font-medium text-amber-600">
+                {diasEmManutencao > 0 ? diasEmManutencao : 0} dias
+              </p>
             </div>
             <div>
               <span className="text-muted-foreground">Data Agendada:</span>
-              <p className="font-medium">{new Date(task.dataAgendada).toLocaleDateString('pt-BR')}</p>
+              <p className="font-medium">
+                {new Date(task.dataAgendada).toLocaleDateString('pt-BR')}
+              </p>
             </div>
             <div>
               <span className="text-muted-foreground">Última Atualização:</span>
-              <p className="font-medium">{new Date(task.dataAtualizacao).toLocaleDateString('pt-BR')}</p>
+              <p className="font-medium">
+                {new Date(task.dataAtualizacao).toLocaleDateString('pt-BR')}
+              </p>
             </div>
           </div>
 
@@ -74,13 +104,18 @@ export function MaintenanceCardDialog({ task, open, onOpenChange, onSave, canEdi
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Prioridade</Label>
-                  <Select value={prioridade} onValueChange={(v) => setPrioridade(v as MaintenancePriority)}>
+                  <Select
+                    value={prioridade}
+                    onValueChange={(v) => setPrioridade(v as MaintenancePriority)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(priorityLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -94,7 +129,9 @@ export function MaintenanceCardDialog({ task, open, onOpenChange, onSave, canEdi
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(maintenanceStatusLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -157,9 +194,7 @@ export function MaintenanceCardDialog({ task, open, onOpenChange, onSave, canEdi
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {canEdit ? 'Cancelar' : 'Fechar'}
           </Button>
-          {canEdit && (
-            <Button onClick={handleSave}>Salvar</Button>
-          )}
+          {canEdit && <Button onClick={handleSave}>Salvar</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,48 +1,48 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, Edit, Trash2, Building2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Edit, Trash2, Building2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { useTickets } from "@/contexts/TicketContext";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { useTickets } from '@/contexts/TicketContext';
+import { useToast } from '@/hooks/use-toast';
 import { TicketSupplier } from '@/hooks/useTicketSuppliers';
 
 export default function TicketSuppliers() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { suppliers, addSupplier, updateSupplier, deleteSupplier } = useTickets();
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<TicketSupplier | null>(null);
   const [formData, setFormData] = useState({
-    nome: "",
-    categoria: "fornecedor_ti" as TicketSupplier["categoria"],
+    nome: '',
+    categoria: 'fornecedor_ti' as TicketSupplier['categoria'],
     slaHoras: 24,
     ativo: true,
   });
 
   const openNewDialog = () => {
     setEditingSupplier(null);
-    setFormData({ nome: "", categoria: "fornecedor_ti", slaHoras: 24, ativo: true });
+    setFormData({ nome: '', categoria: 'fornecedor_ti', slaHoras: 24, ativo: true });
     setIsDialogOpen(true);
   };
 
@@ -59,16 +59,16 @@ export default function TicketSuppliers() {
 
   const handleSave = async () => {
     if (!formData.nome.trim()) {
-      toast({ title: "Erro", description: "Nome é obrigatório", variant: "destructive" });
+      toast({ title: 'Erro', description: 'Nome é obrigatório', variant: 'destructive' });
       return;
     }
 
     if (editingSupplier) {
       await updateSupplier(editingSupplier.id, formData);
-      toast({ title: "Fornecedor atualizado", description: `${formData.nome} foi atualizado.` });
+      toast({ title: 'Fornecedor atualizado', description: `${formData.nome} foi atualizado.` });
     } else {
       await addSupplier(formData);
-      toast({ title: "Fornecedor adicionado", description: `${formData.nome} foi adicionado.` });
+      toast({ title: 'Fornecedor adicionado', description: `${formData.nome} foi adicionado.` });
     }
     setIsDialogOpen(false);
   };
@@ -76,9 +76,13 @@ export default function TicketSuppliers() {
   const handleDelete = async (supplier: { id: string; nome: string }) => {
     const success = await deleteSupplier(supplier.id);
     if (success) {
-      toast({ title: "Fornecedor removido", description: `${supplier.nome} foi removido.` });
+      toast({ title: 'Fornecedor removido', description: `${supplier.nome} foi removido.` });
     } else {
-      toast({ title: "Erro", description: "Não foi possível remover o fornecedor.", variant: "destructive" });
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível remover o fornecedor.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -89,11 +93,14 @@ export default function TicketSuppliers() {
     outro: 'Outro',
   };
 
-  const groupedSuppliers = suppliers.reduce((acc, s) => {
-    if (!acc[s.categoria]) acc[s.categoria] = [];
-    acc[s.categoria].push(s);
-    return acc;
-  }, {} as Record<string, TicketSupplier[]>);
+  const groupedSuppliers = suppliers.reduce(
+    (acc, s) => {
+      if (!acc[s.categoria]) acc[s.categoria] = [];
+      acc[s.categoria].push(s);
+      return acc;
+    },
+    {} as Record<string, TicketSupplier[]>
+  );
 
   return (
     <div className="space-y-6">
@@ -101,9 +108,9 @@ export default function TicketSuppliers() {
         title="Fornecedores de Chamados"
         description="Gerencie os fornecedores disponíveis para chamados de suporte"
         breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Configurações", href: "/settings" },
-          { label: "Fornecedores" },
+          { label: 'Dashboard', href: '/' },
+          { label: 'Configurações', href: '/settings' },
+          { label: 'Fornecedores' },
         ]}
         actions={
           <Button onClick={openNewDialog}>
@@ -151,7 +158,7 @@ export default function TicketSuppliers() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingSupplier ? "Editar Fornecedor" : "Novo Fornecedor"}</DialogTitle>
+            <DialogTitle>{editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -166,14 +173,18 @@ export default function TicketSuppliers() {
               <Label>Categoria</Label>
               <Select
                 value={formData.categoria}
-                onValueChange={(v) => setFormData({ ...formData, categoria: v as typeof formData.categoria })}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, categoria: v as typeof formData.categoria })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(supplierCategoryLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -183,7 +194,9 @@ export default function TicketSuppliers() {
               <Input
                 type="number"
                 value={formData.slaHoras}
-                onChange={(e) => setFormData({ ...formData, slaHoras: parseInt(e.target.value) || 24 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, slaHoras: parseInt(e.target.value) || 24 })
+                }
               />
             </div>
             <div className="flex items-center gap-2">
@@ -195,7 +208,9 @@ export default function TicketSuppliers() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancelar
+            </Button>
             <Button onClick={handleSave}>Salvar</Button>
           </DialogFooter>
         </DialogContent>

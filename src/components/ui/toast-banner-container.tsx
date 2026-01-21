@@ -10,17 +10,8 @@ export function ToastBannerContainer() {
   if (!activeBanner) return null;
 
   return (
-    <div
-      role="region"
-      aria-label="Notificações"
-      aria-live="polite"
-      style={{ zIndex: 9999 }}
-    >
-      <ToastBanner
-        key={activeBanner.id}
-        toast={activeBanner}
-        onClose={removeToast}
-      />
+    <div role="region" aria-label="Notificações" aria-live="polite" style={{ zIndex: 9999 }}>
+      <ToastBanner key={activeBanner.id} toast={activeBanner} onClose={removeToast} />
     </div>
   );
 }

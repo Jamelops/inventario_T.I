@@ -31,9 +31,7 @@ export function DashboardCustomizer({ widgets, onUpdateWidgets }: DashboardCusto
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleToggleVisibility = (id: string) => {
-    setLocalWidgets(prev =>
-      prev.map(w => (w.id === id ? { ...w, visible: !w.visible } : w))
-    );
+    setLocalWidgets((prev) => prev.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)));
   };
 
   const handleDragStart = (index: number) => {

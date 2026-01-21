@@ -1,21 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import {
-  Plus,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Wifi,
-  Laptop,
-  Building2,
-  Download,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Plus, Search, Filter, Eye, Edit, Wifi, Laptop, Building2, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -23,34 +13,34 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
-import { SLAIndicator } from "@/components/tickets/SLAIndicator";
-import { useTickets } from "@/contexts/TicketContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/useToast";
+} from '@/components/ui/dropdown-menu';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { TicketStatusBadge, TicketPriorityBadge } from '@/components/tickets/TicketStatusBadge';
+import { SLAIndicator } from '@/components/tickets/SLAIndicator';
+import { useTickets } from '@/contexts/TicketContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/useToast';
 import {
   Ticket,
   TicketStatus,
   TicketPriority,
   ticketStatusLabels,
   ticketPriorityLabels,
-} from "@/types/tickets";
-import { exportToExcel, formatDateTime, ExportColumn } from "@/lib/export-to-excel";
+} from '@/types/tickets';
+import { exportToExcel, formatDateTime, ExportColumn } from '@/lib/export-to-excel';
 
 export default function Tickets() {
   const navigate = useNavigate();
@@ -58,12 +48,12 @@ export default function Tickets() {
   const { profile } = useAuth();
   const toast = useToast();
 
-  const [search, setSearch] = useState("");
-  const [filterSupplier, setFilterSupplier] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [search, setSearch] = useState('');
+  const [filterSupplier, setFilterSupplier] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
 
-  const activeSuppliers = (suppliers || []).filter(s => s?.ativo);
+  const activeSuppliers = (suppliers || []).filter((s) => s?.ativo);
 
   const filteredTickets = (tickets || []).filter((ticket) => {
     const matchesSearch =
@@ -71,9 +61,9 @@ export default function Tickets() {
       ticket.id.toLowerCase().includes(search.toLowerCase()) ||
       (ticket.protocoloExterno?.toLowerCase().includes(search.toLowerCase()) ?? false);
 
-    const matchesSupplier = filterSupplier === "all" || ticket.fornecedorId === filterSupplier;
-    const matchesStatus = filterStatus === "all" || ticket.status === filterStatus;
-    const matchesPriority = filterPriority === "all" || ticket.prioridade === filterPriority;
+    const matchesSupplier = filterSupplier === 'all' || ticket.fornecedorId === filterSupplier;
+    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
+    const matchesPriority = filterPriority === 'all' || ticket.prioridade === filterPriority;
 
     return matchesSearch && matchesSupplier && matchesStatus && matchesPriority;
   });
@@ -87,13 +77,18 @@ export default function Tickets() {
       toast.error('Erro ao identificar o usuário');
       return;
     }
-    await changeTicketStatus(ticketId, newStatus, profile?.user_id || '', profile?.username || 'Usuário');
+    await changeTicketStatus(
+      ticketId,
+      newStatus,
+      profile?.user_id || '',
+      profile?.username || 'Usuário'
+    );
   };
 
   const getSupplierIcon = (fornecedorId: string) => {
     const supplier = getSupplierById?.(fornecedorId);
     if (!supplier) return <Laptop className="h-4 w-4 text-muted-foreground" />;
-    
+
     if (supplier.categoria === 'operadora') {
       return <Wifi className="h-4 w-4 text-blue-500" />;
     }
@@ -112,8 +107,16 @@ export default function Tickets() {
       { header: 'ID', key: 'id' },
       { header: 'Título', key: 'titulo' },
       { header: 'Fornecedor', key: 'fornecedorId', format: (v) => getSupplierName(v) },
-      { header: 'Status', key: 'status', format: (v) => ticketStatusLabels[v as TicketStatus] || v },
-      { header: 'Prioridade', key: 'prioridade', format: (v) => ticketPriorityLabels[v as TicketPriority] || v },
+      {
+        header: 'Status',
+        key: 'status',
+        format: (v) => ticketStatusLabels[v as TicketStatus] || v,
+      },
+      {
+        header: 'Prioridade',
+        key: 'prioridade',
+        format: (v) => ticketPriorityLabels[v as TicketPriority] || v,
+      },
       { header: 'SLA', key: 'slaDeadline', format: (v) => formatDateTime(v) },
       { header: 'Criado em', key: 'dataCriacao', format: (v) => formatDateTime(v) },
     ];
@@ -168,26 +171,14 @@ export default function Tickets() {
       <PageHeader
         title="Chamados de Suporte"
         description="Gerencie os chamados de suporte com operadoras e fornecedores"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Chamados" },
-        ]}
+        breadcrumbs={[{ label: 'Dashboard', href: '/' }, { label: 'Chamados' }]}
         actions={
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExportToExcel}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
               <Download className="w-4 h-4" />
               Exportar para Excel
             </Button>
-            <Button 
-              size="sm"
-              onClick={() => navigate("/tickets/new")}
-              className="gap-2"
-            >
+            <Button size="sm" onClick={() => navigate('/tickets/new')} className="gap-2">
               <Plus className="h-4 w-4" />
               Novo Chamado
             </Button>
@@ -263,7 +254,8 @@ export default function Tickets() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">
-            {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''} encontrado{filteredTickets.length !== 1 ? 's' : ''}
+            {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''} encontrado
+            {filteredTickets.length !== 1 ? 's' : ''}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -320,7 +312,7 @@ export default function Tickets() {
                       <SLAIndicator slaDeadline={ticket.slaDeadline} status={ticket.status} />
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {format(new Date(ticket.dataCriacao), "dd/MM/yyyy", { locale: ptBR })}
+                      {format(new Date(ticket.dataCriacao), 'dd/MM/yyyy', { locale: ptBR })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
@@ -356,13 +348,9 @@ export default function Tickets() {
           {/* Mobile Cards */}
           <div className="md:hidden">
             {sortedTickets.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">
-                Nenhum chamado encontrado.
-              </p>
+              <p className="text-center py-8 text-muted-foreground">Nenhum chamado encontrado.</p>
             ) : (
-              sortedTickets.map((ticket) => (
-                <TicketCard key={ticket.id} ticket={ticket} />
-              ))
+              sortedTickets.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)
             )}
           </div>
         </CardContent>

@@ -9,7 +9,7 @@ interface HardwareSpecsDisplayProps {
 
 export function HardwareSpecsDisplay({ specs, categoria }: HardwareSpecsDisplayProps) {
   const showSpecs = ['notebook', 'desktop', 'servidor'].includes(categoria);
-  
+
   if (!showSpecs || !specs) {
     return null;
   }
@@ -23,7 +23,7 @@ export function HardwareSpecsDisplay({ specs, categoria }: HardwareSpecsDisplayP
     { icon: Monitor, label: 'Sistema Operacional', value: specs.sistemaOperacional },
     { icon: Server, label: 'Portas', value: specs.portas },
     { icon: Calendar, label: 'Garantia até', value: specs.garantiaAte },
-  ].filter(item => item.value);
+  ].filter((item) => item.value);
 
   if (specItems.length === 0) {
     return null;

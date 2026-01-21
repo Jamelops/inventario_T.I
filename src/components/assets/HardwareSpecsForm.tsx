@@ -1,6 +1,12 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cpu } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
@@ -12,7 +18,7 @@ interface HardwareSpecsFormProps {
 
 export function HardwareSpecsForm({ form, categoria }: HardwareSpecsFormProps) {
   const showSpecs = ['notebook', 'desktop', 'servidor'].includes(categoria);
-  
+
   if (!showSpecs) {
     return null;
   }

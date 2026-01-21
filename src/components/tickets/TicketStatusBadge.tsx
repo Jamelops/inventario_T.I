@@ -1,6 +1,11 @@
-import { Badge } from "@/components/ui/badge";
-import { TicketStatus, TicketPriority, ticketStatusLabels, ticketPriorityLabels } from "@/types/tickets";
-import { cn } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import {
+  TicketStatus,
+  TicketPriority,
+  ticketStatusLabels,
+  ticketPriorityLabels,
+} from '@/types/tickets';
+import { cn } from '@/lib/utils';
 
 interface TicketStatusBadgeProps {
   status: TicketStatus;

@@ -1,7 +1,15 @@
 // Tipos principais do sistema de gerenciamento de ativos
 
 export type AssetStatus = 'ativo' | 'inativo' | 'manutencao' | 'arquivado';
-export type AssetCategory = 'notebook' | 'desktop' | 'servidor' | 'monitor' | 'impressora' | 'rede' | 'periferico' | 'outros';
+export type AssetCategory =
+  | 'notebook'
+  | 'desktop'
+  | 'servidor'
+  | 'monitor'
+  | 'impressora'
+  | 'rede'
+  | 'periferico'
+  | 'outros';
 export type LicenseStatus = 'ativa' | 'vencendo' | 'vencida' | 'cancelada';
 export type LicenseType = 'perpetua' | 'assinatura' | 'volume' | 'oem';
 export type MaintenancePriority = 'alta' | 'media' | 'baixa';

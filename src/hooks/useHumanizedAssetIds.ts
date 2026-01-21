@@ -16,16 +16,16 @@ interface HumanizedIdMap {
 
 // Mapa de categorias para prefixos humanizados
 const CATEGORY_PREFIXES: Record<string, string> = {
-  'notebook': 'NB',      // Notebook
-  'desktop': 'DT',       // Desktop
-  'servidor': 'SRV',     // Servidor
-  'monitor': 'MON',      // Monitor
-  'teclado': 'KBD',      // Keyboard
-  'mouse': 'MSE',        // Mouse
-  'impressora': 'PRT',   // Printer
-  'router': 'RTR',       // Router
-  'switch': 'SWT',       // Switch
-  'outro': 'OTH',        // Other
+  notebook: 'NB', // Notebook
+  desktop: 'DT', // Desktop
+  servidor: 'SRV', // Servidor
+  monitor: 'MON', // Monitor
+  teclado: 'KBD', // Keyboard
+  mouse: 'MSE', // Mouse
+  impressora: 'PRT', // Printer
+  router: 'RTR', // Router
+  switch: 'SWT', // Switch
+  outro: 'OTH', // Other
 };
 
 export const useHumanizedAssetIds = () => {
@@ -45,22 +45,25 @@ export const useHumanizedAssetIds = () => {
   /**
    * Calcula o próximo número sequencial para uma categoria
    */
-  const getNextSequenceNumber = useCallback((category: string): number => {
-    const assetsInCategory = assets.filter(a => a.categoria === category);
-    const humanizedIds = assetsInCategory
-      .map(a => a.humanizedId || '')
-      .filter(id => id.startsWith(CATEGORY_PREFIXES[category] || CATEGORY_PREFIXES['outro']));
-    
-    if (humanizedIds.length === 0) return 1;
-    
-    // Extrai números dos IDs humanizados
-    const numbers = humanizedIds
-      .map(id => parseInt(id.replace(/[A-Z]/g, ''), 10))
-      .filter(n => !isNaN(n))
-      .sort((a, b) => b - a);
-    
-    return numbers.length > 0 ? numbers[0] + 1 : 1;
-  }, [assets]);
+  const getNextSequenceNumber = useCallback(
+    (category: string): number => {
+      const assetsInCategory = assets.filter((a) => a.categoria === category);
+      const humanizedIds = assetsInCategory
+        .map((a) => a.humanizedId || '')
+        .filter((id) => id.startsWith(CATEGORY_PREFIXES[category] || CATEGORY_PREFIXES['outro']));
+
+      if (humanizedIds.length === 0) return 1;
+
+      // Extrai números dos IDs humanizados
+      const numbers = humanizedIds
+        .map((id) => parseInt(id.replace(/[A-Z]/g, ''), 10))
+        .filter((n) => !isNaN(n))
+        .sort((a, b) => b - a);
+
+      return numbers.length > 0 ? numbers[0] + 1 : 1;
+    },
+    [assets]
+  );
 
   /**
    * Gera IDs humanizados para todos os ativos
@@ -71,21 +74,21 @@ export const useHumanizedAssetIds = () => {
     const sequenceCounters: Record<string, number> = {};
 
     // Inicializar contadores
-    Object.keys(CATEGORY_PREFIXES).forEach(category => {
+    Object.keys(CATEGORY_PREFIXES).forEach((category) => {
       sequenceCounters[category] = 1;
     });
 
-    assets.forEach(asset => {
+    assets.forEach((asset) => {
       const category = asset.categoria;
       const sequence = sequenceCounters[category] || 1;
       const humanizedId = generateHumanizedId(category, sequence);
-      
+
       idMap[asset.id] = {
         humanizedId,
         category,
         sequence: sequence.toString(),
       };
-      
+
       sequenceCounters[category]++;
     });
 
@@ -95,24 +98,27 @@ export const useHumanizedAssetIds = () => {
   /**
    * Busca o ID humanizado de um ativo pelo ID interno
    */
-  const getHumanizedId = useCallback((assetId: string): string => {
-    const asset = assets.find(a => a.id === assetId);
-    return asset?.humanizedId || 'N/A';
-  }, [assets]);
+  const getHumanizedId = useCallback(
+    (assetId: string): string => {
+      const asset = assets.find((a) => a.id === assetId);
+      return asset?.humanizedId || 'N/A';
+    },
+    [assets]
+  );
 
   /**
    * Retorna estatísticas de IDs humanizados por categoria
    */
   const getStatsByCategory = useMemo(() => {
     const stats: Record<string, { count: number; ids: string[] }> = {};
-    
-    Object.keys(CATEGORY_PREFIXES).forEach(category => {
-      const categoryAssets = assets.filter(a => a.categoria === category);
+
+    Object.keys(CATEGORY_PREFIXES).forEach((category) => {
+      const categoryAssets = assets.filter((a) => a.categoria === category);
       stats[category] = {
         count: categoryAssets.length,
         ids: categoryAssets
-          .map(a => a.humanizedId || '')
-          .filter(id => id.length > 0)
+          .map((a) => a.humanizedId || '')
+          .filter((id) => id.length > 0)
           .sort(),
       };
     });
@@ -135,7 +141,7 @@ export const useHumanizedAssetIds = () => {
       for (const [assetId, data] of Object.entries(idMap)) {
         const { error } = await supabase
           .from('assets')
-          .update({ 
+          .update({
             humanized_id: data.humanizedId,
             updated_at: new Date().toISOString(),
           })

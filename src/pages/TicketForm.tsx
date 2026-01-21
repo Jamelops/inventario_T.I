@@ -1,13 +1,13 @@
-import { useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { ArrowLeft, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ArrowLeft, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -15,40 +15,57 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
-import { useTickets } from "@/contexts/TicketContext";
-import { useData } from "@/contexts/DataContext";
-import { useAuth } from "@/contexts/AuthContext";
+} from '@/components/ui/select';
+import { PageHeader } from '@/components/shared/PageHeader';
+import {
+  RequiredFieldIndicator,
+  RequiredFieldsHint,
+} from '@/components/shared/RequiredFieldIndicator';
+import { useTickets } from '@/contexts/TicketContext';
+import { useData } from '@/contexts/DataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   TicketType,
   TicketPriority,
   ticketTypeLabels,
   ticketPriorityLabels,
   supplierCategoryLabels,
-} from "@/types/tickets";
-import { addHours } from "date-fns";
+} from '@/types/tickets';
+import { addHours } from 'date-fns';
 
 const ticketSchema = z.object({
-  titulo: z.string().min(3, "Título deve ter no mínimo 3 caracteres").max(200, "Título deve ter no máximo 200 caracteres"),
-  descricao: z.string().min(10, "Descrição deve ter no mínimo 10 caracteres").max(2000, "Descrição deve ter no máximo 2000 caracteres"),
-  fornecedorId: z.string().min(1, "Selecione um fornecedor"),
-  tipo: z.string().min(1, "Selecione um tipo"),
-  prioridade: z.string().min(1, "Selecione uma prioridade"),
-  unidade: z.string().min(1, "Unidade é obrigatória").max(100, "Unidade deve ter no máximo 100 caracteres"),
+  titulo: z
+    .string()
+    .min(3, 'Título deve ter no mínimo 3 caracteres')
+    .max(200, 'Título deve ter no máximo 200 caracteres'),
+  descricao: z
+    .string()
+    .min(10, 'Descrição deve ter no mínimo 10 caracteres')
+    .max(2000, 'Descrição deve ter no máximo 2000 caracteres'),
+  fornecedorId: z.string().min(1, 'Selecione um fornecedor'),
+  tipo: z.string().min(1, 'Selecione um tipo'),
+  prioridade: z.string().min(1, 'Selecione uma prioridade'),
+  unidade: z
+    .string()
+    .min(1, 'Unidade é obrigatória')
+    .max(100, 'Unidade deve ter no máximo 100 caracteres'),
   assetId: z.string().optional(),
-  protocoloExterno: z.string().max(100, "Protocolo deve ter no máximo 100 caracteres").optional(),
-  contatoNome: z.string().max(100, "Nome deve ter no máximo 100 caracteres").optional(),
-  contatoTelefone: z.string().max(20, "Telefone deve ter no máximo 20 caracteres").optional(),
-  contatoEmail: z.string().email("E-mail inválido").max(100, "E-mail deve ter no máximo 100 caracteres").optional().or(z.literal('')),
+  protocoloExterno: z.string().max(100, 'Protocolo deve ter no máximo 100 caracteres').optional(),
+  contatoNome: z.string().max(100, 'Nome deve ter no máximo 100 caracteres').optional(),
+  contatoTelefone: z.string().max(20, 'Telefone deve ter no máximo 20 caracteres').optional(),
+  contatoEmail: z
+    .string()
+    .email('E-mail inválido')
+    .max(100, 'E-mail deve ter no máximo 100 caracteres')
+    .optional()
+    .or(z.literal('')),
 });
 
 type TicketFormData = z.infer<typeof ticketSchema>;
@@ -63,33 +80,36 @@ export default function TicketForm() {
 
   const isEditing = !!id;
   const existingTicket = isEditing ? getTicketById(id) : undefined;
-  const preselectedAssetId = searchParams.get("assetId");
+  const preselectedAssetId = searchParams.get('assetId');
 
-  const activeSuppliers = suppliers.filter(s => s.ativo);
+  const activeSuppliers = suppliers.filter((s) => s.ativo);
 
   // Group suppliers by category
-  const suppliersByCategory = activeSuppliers.reduce((acc, supplier) => {
-    if (!acc[supplier.categoria]) {
-      acc[supplier.categoria] = [];
-    }
-    acc[supplier.categoria].push(supplier);
-    return acc;
-  }, {} as Record<string, typeof activeSuppliers>);
+  const suppliersByCategory = activeSuppliers.reduce(
+    (acc, supplier) => {
+      if (!acc[supplier.categoria]) {
+        acc[supplier.categoria] = [];
+      }
+      acc[supplier.categoria].push(supplier);
+      return acc;
+    },
+    {} as Record<string, typeof activeSuppliers>
+  );
 
   const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
-      titulo: "",
-      descricao: "",
-      fornecedorId: "",
-      tipo: "",
-      prioridade: "media",
-      unidade: "",
-      assetId: preselectedAssetId || "",
-      protocoloExterno: "",
-      contatoNome: "",
-      contatoTelefone: "",
-      contatoEmail: "",
+      titulo: '',
+      descricao: '',
+      fornecedorId: '',
+      tipo: '',
+      prioridade: 'media',
+      unidade: '',
+      assetId: preselectedAssetId || '',
+      protocoloExterno: '',
+      contatoNome: '',
+      contatoTelefone: '',
+      contatoEmail: '',
     },
   });
 
@@ -102,11 +122,11 @@ export default function TicketForm() {
         tipo: existingTicket.tipo,
         prioridade: existingTicket.prioridade,
         unidade: existingTicket.unidade,
-        assetId: existingTicket.assetId || "",
-        protocoloExterno: existingTicket.protocoloExterno || "",
-        contatoNome: existingTicket.contatoFornecedor?.nome || "",
-        contatoTelefone: existingTicket.contatoFornecedor?.telefone || "",
-        contatoEmail: existingTicket.contatoFornecedor?.email || "",
+        assetId: existingTicket.assetId || '',
+        protocoloExterno: existingTicket.protocoloExterno || '',
+        contatoNome: existingTicket.contatoFornecedor?.nome || '',
+        contatoTelefone: existingTicket.contatoFornecedor?.telefone || '',
+        contatoEmail: existingTicket.contatoFornecedor?.email || '',
       });
     }
   }, [existingTicket, form]);
@@ -139,9 +159,9 @@ export default function TicketForm() {
               email: data.contatoEmail?.trim() || undefined,
             }
           : undefined,
-      responsavelId: profile?.user_id || "",
-      responsavelNome: profile?.username || "Usuário",
-      status: "aberto" as const,
+      responsavelId: profile?.user_id || '',
+      responsavelNome: profile?.username || 'Usuário',
+      status: 'aberto' as const,
       dataCriacao: isEditing && existingTicket ? existingTicket.dataCriacao : now,
       slaDeadline: isEditing && existingTicket ? existingTicket.slaDeadline : slaDeadline,
     };
@@ -159,21 +179,21 @@ export default function TicketForm() {
     }
   };
 
-  const selectedSupplierId = form.watch("fornecedorId");
+  const selectedSupplierId = form.watch('fornecedorId');
   const selectedSupplier = selectedSupplierId ? getSupplierById(selectedSupplierId) : null;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={isEditing ? "Editar Chamado" : "Novo Chamado"}
-        description={isEditing ? `Editando chamado ${id}` : "Registre um novo chamado de suporte"}
+        title={isEditing ? 'Editar Chamado' : 'Novo Chamado'}
+        description={isEditing ? `Editando chamado ${id}` : 'Registre um novo chamado de suporte'}
         breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Chamados", href: "/tickets" },
-          { label: isEditing ? "Editar" : "Novo" },
+          { label: 'Dashboard', href: '/' },
+          { label: 'Chamados', href: '/tickets' },
+          { label: isEditing ? 'Editar' : 'Novo' },
         ]}
         actions={
-          <Button variant="ghost" onClick={() => navigate("/tickets")}>
+          <Button variant="ghost" onClick={() => navigate('/tickets')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
@@ -202,7 +222,10 @@ export default function TicketForm() {
                         <RequiredFieldIndicator required={true} />
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Link de internet fora na filial Centro" {...field} />
+                        <Input
+                          placeholder="Ex: Link de internet fora na filial Centro"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -247,18 +270,24 @@ export default function TicketForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.entries(suppliersByCategory).map(([categoria, categorySuppliers]) => (
-                              <div key={categoria}>
-                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                                  {supplierCategoryLabels[categoria as keyof typeof supplierCategoryLabels]}
+                            {Object.entries(suppliersByCategory).map(
+                              ([categoria, categorySuppliers]) => (
+                                <div key={categoria}>
+                                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                                    {
+                                      supplierCategoryLabels[
+                                        categoria as keyof typeof supplierCategoryLabels
+                                      ]
+                                    }
+                                  </div>
+                                  {categorySuppliers.map((supplier) => (
+                                    <SelectItem key={supplier.id} value={supplier.id}>
+                                      {supplier.nome}
+                                    </SelectItem>
+                                  ))}
                                 </div>
-                                {categorySuppliers.map((supplier) => (
-                                  <SelectItem key={supplier.id} value={supplier.id}>
-                                    {supplier.nome}
-                                  </SelectItem>
-                                ))}
-                              </div>
-                            ))}
+                              )
+                            )}
                           </SelectContent>
                         </Select>
                         {selectedSupplier && (
@@ -351,9 +380,9 @@ export default function TicketForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ativo Relacionado</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
-                        value={field.value || "none"}
+                      <Select
+                        onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
+                        value={field.value || 'none'}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -449,12 +478,12 @@ export default function TicketForm() {
           </div>
 
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => navigate("/tickets")}>
+            <Button type="button" variant="outline" onClick={() => navigate('/tickets')}>
               Cancelar
             </Button>
             <Button type="submit">
               <Save className="h-4 w-4 mr-2" />
-              {isEditing ? "Atualizar Chamado" : "Criar Chamado"}
+              {isEditing ? 'Atualizar Chamado' : 'Criar Chamado'}
             </Button>
           </div>
         </form>

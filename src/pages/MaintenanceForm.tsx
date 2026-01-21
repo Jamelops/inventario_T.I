@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -14,34 +14,48 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useData } from "@/contexts/DataContext";
-import { useMaintenanceTasks } from "@/hooks/useMaintenanceTasks";
-import { useAuth } from "@/contexts/AuthContext";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
-import type { MaintenanceStatus, MaintenancePriority } from "@/types";
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useData } from '@/contexts/DataContext';
+import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
+import { useAuth } from '@/contexts/AuthContext';
+import { PageHeader } from '@/components/shared/PageHeader';
+import {
+  RequiredFieldIndicator,
+  RequiredFieldsHint,
+} from '@/components/shared/RequiredFieldIndicator';
+import type { MaintenanceStatus, MaintenancePriority } from '@/types';
 
 const maintenanceSchema = z.object({
-  assetIds: z.array(z.string()).min(1, "Selecione pelo menos um ativo"),
-  descricao: z.string().min(1, "Descrição é obrigatória").max(1000, "Descrição muito longa (máx 1000 caracteres)"),
-  prioridade: z.enum(["baixa", "media", "alta"]),
-  status: z.enum(["pendente", "em_andamento", "concluido", "arquivado"]),
-  responsavel: z.string().min(1, "Responsável é obrigatório").max(100, "Nome muito longo (máx 100 caracteres)"),
-  responsavelEmail: z.string().email("Email inválido").max(255, "Email muito longo (máx 255 caracteres)").optional().or(z.literal("")),
-  dataAgendada: z.string().min(1, "Data agendada é obrigatória"),
-  notas: z.string().max(2000, "Notas muito longas (máx 2000 caracteres)").optional(),
-  localManutencao: z.string().max(255, "Local muito longo (máx 255 caracteres)").optional(),
-  situacaoEquipamento: z.string().max(500, "Situação muito longa (máx 500 caracteres)").optional(),
-  observacao: z.string().max(2000, "Observação muito longa (máx 2000 caracteres)").optional(),
+  assetIds: z.array(z.string()).min(1, 'Selecione pelo menos um ativo'),
+  descricao: z
+    .string()
+    .min(1, 'Descrição é obrigatória')
+    .max(1000, 'Descrição muito longa (máx 1000 caracteres)'),
+  prioridade: z.enum(['baixa', 'media', 'alta']),
+  status: z.enum(['pendente', 'em_andamento', 'concluido', 'arquivado']),
+  responsavel: z
+    .string()
+    .min(1, 'Responsável é obrigatório')
+    .max(100, 'Nome muito longo (máx 100 caracteres)'),
+  responsavelEmail: z
+    .string()
+    .email('Email inválido')
+    .max(255, 'Email muito longo (máx 255 caracteres)')
+    .optional()
+    .or(z.literal('')),
+  dataAgendada: z.string().min(1, 'Data agendada é obrigatória'),
+  notas: z.string().max(2000, 'Notas muito longas (máx 2000 caracteres)').optional(),
+  localManutencao: z.string().max(255, 'Local muito longo (máx 255 caracteres)').optional(),
+  situacaoEquipamento: z.string().max(500, 'Situação muito longa (máx 500 caracteres)').optional(),
+  observacao: z.string().max(2000, 'Observação muito longa (máx 2000 caracteres)').optional(),
 });
 
 type MaintenanceFormData = z.infer<typeof maintenanceSchema>;
@@ -52,7 +66,14 @@ const MaintenanceForm = () => {
   const navigate = useNavigate();
   const { assets = [] } = useData();
   // O hook retorna: tasks, loading, addTask, updateTask, deleteTask, getTaskById, refetch
-  const { tasks = [], loading: tasksLoading, addTask, updateTask, deleteTask, getTaskById } = useMaintenanceTasks();
+  const {
+    tasks = [],
+    loading: tasksLoading,
+    addTask,
+    updateTask,
+    deleteTask,
+    getTaskById,
+  } = useMaintenanceTasks();
   const { profile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,16 +85,16 @@ const MaintenanceForm = () => {
     resolver: zodResolver(maintenanceSchema),
     defaultValues: {
       assetIds: [],
-      descricao: "",
-      prioridade: "media" as MaintenancePriority,
-      status: "pendente" as MaintenanceStatus,
-      responsavel: profile?.username || "",
-      responsavelEmail: profile?.email || "",
-      dataAgendada: new Date().toISOString().split("T")[0],
-      notas: "",
-      localManutencao: "",
-      situacaoEquipamento: "",
-      observacao: "",
+      descricao: '',
+      prioridade: 'media' as MaintenancePriority,
+      status: 'pendente' as MaintenanceStatus,
+      responsavel: profile?.username || '',
+      responsavelEmail: profile?.email || '',
+      dataAgendada: new Date().toISOString().split('T')[0],
+      notas: '',
+      localManutencao: '',
+      situacaoEquipamento: '',
+      observacao: '',
     },
   });
 
@@ -86,17 +107,17 @@ const MaintenanceForm = () => {
         prioridade: existingTask.prioridade,
         status: existingTask.status,
         responsavel: existingTask.responsavel,
-        responsavelEmail: existingTask.responsavelEmail || "",
+        responsavelEmail: existingTask.responsavelEmail || '',
         dataAgendada: existingTask.dataAgendada,
-        notas: existingTask.notas || "",
-        localManutencao: existingTask.localManutencao || "",
-        situacaoEquipamento: existingTask.situacaoEquipamento || "",
-        observacao: existingTask.observacao || "",
+        notas: existingTask.notas || '',
+        localManutencao: existingTask.localManutencao || '',
+        situacaoEquipamento: existingTask.situacaoEquipamento || '',
+        observacao: existingTask.observacao || '',
       });
     } else if (profile) {
       // Auto-fill com info do usuário atual para nova manutenção
-      form.setValue("responsavel", profile.username);
-      form.setValue("responsavelEmail", profile.email);
+      form.setValue('responsavel', profile.username);
+      form.setValue('responsavelEmail', profile.email);
     }
   }, [existingTask, profile, form]);
 
@@ -116,7 +137,7 @@ const MaintenanceForm = () => {
         const asset = assets.find((a) => a.id === data.assetIds[0]);
         const success = await updateTask(existingTask.id, {
           assetId: data.assetIds[0],
-          assetNome: asset?.nome || "Ativo desconhecido",
+          assetNome: asset?.nome || 'Ativo desconhecido',
           descricao: data.descricao,
           prioridade: data.prioridade,
           status: data.status,
@@ -128,7 +149,7 @@ const MaintenanceForm = () => {
           observacao: data.observacao || undefined,
         });
         if (success) {
-          navigate("/maintenance");
+          navigate('/maintenance');
         }
       } else {
         // Criar tarefa de manutenção para cada ativo selecionado
@@ -137,7 +158,7 @@ const MaintenanceForm = () => {
           const asset = assets.find((a) => a.id === assetId);
           const result = await addTask({
             assetId: assetId,
-            assetNome: asset?.nome || "Ativo desconhecido",
+            assetNome: asset?.nome || 'Ativo desconhecido',
             descricao: data.descricao,
             prioridade: data.prioridade,
             status: data.status,
@@ -152,41 +173,41 @@ const MaintenanceForm = () => {
           if (result) successCount++;
         }
         if (successCount > 0) {
-          navigate("/maintenance");
+          navigate('/maintenance');
         }
       }
     } catch (error) {
-      console.error("Error saving maintenance:", error);
+      console.error('Error saving maintenance:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const priorityOptions: { value: MaintenancePriority; label: string }[] = [
-    { value: "baixa", label: "Baixa" },
-    { value: "media", label: "Média" },
-    { value: "alta", label: "Alta" },
+    { value: 'baixa', label: 'Baixa' },
+    { value: 'media', label: 'Média' },
+    { value: 'alta', label: 'Alta' },
   ];
 
   const statusOptions: { value: MaintenanceStatus; label: string }[] = [
-    { value: "pendente", label: "Pendente" },
-    { value: "em_andamento", label: "Em Andamento" },
-    { value: "concluido", label: "Concluído" },
-    { value: "arquivado", label: "Arquivado" },
+    { value: 'pendente', label: 'Pendente' },
+    { value: 'em_andamento', label: 'Em Andamento' },
+    { value: 'concluido', label: 'Concluído' },
+    { value: 'arquivado', label: 'Arquivado' },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/maintenance")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/maintenance')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <PageHeader
-          title={isEditing ? "Editar Manutenção" : "Nova Manutenção"}
+          title={isEditing ? 'Editar Manutenção' : 'Nova Manutenção'}
           description={
             isEditing
-              ? "Atualize as informações da manutenção"
-              : "Preencha os dados para agendar uma nova manutenção"
+              ? 'Atualize as informações da manutenção'
+              : 'Preencha os dados para agendar uma nova manutenção'
           }
         />
       </div>
@@ -208,13 +229,13 @@ const MaintenanceForm = () => {
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
                       <FormLabel>
-                        {isEditing ? "Ativo" : "Ativos (selecione um ou mais)"}
+                        {isEditing ? 'Ativo' : 'Ativos (selecione um ou mais)'}
                         <RequiredFieldIndicator required={true} />
                       </FormLabel>
                       {isEditing ? (
-                        <Select 
-                          onValueChange={(value) => field.onChange([value])} 
-                          value={field.value[0] || ""}
+                        <Select
+                          onValueChange={(value) => field.onChange([value])}
+                          value={field.value[0] || ''}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -237,9 +258,9 @@ const MaintenanceForm = () => {
                               <label
                                 key={asset.id}
                                 className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
-                                  isSelected 
-                                    ? "bg-primary/10 border border-primary" 
-                                    : "hover:bg-muted border border-transparent"
+                                  isSelected
+                                    ? 'bg-primary/10 border border-primary'
+                                    : 'hover:bg-muted border border-transparent'
                                 }`}
                               >
                                 <input
@@ -249,14 +270,14 @@ const MaintenanceForm = () => {
                                     if (e.target.checked) {
                                       field.onChange([...field.value, asset.id]);
                                     } else {
-                                      field.onChange(field.value.filter((id: string) => id !== asset.id));
+                                      field.onChange(
+                                        field.value.filter((id: string) => id !== asset.id)
+                                      );
                                     }
                                   }}
                                   className="rounded"
                                 />
-                                <span className="text-sm truncate">
-                                  {asset.nome}
-                                </span>
+                                <span className="text-sm truncate">{asset.nome}</span>
                               </label>
                             );
                           })}
@@ -282,11 +303,7 @@ const MaintenanceForm = () => {
                         <RequiredFieldIndicator required={true} />
                       </FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          disabled 
-                          className="bg-muted"
-                        />
+                        <Input {...field} disabled className="bg-muted" />
                       </FormControl>
                       <p className="text-xs text-muted-foreground">
                         O responsável é preenchido automaticamente com seu usuário.
@@ -306,12 +323,7 @@ const MaintenanceForm = () => {
                         <RequiredFieldIndicator required={true} />
                       </FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          disabled 
-                          className="bg-muted" 
-                          type="email"
-                        />
+                        <Input {...field} disabled className="bg-muted" type="email" />
                       </FormControl>
                       <p className="text-xs text-muted-foreground">
                         O email é preenchido automaticamente com seu email de usuário.
@@ -485,12 +497,12 @@ const MaintenanceForm = () => {
               </div>
 
               <div className="flex justify-end gap-4">
-                <Button type="button" variant="outline" onClick={() => navigate("/maintenance")}>
+                <Button type="button" variant="outline" onClick={() => navigate('/maintenance')}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoading}>
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Salvando..." : isEditing ? "Atualizar" : "Criar Manutenção"}
+                  {isLoading ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar Manutenção'}
                 </Button>
               </div>
             </form>

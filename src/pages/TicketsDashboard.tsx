@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChart,
   Bar,
@@ -10,34 +10,25 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-} from "recharts";
-import {
-  Ticket,
-  AlertTriangle,
-  Clock,
-  Wifi,
-  Building2,
-  ChevronRight,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { KPICard } from "@/components/shared/KPICard";
-import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
-import { SLAIndicator } from "@/components/tickets/SLAIndicator";
-import { useTickets } from "@/contexts/TicketContext";
-import { ticketStatusLabels } from "@/types/tickets";
+} from 'recharts';
+import { Ticket, AlertTriangle, Clock, Wifi, Building2, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { KPICard } from '@/components/shared/KPICard';
+import { TicketStatusBadge, TicketPriorityBadge } from '@/components/tickets/TicketStatusBadge';
+import { SLAIndicator } from '@/components/tickets/SLAIndicator';
+import { useTickets } from '@/contexts/TicketContext';
+import { ticketStatusLabels } from '@/types/tickets';
 
-const COLORS = ["#3b82f6", "#22c55e", "#eab308", "#f97316", "#ef4444", "#8b5cf6"];
+const COLORS = ['#3b82f6', '#22c55e', '#eab308', '#f97316', '#ef4444', '#8b5cf6'];
 
 export default function TicketsDashboard() {
   const navigate = useNavigate();
   const { tickets, suppliers, getSupplierById } = useTickets();
 
   const stats = useMemo(() => {
-    const openTickets = tickets.filter(
-      (t) => t.status !== "resolvido" && t.status !== "encerrado"
-    );
+    const openTickets = tickets.filter((t) => t.status !== 'resolvido' && t.status !== 'encerrado');
     const operadoraTickets = openTickets.filter((t) => {
       const supplier = getSupplierById(t.fornecedorId);
       return supplier?.categoria === 'operadora';
@@ -47,7 +38,7 @@ export default function TicketsDashboard() {
       return supplier?.categoria === 'prodata';
     });
     const criticalTickets = openTickets.filter(
-      (t) => t.prioridade === "critica" || t.prioridade === "alta"
+      (t) => t.prioridade === 'critica' || t.prioridade === 'alta'
     );
 
     return {
@@ -80,7 +71,7 @@ export default function TicketsDashboard() {
   const criticalTickets = useMemo(() => {
     const now = new Date();
     return tickets
-      .filter((t) => t.status !== "resolvido" && t.status !== "encerrado")
+      .filter((t) => t.status !== 'resolvido' && t.status !== 'encerrado')
       .map((t) => ({
         ...t,
         isOverdue: new Date(t.slaDeadline) < now,
@@ -88,7 +79,7 @@ export default function TicketsDashboard() {
           (new Date(t.slaDeadline).getTime() - now.getTime()) / (1000 * 60 * 60)
         ),
       }))
-      .filter((t) => t.prioridade === "critica" || t.prioridade === "alta" || t.isOverdue)
+      .filter((t) => t.prioridade === 'critica' || t.prioridade === 'alta' || t.isOverdue)
       .sort((a, b) => a.hoursRemaining - b.hoursRemaining)
       .slice(0, 5);
   }, [tickets]);
@@ -99,9 +90,9 @@ export default function TicketsDashboard() {
         title="Dashboard de Chamados"
         description="Visão geral dos chamados de suporte"
         breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Chamados", href: "/tickets" },
-          { label: "Dashboard" },
+          { label: 'Dashboard', href: '/' },
+          { label: 'Chamados', href: '/tickets' },
+          { label: 'Dashboard' },
         ]}
       />
 
@@ -130,7 +121,7 @@ export default function TicketsDashboard() {
           value={stats.critical}
           icon={<AlertTriangle className="h-5 w-5" />}
           description="Prioridade alta ou crítica"
-          className={stats.critical > 0 ? "border-red-200 bg-red-50 dark:bg-red-950/20" : ""}
+          className={stats.critical > 0 ? 'border-red-200 bg-red-50 dark:bg-red-950/20' : ''}
         />
       </div>
 
@@ -152,9 +143,7 @@ export default function TicketsDashboard() {
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {supplierChartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -201,7 +190,7 @@ export default function TicketsDashboard() {
             <AlertTriangle className="h-5 w-5 text-red-500" />
             Chamados Críticos
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/tickets")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/tickets')}>
             Ver todos
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>

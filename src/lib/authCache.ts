@@ -52,7 +52,7 @@ class AuthCache {
         id,
         data,
         timestamp: Date.now(),
-        ttl
+        ttl,
       } as CachedAuthData);
 
       request.onerror = () => reject(request.error);
@@ -80,7 +80,7 @@ class AuthCache {
         // Check if cache is expired
         if (result.ttl && Date.now() - result.timestamp > result.ttl) {
           // Cache expired, delete it
-          this.delete(id).catch(err => console.error('Failed to delete expired cache:', err));
+          this.delete(id).catch((err) => console.error('Failed to delete expired cache:', err));
           resolve(null);
           return;
         }

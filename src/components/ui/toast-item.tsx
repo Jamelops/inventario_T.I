@@ -65,7 +65,7 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 50));
+        const newProgress = prev - 100 / (duration / 50);
         return newProgress > 0 ? newProgress : 0;
       });
     }, 50);
@@ -98,16 +98,12 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
       style={{ zIndex: 9999 }}
     >
       <div
-        className={cn(
-          'w-96 max-w-md rounded-lg border p-4 shadow-lg',
-          config.bg,
-          config.border
-        )}
+        className={cn('w-96 max-w-md rounded-lg border p-4 shadow-lg', config.bg, config.border)}
       >
         <div className="flex items-start gap-3">
           <IconComponent className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconColor)} />
           <div className="flex-1 min-w-0">
-            <p 
+            <p
               className={cn(
                 'text-sm font-medium break-words whitespace-pre-wrap',
                 config.textColor

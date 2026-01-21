@@ -13,8 +13,8 @@ type DbAssetUpdate = TablesUpdate<'assets'>;
 const dbToAsset = (dbAsset: DbAsset): Asset => ({
   id: dbAsset.id,
   nome: dbAsset.nome || '',
-  categoria: dbAsset.categoria as any || 'outros',
-  status: dbAsset.status as any || 'ativo',
+  categoria: (dbAsset.categoria as any) || 'outros',
+  status: (dbAsset.status as any) || 'ativo',
   numeroSerie: dbAsset.numero_serie || '',
   dataCompra: dbAsset.data_compra || '',
   valor: dbAsset.valor || 0,
@@ -29,7 +29,10 @@ const dbToAsset = (dbAsset: DbAsset): Asset => ({
 });
 
 // Convert application Asset to database insert type
-const assetToDbInsert = (asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualizacao'>, userId: string): DbAssetInsert => ({
+const assetToDbInsert = (
+  asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualizacao'>,
+  userId: string
+): DbAssetInsert => ({
   nome: asset.nome,
   categoria: asset.categoria,
   status: asset.status,
@@ -61,7 +64,10 @@ const assetToDbUpdate = (updates: Partial<Asset>): DbAssetUpdate => {
   if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao || null;
   if (updates.fornecedor !== undefined) dbUpdate.fornecedor = updates.fornecedor || null;
   if (updates.tags !== undefined) dbUpdate.tags = updates.tags || null;
-  if (updates.especificacoes !== undefined) dbUpdate.especificacoes = updates.especificacoes ? JSON.parse(JSON.stringify(updates.especificacoes)) : null;
+  if (updates.especificacoes !== undefined)
+    dbUpdate.especificacoes = updates.especificacoes
+      ? JSON.parse(JSON.stringify(updates.especificacoes))
+      : null;
 
   return dbUpdate;
 };
@@ -98,7 +104,9 @@ export function useAssets() {
     fetchAssets();
   }, [fetchAssets]);
 
-  const addAsset = async (asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualizacao'>): Promise<Asset | null> => {
+  const addAsset = async (
+    asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualizacao'>
+  ): Promise<Asset | null> => {
     if (!user) {
       toast.error('Usuário não autenticado');
       return null;
@@ -114,7 +122,7 @@ export function useAssets() {
       if (error) throw error;
 
       const newAsset = dbToAsset(data);
-      setAssets(prev => [newAsset, ...prev]);
+      setAssets((prev) => [newAsset, ...prev]);
       toast.success('Ativo criado com sucesso');
       return newAsset;
     } catch (error: any) {
@@ -126,18 +134,17 @@ export function useAssets() {
 
   const updateAsset = async (id: string, updates: Partial<Asset>): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('assets')
-        .update(assetToDbUpdate(updates))
-        .eq('id', id);
+      const { error } = await supabase.from('assets').update(assetToDbUpdate(updates)).eq('id', id);
 
       if (error) throw error;
 
-      setAssets(prev => prev.map(asset =>
-        asset.id === id
-          ? { ...asset, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
-          : asset
-      ));
+      setAssets((prev) =>
+        prev.map((asset) =>
+          asset.id === id
+            ? { ...asset, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
+            : asset
+        )
+      );
       toast.success('Ativo atualizado com sucesso');
       return true;
     } catch (error: any) {
@@ -149,14 +156,11 @@ export function useAssets() {
 
   const deleteAsset = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('assets')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('assets').delete().eq('id', id);
 
       if (error) throw error;
 
-      setAssets(prev => prev.filter(asset => asset.id !== id));
+      setAssets((prev) => prev.filter((asset) => asset.id !== id));
       toast.success('Ativo excluído com sucesso');
       return true;
     } catch (error: any) {
@@ -167,7 +171,7 @@ export function useAssets() {
   };
 
   const getAssetById = (id: string): Asset | undefined => {
-    return assets.find(asset => asset.id === id);
+    return assets.find((asset) => asset.id === id);
   };
 
   return {

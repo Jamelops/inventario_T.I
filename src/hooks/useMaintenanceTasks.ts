@@ -28,7 +28,10 @@ const dbToTask = (dbTask: DbTask): MaintenanceTask => ({
   dataAtualizacao: dbTask.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
 });
 
-const taskToDbInsert = (task: Omit<MaintenanceTask, 'id' | 'dataCriacao' | 'dataAtualizacao'>, userId: string): DbTaskInsert => ({
+const taskToDbInsert = (
+  task: Omit<MaintenanceTask, 'id' | 'dataCriacao' | 'dataAtualizacao'>,
+  userId: string
+): DbTaskInsert => ({
   asset_id: task.assetId || null,
   asset_nome: task.assetNome || null,
   descricao: task.descricao,
@@ -52,14 +55,17 @@ const taskToDbUpdate = (updates: Partial<MaintenanceTask>): DbTaskUpdate => {
   if (updates.assetNome !== undefined) dbUpdate.asset_nome = updates.assetNome || null;
   if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao;
   if (updates.responsavel !== undefined) dbUpdate.responsavel = updates.responsavel;
-  if (updates.responsavelEmail !== undefined) dbUpdate.responsavel_email = updates.responsavelEmail || null;
+  if (updates.responsavelEmail !== undefined)
+    dbUpdate.responsavel_email = updates.responsavelEmail || null;
   if (updates.prioridade !== undefined) dbUpdate.prioridade = updates.prioridade;
   if (updates.status !== undefined) dbUpdate.status = updates.status;
   if (updates.dataAgendada !== undefined) dbUpdate.data_agendada = updates.dataAgendada;
   if (updates.dataConclusao !== undefined) dbUpdate.data_conclusao = updates.dataConclusao || null;
   if (updates.notas !== undefined) dbUpdate.notas = updates.notas || null;
-  if (updates.localManutencao !== undefined) dbUpdate.local_manutencao = updates.localManutencao || null;
-  if (updates.situacaoEquipamento !== undefined) dbUpdate.situacao_equipamento = updates.situacaoEquipamento || null;
+  if (updates.localManutencao !== undefined)
+    dbUpdate.local_manutencao = updates.localManutencao || null;
+  if (updates.situacaoEquipamento !== undefined)
+    dbUpdate.situacao_equipamento = updates.situacaoEquipamento || null;
   if (updates.observacao !== undefined) dbUpdate.observacao = updates.observacao || null;
 
   return dbUpdate;
@@ -97,7 +103,9 @@ export function useMaintenanceTasks() {
     fetchTasks();
   }, [fetchTasks]);
 
-  const addTask = async (task: Omit<MaintenanceTask, 'id' | 'dataCriacao' | 'dataAtualizacao'>): Promise<MaintenanceTask | null> => {
+  const addTask = async (
+    task: Omit<MaintenanceTask, 'id' | 'dataCriacao' | 'dataAtualizacao'>
+  ): Promise<MaintenanceTask | null> => {
     if (!user) {
       toast.error('Usuário não autenticado');
       return null;
@@ -113,7 +121,7 @@ export function useMaintenanceTasks() {
       if (error) throw error;
 
       const newTask = dbToTask(data);
-      setTasks(prev => [newTask, ...prev]);
+      setTasks((prev) => [newTask, ...prev]);
       toast.success('Tarefa de manutenção criada com sucesso');
       return newTask;
     } catch (error: any) {
@@ -132,11 +140,13 @@ export function useMaintenanceTasks() {
 
       if (error) throw error;
 
-      setTasks(prev => prev.map(task =>
-        task.id === id
-          ? { ...task, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
-          : task
-      ));
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === id
+            ? { ...task, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
+            : task
+        )
+      );
       toast.success('Tarefa atualizada com sucesso');
       return true;
     } catch (error: any) {
@@ -148,14 +158,11 @@ export function useMaintenanceTasks() {
 
   const deleteTask = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('maintenance_tasks')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('maintenance_tasks').delete().eq('id', id);
 
       if (error) throw error;
 
-      setTasks(prev => prev.filter(task => task.id !== id));
+      setTasks((prev) => prev.filter((task) => task.id !== id));
       toast.success('Tarefa excluída com sucesso');
       return true;
     } catch (error: any) {
@@ -165,12 +172,15 @@ export function useMaintenanceTasks() {
     }
   };
 
-  const moveMaintenanceTask = async (id: string, newStatus: MaintenanceStatus): Promise<boolean> => {
+  const moveMaintenanceTask = async (
+    id: string,
+    newStatus: MaintenanceStatus
+  ): Promise<boolean> => {
     return await updateTask(id, { status: newStatus });
   };
 
   const getTaskById = (id: string): MaintenanceTask | undefined => {
-    return tasks.find(task => task.id === id);
+    return tasks.find((task) => task.id === id);
   };
 
   return {

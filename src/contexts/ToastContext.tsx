@@ -6,28 +6,25 @@ export const ToastContext = createContext<ToastContextType | undefined>(undefine
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback(
-    (toast: Omit<Toast, 'id'>): string => {
-      const id = `toast-${Date.now()}-${Math.random()}`;
-      const newToast: Toast = {
-        ...toast,
-        id,
-        duration: toast.duration ?? 4000,
-      };
+  const addToast = useCallback((toast: Omit<Toast, 'id'>): string => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    const newToast: Toast = {
+      ...toast,
+      id,
+      duration: toast.duration ?? 4000,
+    };
 
-      setToasts((prev) => [...prev, newToast]);
+    setToasts((prev) => [...prev, newToast]);
 
-      // Auto-remove toast after duration
-      if (newToast.duration > 0) {
-        setTimeout(() => {
-          removeToast(id);
-        }, newToast.duration);
-      }
+    // Auto-remove toast after duration
+    if (newToast.duration > 0) {
+      setTimeout(() => {
+        removeToast(id);
+      }, newToast.duration);
+    }
 
-      return id;
-    },
-    []
-  );
+    return id;
+  }, []);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));

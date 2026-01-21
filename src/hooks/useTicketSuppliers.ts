@@ -38,9 +38,7 @@ const supplierToDbInsert = (
   created_by: userId,
 });
 
-const supplierToDbUpdate = (
-  updates: Partial<TicketSupplier>
-): DbTicketSupplierUpdate => {
+const supplierToDbUpdate = (updates: Partial<TicketSupplier>): DbTicketSupplierUpdate => {
   const dbUpdates: DbTicketSupplierUpdate = {};
   if (updates.nome !== undefined) dbUpdates.nome = updates.nome;
   if (updates.categoria !== undefined) dbUpdates.categoria = updates.categoria;
@@ -105,21 +103,17 @@ export function useTicketSuppliers() {
     }
   };
 
-  const updateSupplier = async (
-    id: string,
-    updates: Partial<TicketSupplier>
-  ): Promise<boolean> => {
+  const updateSupplier = async (id: string, updates: Partial<TicketSupplier>): Promise<boolean> => {
     try {
       const dbUpdates = supplierToDbUpdate(updates);
-      const { error } = await supabase
-        .from('ticket_suppliers')
-        .update(dbUpdates)
-        .eq('id', id);
+      const { error } = await supabase.from('ticket_suppliers').update(dbUpdates).eq('id', id);
 
       if (error) throw error;
 
       setSuppliers((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s))
+        prev.map((s) =>
+          s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s
+        )
       );
       return true;
     } catch (error) {
@@ -132,10 +126,7 @@ export function useTicketSuppliers() {
 
   const deleteSupplier = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('ticket_suppliers')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('ticket_suppliers').delete().eq('id', id);
 
       if (error) throw error;
 

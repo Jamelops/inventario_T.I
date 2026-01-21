@@ -8,20 +8,20 @@ export interface TicketSupplierConfig {
   ativo: boolean;
 }
 
-export type TicketType = 
-  | 'internet_fora' 
-  | 'link_intermitente' 
-  | 'sistema_prodata_fora' 
-  | 'validador_travando' 
-  | 'hardware' 
-  | 'software' 
+export type TicketType =
+  | 'internet_fora'
+  | 'link_intermitente'
+  | 'sistema_prodata_fora'
+  | 'validador_travando'
+  | 'hardware'
+  | 'software'
   | 'outro';
 
-export type TicketStatus = 
-  | 'aberto' 
-  | 'em_andamento' 
-  | 'aguardando_terceiro' 
-  | 'resolvido' 
+export type TicketStatus =
+  | 'aberto'
+  | 'em_andamento'
+  | 'aguardando_terceiro'
+  | 'resolvido'
   | 'encerrado';
 
 export type TicketPriority = 'baixa' | 'media' | 'alta' | 'critica';

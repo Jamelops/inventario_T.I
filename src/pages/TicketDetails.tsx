@@ -1,6 +1,6 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { useNavigate, useParams } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import {
   ArrowLeft,
   Edit,
@@ -12,28 +12,24 @@ import {
   Mail,
   ExternalLink,
   Link as LinkIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
-import { TicketTimeline } from "@/components/tickets/TicketTimeline";
-import { AddInteractionDialog } from "@/components/tickets/AddInteractionDialog";
-import { SLAIndicator } from "@/components/tickets/SLAIndicator";
-import { useTickets } from "@/contexts/TicketContext";
-import { useAuth } from "@/contexts/AuthContext";
-import {
-  TicketStatus,
-  ticketTypeLabels,
-  ticketStatusLabels,
-} from "@/types/tickets";
+} from '@/components/ui/dropdown-menu';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { TicketStatusBadge, TicketPriorityBadge } from '@/components/tickets/TicketStatusBadge';
+import { TicketTimeline } from '@/components/tickets/TicketTimeline';
+import { AddInteractionDialog } from '@/components/tickets/AddInteractionDialog';
+import { SLAIndicator } from '@/components/tickets/SLAIndicator';
+import { useTickets } from '@/contexts/TicketContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { TicketStatus, ticketTypeLabels, ticketStatusLabels } from '@/types/tickets';
 
 export default function TicketDetails() {
   const { id } = useParams();
@@ -41,24 +37,33 @@ export default function TicketDetails() {
   const { getTicketById, getSupplierById, changeTicketStatus, duplicateTicket } = useTickets();
   const { profile } = useAuth();
 
-  const ticket = getTicketById(id || "");
+  const ticket = getTicketById(id || '');
   const supplier = ticket ? getSupplierById(ticket.fornecedorId) : null;
 
   if (!ticket) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
         <p className="text-muted-foreground">Chamado não encontrado</p>
-        <Button onClick={() => navigate("/tickets")}>Voltar para Chamados</Button>
+        <Button onClick={() => navigate('/tickets')}>Voltar para Chamados</Button>
       </div>
     );
   }
 
   const handleStatusChange = async (newStatus: TicketStatus) => {
-    await changeTicketStatus(ticket.id, newStatus, profile?.user_id || "", profile?.username || "Usuário");
+    await changeTicketStatus(
+      ticket.id,
+      newStatus,
+      profile?.user_id || '',
+      profile?.username || 'Usuário'
+    );
   };
 
   const handleDuplicate = async () => {
-    const duplicated = await duplicateTicket(ticket.id, profile?.user_id || "", profile?.username || "Usuário");
+    const duplicated = await duplicateTicket(
+      ticket.id,
+      profile?.user_id || '',
+      profile?.username || 'Usuário'
+    );
     if (duplicated) {
       navigate(`/tickets/${duplicated.id}`);
     }
@@ -70,13 +75,13 @@ export default function TicketDetails() {
         title={ticket.titulo}
         description={`Chamado ${ticket.id}`}
         breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Chamados", href: "/tickets" },
+          { label: 'Dashboard', href: '/' },
+          { label: 'Chamados', href: '/tickets' },
           { label: ticket.id },
         ]}
         actions={
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => navigate("/tickets")}>
+            <Button variant="ghost" onClick={() => navigate('/tickets')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
@@ -255,14 +260,18 @@ export default function TicketDetails() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Atualizado em</span>
                 <span>
-                  {format(new Date(ticket.dataAtualizacao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  {format(new Date(ticket.dataAtualizacao), "dd/MM/yyyy 'às' HH:mm", {
+                    locale: ptBR,
+                  })}
                 </span>
               </div>
               {ticket.dataResolucao && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Resolvido em</span>
                   <span>
-                    {format(new Date(ticket.dataResolucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    {format(new Date(ticket.dataResolucao), "dd/MM/yyyy 'às' HH:mm", {
+                      locale: ptBR,
+                    })}
                   </span>
                 </div>
               )}

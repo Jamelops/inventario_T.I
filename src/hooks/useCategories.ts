@@ -80,7 +80,7 @@ export function useCategories() {
       if (error) throw error;
 
       const newCategory = dbToCategory(data);
-      setCategories(prev => [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome)));
+      setCategories((prev) => [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome)));
       toast.success('Categoria criada com sucesso');
       return newCategory;
     } catch (error: any) {
@@ -99,11 +99,9 @@ export function useCategories() {
 
       if (error) throw error;
 
-      setCategories(prev => prev.map(category =>
-        category.id === id
-          ? { ...category, ...updates }
-          : category
-      ));
+      setCategories((prev) =>
+        prev.map((category) => (category.id === id ? { ...category, ...updates } : category))
+      );
       toast.success('Categoria atualizada com sucesso');
       return true;
     } catch (error: any) {
@@ -115,14 +113,11 @@ export function useCategories() {
 
   const deleteCategory = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('categories').delete().eq('id', id);
 
       if (error) throw error;
 
-      setCategories(prev => prev.filter(category => category.id !== id));
+      setCategories((prev) => prev.filter((category) => category.id !== id));
       toast.success('Categoria excluída com sucesso');
       return true;
     } catch (error: any) {

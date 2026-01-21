@@ -62,12 +62,8 @@ export const RenumberIdsPanel = () => {
           <div className="flex gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-red-900 dark:text-red-200 mb-1">
-                ❌ Erro
-              </h3>
-              <p className="text-sm text-red-800 dark:text-red-300">
-                {error}
-              </p>
+              <h3 className="font-semibold text-red-900 dark:text-red-200 mb-1">❌ Erro</h3>
+              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
             </div>
           </div>
         </div>
@@ -83,7 +79,8 @@ export const RenumberIdsPanel = () => {
                 ✅ Renumeração Concluída!
               </h3>
               <p className="text-sm text-emerald-800 dark:text-emerald-300 mt-1">
-                Todos os IDs foram renumerados com sucesso. Verifique os toast notifications para detalhes.
+                Todos os IDs foram renumerados com sucesso. Verifique os toast notifications para
+                detalhes.
               </p>
             </div>
           </div>

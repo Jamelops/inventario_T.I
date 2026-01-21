@@ -45,7 +45,9 @@ export interface AuditLogEntry {
  */
 export const logAudit = async (entry: AuditLogEntry) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     // Get client IP (requires backend support)
     const ipAddress = await getClientIp();
@@ -67,9 +69,7 @@ export const logAudit = async (entry: AuditLogEntry) => {
     };
 
     // Silently log (don't show errors to user)
-    const { error } = await supabase
-      .from('audit_logs')
-      .insert([auditLog]);
+    const { error } = await supabase.from('audit_logs').insert([auditLog]);
 
     if (error && import.meta.env.DEV) {
       console.error('[Audit Log Error]', error);
@@ -121,10 +121,7 @@ export const logFailure = async (
 /**
  * Log security-critical events
  */
-export const logSecurityEvent = async (
-  action: AuditAction,
-  details: Record<string, any>
-) => {
+export const logSecurityEvent = async (action: AuditAction, details: Record<string, any>) => {
   await logAudit({
     action,
     resourceType: 'SECURITY',
@@ -161,37 +158,31 @@ const getClientIp = async (): Promise<string | null> => {
  */
 export const detectSuspiciousActivity = (logs: AuditLogEntry[]): boolean => {
   const recentLogs = logs.filter(
-    log => new Date(log.metadata?.timestamp || 0).getTime() > Date.now() - 15 * 60 * 1000 // Last 15 min
+    (log) => new Date(log.metadata?.timestamp || 0).getTime() > Date.now() - 15 * 60 * 1000 // Last 15 min
   );
 
   // Too many failed login attempts
-  const failedLogins = recentLogs.filter(
-    log => log.action === 'FAILED_LOGIN_ATTEMPT'
-  ).length;
+  const failedLogins = recentLogs.filter((log) => log.action === 'FAILED_LOGIN_ATTEMPT').length;
   if (failedLogins > 5) {
     return true;
   }
 
   // Unauthorized access attempts
   const unauthorizedAttempts = recentLogs.filter(
-    log => log.action === 'UNAUTHORIZED_ACCESS_ATTEMPT'
+    (log) => log.action === 'UNAUTHORIZED_ACCESS_ATTEMPT'
   ).length;
   if (unauthorizedAttempts > 3) {
     return true;
   }
 
   // Unusual bulk operations
-  const bulkOps = recentLogs.filter(
-    log => log.action === 'BULK_OPERATION'
-  ).length;
+  const bulkOps = recentLogs.filter((log) => log.action === 'BULK_OPERATION').length;
   if (bulkOps > 10) {
     return true;
   }
 
   // Multiple deletes in short time
-  const deletes = recentLogs.filter(
-    log => log.action.includes('DELETE')
-  ).length;
+  const deletes = recentLogs.filter((log) => log.action.includes('DELETE')).length;
   if (deletes > 20) {
     return true;
   }

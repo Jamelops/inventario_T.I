@@ -1,5 +1,5 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const NotFound = () => {
   const location = useLocation();
@@ -7,7 +7,7 @@ const NotFound = () => {
   useEffect(() => {
     // Only log in development mode to avoid information leakage
     if (import.meta.env.DEV) {
-      console.log("404: Route not found");
+      console.log('404: Route not found');
     }
   }, [location.pathname]);
 

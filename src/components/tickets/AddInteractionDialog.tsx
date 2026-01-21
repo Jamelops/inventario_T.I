@@ -1,14 +1,26 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import { TicketInteraction, ticketInteractionTypeLabels } from "@/types/tickets";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTickets } from "@/contexts/TicketContext";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus } from 'lucide-react';
+import { TicketInteraction, ticketInteractionTypeLabels } from '@/types/tickets';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTickets } from '@/contexts/TicketContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddInteractionDialogProps {
   ticketId: string;
@@ -20,7 +32,7 @@ export function AddInteractionDialog({ ticketId }: AddInteractionDialogProps) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<InteractionType>('comentario');
   const [message, setMessage] = useState('');
-  
+
   const { profile } = useAuth();
   const { addInteraction } = useTickets();
   const { toast } = useToast();
@@ -28,9 +40,9 @@ export function AddInteractionDialog({ ticketId }: AddInteractionDialogProps) {
   const handleSubmit = () => {
     if (!message.trim()) {
       toast({
-        title: "Erro",
-        description: "A mensagem é obrigatória.",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'A mensagem é obrigatória.',
+        variant: 'destructive',
       });
       return;
     }
@@ -43,8 +55,8 @@ export function AddInteractionDialog({ ticketId }: AddInteractionDialogProps) {
     });
 
     toast({
-      title: "Interação adicionada",
-      description: "A interação foi registrada com sucesso.",
+      title: 'Interação adicionada',
+      description: 'A interação foi registrada com sucesso.',
     });
 
     setMessage('');
@@ -52,7 +64,12 @@ export function AddInteractionDialog({ ticketId }: AddInteractionDialogProps) {
     setOpen(false);
   };
 
-  const interactionTypes: InteractionType[] = ['comentario', 'ligacao', 'email', 'retorno_fornecedor'];
+  const interactionTypes: InteractionType[] = [
+    'comentario',
+    'ligacao',
+    'email',
+    'retorno_fornecedor',
+  ];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -96,9 +113,7 @@ export function AddInteractionDialog({ ticketId }: AddInteractionDialogProps) {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit}>
-            Adicionar
-          </Button>
+          <Button onClick={handleSubmit}>Adicionar</Button>
         </div>
       </DialogContent>
     </Dialog>

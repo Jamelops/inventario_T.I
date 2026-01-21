@@ -45,23 +45,19 @@ export function formatCurrency(value: any): string {
   if (isNaN(num)) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
-    currency: 'BRL'
+    currency: 'BRL',
   }).format(num);
 }
 
 // Função principal de exportação
-export async function exportToExcel(
-  data: any[],
-  columns: ExportColumn[],
-  options: ExportOptions
-) {
+export async function exportToExcel(data: any[], columns: ExportColumn[], options: ExportOptions) {
   try {
     const toast = options?.toast;
 
     // Validação 1: Dados vazios
     if (!data || data.length === 0) {
       const message = 'Nenhum dado para exportar';
-      
+
       if (toast && typeof toast.warning === 'function') {
         toast.warning(message, 5000);
       } else {
@@ -73,7 +69,7 @@ export async function exportToExcel(
     // Validação 2: Filename vazio
     if (!options || !options.filename) {
       const message = 'Nome do arquivo não fornecido';
-      
+
       if (toast && typeof toast.error === 'function') {
         toast.error(message, 5000);
       } else {
@@ -87,42 +83,42 @@ export async function exportToExcel(
 
     // Se não houver colunas definidas, usar as chaves do primeiro objeto
     let finalColumns: ExportColumn[] = columns || [];
-    
+
     if (finalColumns.length === 0) {
       const headers = Object.keys(data[0]);
-      finalColumns = headers.map(header => ({
+      finalColumns = headers.map((header) => ({
         key: header,
         header: formatarHeader(header),
-        width: 20
+        width: 20,
       }));
     }
 
     // Configurar colunas
-    worksheet.columns = finalColumns.map(col => ({
+    worksheet.columns = finalColumns.map((col) => ({
       header: col.header,
       key: col.key,
-      width: col.width || 20
+      width: col.width || 20,
     }));
 
     // Estilo do cabeçalho (azul com texto branco)
     const headerRow = worksheet.getRow(1);
-    headerRow.font = { 
-      bold: true, 
-      color: { argb: 'FFFFFFFF' } 
+    headerRow.font = {
+      bold: true,
+      color: { argb: 'FFFFFFFF' },
     };
-    headerRow.fill = { 
-      type: 'pattern', 
-      pattern: 'solid', 
-      fgColor: { argb: 'FF2563EB' } 
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF2563EB' },
     };
 
     // Adicionar dados
-    data.forEach(item => {
+    data.forEach((item) => {
       const row: any = {};
-      
-      finalColumns.forEach(col => {
+
+      finalColumns.forEach((col) => {
         let value = item[col.key];
-        
+
         // Usar format customizado se existir
         if (col.format) {
           value = col.format(value, item);
@@ -134,10 +130,10 @@ export async function exportToExcel(
             value = formatCurrency(value);
           }
         }
-        
+
         row[col.key] = value || 'N/A';
       });
-      
+
       worksheet.addRow(row);
     });
 
@@ -148,21 +144,21 @@ export async function exportToExcel(
 
     // Gerar arquivo e fazer download
     const buffer = await workbook.xlsx.writeBuffer();
-    
+
     // Usar método nativo do navegador para download
-    const blob = new Blob([buffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-    
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `${options.filename}-${new Date().toISOString().split('T')[0]}.xlsx`;
-    
+
     // Adicionar ao DOM, clicar e remover
     document.body.appendChild(link);
     link.click();
-    
+
     // Cleanup
     setTimeout(() => {
       document.body.removeChild(link);
@@ -171,19 +167,18 @@ export async function exportToExcel(
 
     // ✅ SUCESSO - COM DURAÇÃO AUMENTADA (6 segundos)
     const successMessage = '✅ Arquivo exportado com sucesso!';
-    
+
     if (toast && typeof toast.success === 'function') {
       toast.success(successMessage, 6000); // 6 segundos para o usuário ver
     } else {
       alert(successMessage);
     }
-
   } catch (error) {
     console.error('❌ ERRO ao exportar para Excel:', error);
-    
+
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     const finalMessage = `❌ Erro ao exportar: ${errorMessage}`;
-    
+
     if (options.toast && typeof options.toast.error === 'function') {
       options.toast.error(finalMessage, 6000); // 6 segundos para o usuário ver
     } else {
@@ -199,6 +194,6 @@ function formatarHeader(header: string): string {
     .replace(/_/g, ' ')
     .trim()
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }

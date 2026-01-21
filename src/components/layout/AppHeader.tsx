@@ -29,8 +29,10 @@ export function AppHeader() {
   const { tasks } = useMaintenanceTasks();
 
   // Calculate notifications
-  const expiringLicenses = licenses.filter(l => l.status === 'vencendo' || l.status === 'vencida').length;
-  const pendingMaintenance = tasks.filter(t => t.status === 'pendente').length;
+  const expiringLicenses = licenses.filter(
+    (l) => l.status === 'vencendo' || l.status === 'vencida'
+  ).length;
+  const pendingMaintenance = tasks.filter((t) => t.status === 'pendente').length;
   const totalNotifications = expiringLicenses + pendingMaintenance;
 
   const handleSignOut = async () => {
@@ -62,8 +64,8 @@ export function AppHeader() {
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               {totalNotifications > 0 && (
-                <Badge 
-                  variant="destructive" 
+                <Badge
+                  variant="destructive"
                   className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                 >
                   {totalNotifications}
@@ -91,9 +93,7 @@ export function AppHeader() {
               </DropdownMenuItem>
             )}
             {totalNotifications === 0 && (
-              <DropdownMenuItem disabled>
-                Nenhuma notificação
-              </DropdownMenuItem>
+              <DropdownMenuItem disabled>Nenhuma notificação</DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

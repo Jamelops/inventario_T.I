@@ -2,19 +2,19 @@ import { RenumberIdsPanel } from '@/components/admin/RenumberIdsPanel';
 
 /**
  * Página de Administração - Renumerar IDs
- * 
+ *
  * Rota sugerida: /admin/renumber-ids
- * 
+ *
  * Exemplo de uso:
  * 1. Adicione no seu router:
  *    import { AdminRenumberIds } from '@/pages/AdminRenumberIds';
- *    
+ *
  *    {
  *      path: '/admin/renumber-ids',
  *      element: <AdminRenumberIds />,
  *      // adicione autenticação/autorização se necessário
  *    }
- * 
+ *
  * 2. Acesse via: http://localhost:5173/admin/renumber-ids
  */
 export const AdminRenumberIds = () => {

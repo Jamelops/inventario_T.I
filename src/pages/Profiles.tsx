@@ -7,7 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { User, CheckCircle, Clock, XCircle, Shield, Mail } from 'lucide-react';
 
@@ -39,7 +45,7 @@ export default function Profiles() {
       navigate('/auth');
       return;
     }
-    
+
     if (!loading && !isAdmin()) {
       navigate('/');
     }
@@ -69,9 +75,7 @@ export default function Profiles() {
   };
 
   const fetchUserRoles = async () => {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('user_id, role');
+    const { data, error } = await supabase.from('user_roles').select('user_id, role');
 
     if (error) {
       if (import.meta.env.DEV) {
@@ -82,11 +86,11 @@ export default function Profiles() {
     setUserRoles(data as UserRole[]);
   };
 
-  const updateProfileStatus = async (userId: string, status: 'pending' | 'approved' | 'rejected') => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ status })
-      .eq('user_id', userId);
+  const updateProfileStatus = async (
+    userId: string,
+    status: 'pending' | 'approved' | 'rejected'
+  ) => {
+    const { error } = await supabase.from('profiles').update({ status }).eq('user_id', userId);
 
     if (error) {
       return;
@@ -138,21 +142,16 @@ export default function Profiles() {
 
   const updateUserRole = async (userId: string, role: 'admin' | 'manager' | 'viewer') => {
     // Check if role exists
-    const existingRole = userRoles.find(r => r.user_id === userId);
-    
+    const existingRole = userRoles.find((r) => r.user_id === userId);
+
     if (existingRole) {
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role })
-        .eq('user_id', userId);
+      const { error } = await supabase.from('user_roles').update({ role }).eq('user_id', userId);
 
       if (error) {
         return;
       }
     } else {
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role });
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
 
       if (error) {
         return;
@@ -163,7 +162,7 @@ export default function Profiles() {
   };
 
   const getUserRole = (userId: string) => {
-    return userRoles.find(r => r.user_id === userId)?.role || 'viewer';
+    return userRoles.find((r) => r.user_id === userId)?.role || 'viewer';
   };
 
   const getStatusIcon = (status: string) => {
@@ -184,7 +183,11 @@ export default function Profiles() {
       case 'rejected':
         return <Badge variant="destructive">Rejeitado</Badge>;
       default:
-        return <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">Pendente</Badge>;
+        return (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+            Pendente
+          </Badge>
+        );
     }
   };
 
@@ -200,9 +203,9 @@ export default function Profiles() {
     return null;
   }
 
-  const pendingProfiles = profiles.filter(p => p.status === 'pending');
-  const approvedProfiles = profiles.filter(p => p.status === 'approved');
-  const rejectedProfiles = profiles.filter(p => p.status === 'rejected');
+  const pendingProfiles = profiles.filter((p) => p.status === 'pending');
+  const approvedProfiles = profiles.filter((p) => p.status === 'approved');
+  const rejectedProfiles = profiles.filter((p) => p.status === 'rejected');
 
   return (
     <div>
@@ -241,16 +244,16 @@ export default function Profiles() {
                   </p>
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="flex-1"
                         onClick={() => updateProfileStatus(profile.user_id, 'approved')}
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Aprovar
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="destructive"
                         className="flex-1"
                         onClick={() => updateProfileStatus(profile.user_id, 'rejected')}
@@ -307,7 +310,10 @@ export default function Profiles() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Permissão:</span>
-                    <Select value={role} onValueChange={(value) => updateUserRole(profile.user_id, value as any)}>
+                    <Select
+                      value={role}
+                      onValueChange={(value) => updateUserRole(profile.user_id, value as any)}
+                    >
                       <SelectTrigger className="w-32 h-8">
                         <SelectValue />
                       </SelectTrigger>
@@ -353,8 +359,8 @@ export default function Profiles() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     className="w-full"
                     onClick={() => updateProfileStatus(profile.user_id, 'approved')}

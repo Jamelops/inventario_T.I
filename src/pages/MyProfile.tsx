@@ -66,7 +66,11 @@ export default function MyProfile() {
       case 'rejected':
         return <Badge variant="destructive">Rejeitado</Badge>;
       default:
-        return <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">Pendente</Badge>;
+        return (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+            Pendente
+          </Badge>
+        );
     }
   };
 

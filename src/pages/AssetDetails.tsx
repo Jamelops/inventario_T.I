@@ -1,6 +1,6 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { useNavigate, useParams } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import {
   ArrowLeft,
   Edit,
@@ -14,19 +14,19 @@ import {
   DollarSign,
   Clock,
   Headphones,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useData } from "@/contexts/DataContext";
-import { useTickets } from "@/contexts/TicketContext";
-import { StatusBadge } from "@/components/shared/StatusBadge";
-import { HardwareSpecsDisplay } from "@/components/assets/HardwareSpecsDisplay";
-import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
-import { useToast } from "@/hooks/use-toast";
-import { useMaintenanceTasks } from "@/hooks/useMaintenanceTasks";
-import { categoryLabels, maintenanceStatusLabels } from "@/types";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useData } from '@/contexts/DataContext';
+import { useTickets } from '@/contexts/TicketContext';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { HardwareSpecsDisplay } from '@/components/assets/HardwareSpecsDisplay';
+import { TicketStatusBadge } from '@/components/tickets/TicketStatusBadge';
+import { useToast } from '@/hooks/use-toast';
+import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
+import { categoryLabels, maintenanceStatusLabels } from '@/types';
 
 const AssetDetails = () => {
   const { id } = useParams();
@@ -38,7 +38,7 @@ const AssetDetails = () => {
 
   const asset = assets.find((a) => a.id === id);
   const assetMaintenances = maintenanceTasks.filter((t) => t.assetId === id);
-  const assetTickets = getTicketsByAssetId(id || "");
+  const assetTickets = getTicketsByAssetId(id || '');
 
   if (assetsLoading) {
     return (
@@ -52,39 +52,39 @@ const AssetDetails = () => {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
         <p className="text-muted-foreground">Ativo não encontrado</p>
-        <Button onClick={() => navigate("/assets")}>Voltar para Ativos</Button>
+        <Button onClick={() => navigate('/assets')}>Voltar para Ativos</Button>
       </div>
     );
   }
 
   const handleArchive = async () => {
-    const success = await updateAsset(asset.id, { status: "arquivado" });
+    const success = await updateAsset(asset.id, { status: 'arquivado' });
     if (success) {
       toast({
-        title: "Ativo arquivado",
+        title: 'Ativo arquivado',
         description: `${asset.nome} foi arquivado com sucesso.`,
       });
     }
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
     }).format(value);
   };
 
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+    return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
   };
 
   const infoItems = [
-    { icon: Tag, label: "Categoria", value: categoryLabels[asset.categoria] },
-    { icon: Hash, label: "Número de Série", value: asset.numeroSerie },
-    { icon: Calendar, label: "Data de Compra", value: formatDate(asset.dataCompra) },
-    { icon: DollarSign, label: "Valor", value: formatCurrency(asset.valor) },
-    { icon: MapPin, label: "Localização", value: asset.localizacao },
-    { icon: User, label: "Responsável", value: asset.responsavel },
+    { icon: Tag, label: 'Categoria', value: categoryLabels[asset.categoria] },
+    { icon: Hash, label: 'Número de Série', value: asset.numeroSerie },
+    { icon: Calendar, label: 'Data de Compra', value: formatDate(asset.dataCompra) },
+    { icon: DollarSign, label: 'Valor', value: formatCurrency(asset.valor) },
+    { icon: MapPin, label: 'Localização', value: asset.localizacao },
+    { icon: User, label: 'Responsável', value: asset.responsavel },
   ];
 
   return (
@@ -92,7 +92,7 @@ const AssetDetails = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/assets")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -116,7 +116,7 @@ const AssetDetails = () => {
             <Headphones className="h-4 w-4 mr-2" />
             Abrir Chamado
           </Button>
-          {asset.status !== "arquivado" && (
+          {asset.status !== 'arquivado' && (
             <Button variant="outline" onClick={handleArchive}>
               <Archive className="h-4 w-4 mr-2" />
               Arquivar
@@ -185,11 +185,11 @@ const AssetDetails = () => {
                       <p className="font-medium text-sm">{task.descricao}</p>
                       <Badge
                         variant={
-                          task.status === "concluido"
-                            ? "default"
-                            : task.status === "em_andamento"
-                            ? "secondary"
-                            : "outline"
+                          task.status === 'concluido'
+                            ? 'default'
+                            : task.status === 'em_andamento'
+                              ? 'secondary'
+                              : 'outline'
                         }
                       >
                         {maintenanceStatusLabels[task.status]}
@@ -238,7 +238,8 @@ const AssetDetails = () => {
                         <TicketStatusBadge status={ticket.status} />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {supplier?.nome || 'Desconhecido'} • {format(new Date(ticket.dataCriacao), "dd/MM/yyyy", { locale: ptBR })}
+                        {supplier?.nome || 'Desconhecido'} •{' '}
+                        {format(new Date(ticket.dataCriacao), 'dd/MM/yyyy', { locale: ptBR })}
                       </p>
                     </div>
                   );

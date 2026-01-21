@@ -46,7 +46,7 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
 
   // Network errors
   'network error': 'Erro de conexão. Verifique sua internet',
-  'timeout': 'Requisição expirou. Tente novamente',
+  timeout: 'Requisição expirou. Tente novamente',
   'failed to fetch': 'Falha ao conectar com o servidor',
 
   // Rate limiting
@@ -63,7 +63,8 @@ const getUserMessage = (error: any): string => {
     return error;
   }
 
-  const errorMessage = error?.message || error?.error || JSON.stringify(error) || 'Erro desconhecido';
+  const errorMessage =
+    error?.message || error?.error || JSON.stringify(error) || 'Erro desconhecido';
   const errorMessageLower = errorMessage.toLowerCase();
 
   // Check against known error patterns
@@ -86,14 +87,11 @@ const getUserMessage = (error: any): string => {
  * Main error handler function
  * Use this in try-catch blocks throughout the app
  */
-export const handleApiError = (
-  error: any,
-  options: HandleErrorOptions = {}
-): ApiError => {
+export const handleApiError = (error: any, options: HandleErrorOptions = {}): ApiError => {
   const {
     showToast = true,
     logToConsole = import.meta.env.DEV,
-    fallbackMessage = 'Erro ao processar requisição'
+    fallbackMessage = 'Erro ao processar requisição',
   } = options;
 
   // Log full error in development only
@@ -139,40 +137,40 @@ export const handleErrorByType = (error: any) => {
     case 400:
       return {
         message: 'Dados inválidos. Verifique o formulário',
-        severity: 'warning'
+        severity: 'warning',
       };
 
     case 401:
       return {
         message: 'Sua sessão expirou. Por favor, faça login novamente',
         severity: 'error',
-        action: 'logout'
+        action: 'logout',
       };
 
     case 403:
       return {
         message: 'Você não tem permissão para acessar isto',
         severity: 'error',
-        action: 'redirect_home'
+        action: 'redirect_home',
       };
 
     case 404:
       return {
         message: 'Recurso não encontrado',
         severity: 'error',
-        action: 'redirect_back'
+        action: 'redirect_back',
       };
 
     case 409:
       return {
         message: 'Esse registro já existe',
-        severity: 'warning'
+        severity: 'warning',
       };
 
     case 429:
       return {
         message: 'Muitas requisições. Por favor, aguarde',
-        severity: 'error'
+        severity: 'error',
       };
 
     case 500:
@@ -180,13 +178,13 @@ export const handleErrorByType = (error: any) => {
     case 503:
       return {
         message: 'Erro no servidor. Tente novamente mais tarde',
-        severity: 'error'
+        severity: 'error',
       };
 
     default:
       return {
         message: 'Algo deu errado',
-        severity: 'error'
+        severity: 'error',
       };
   }
 };
@@ -212,7 +210,7 @@ export const createSafeApiError = (error: any) => {
   return {
     error: {
       message: getUserMessage(error),
-      ...(import.meta.env.DEV && { originalError: error.message })
-    }
+      ...(import.meta.env.DEV && { originalError: error.message }),
+    },
   };
 };

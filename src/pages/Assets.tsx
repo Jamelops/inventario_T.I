@@ -10,8 +10,21 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { categoryLabels, AssetCategory, AssetStatus, statusLabels } from '@/types';
 import { exportToExcel, formatCurrency, ExportColumn } from '@/lib/export-to-excel';
 import { toHumanizedId, generateHumanizedId } from '@/lib/humanizedId';
@@ -28,7 +41,7 @@ export default function Assets() {
 
   // Gerar IDs humanizados para todos os ativos
   useMemo(() => {
-    assets.forEach(asset => {
+    assets.forEach((asset) => {
       generateHumanizedId(asset.id, asset.categoria);
     });
   }, [assets]);
@@ -41,9 +54,10 @@ export default function Assets() {
     );
   }
 
-  const filteredAssets = assets.filter(asset => {
+  const filteredAssets = assets.filter((asset) => {
     const humanizedId = toHumanizedId(asset.id, asset.categoria);
-    const matchesSearch = asset.nome.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch =
+      asset.nome.toLowerCase().includes(search.toLowerCase()) ||
       asset.id.toLowerCase().includes(search.toLowerCase()) ||
       humanizedId.toLowerCase().includes(search.toLowerCase()) ||
       asset.numeroSerie.toLowerCase().includes(search.toLowerCase());
@@ -56,25 +70,25 @@ export default function Assets() {
     const columns: ExportColumn[] = [
       { header: 'ID', key: 'id' },
       { header: 'Nome', key: 'nome' },
-      { 
-        header: 'Categoria', 
+      {
+        header: 'Categoria',
         key: 'categoria',
         format: (value: any) => {
           return categoryLabels[value as AssetCategory] || value;
-        }
+        },
       },
-      { 
-        header: 'Status', 
+      {
+        header: 'Status',
         key: 'status',
         format: (value: any) => {
           return statusLabels[value as AssetStatus] || value;
-        }
+        },
       },
       { header: 'Responsável', key: 'responsavel' },
-      { 
-        header: 'Valor', 
+      {
+        header: 'Valor',
         key: 'valor',
-        format: (value: any) => formatCurrency(value)
+        format: (value: any) => formatCurrency(value),
       },
     ];
 
@@ -83,25 +97,16 @@ export default function Assets() {
 
   return (
     <>
-      <PageHeader 
+      <PageHeader
         title="Inventário de Ativos"
         description={`${assets.length} ativos cadastrados`}
         actions={
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExportToExcel}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
               <Download className="w-4 h-4" />
               Exportar para Excel
             </Button>
-            <Button 
-              size="sm"
-              onClick={() => navigate('/assets/new')}
-              className="gap-2"
-            >
+            <Button size="sm" onClick={() => navigate('/assets/new')} className="gap-2">
               <Plus className="w-4 h-4" />
               Novo Ativo
             </Button>
@@ -131,7 +136,9 @@ export default function Assets() {
                   <SelectContent>
                     <SelectItem value="all">Todas as categorias</SelectItem>
                     {Object.entries(categoryLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -142,7 +149,9 @@ export default function Assets() {
                   <SelectContent>
                     <SelectItem value="all">Todos os status</SelectItem>
                     {Object.entries(statusLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -155,7 +164,7 @@ export default function Assets() {
         <Card>
           <CardContent className="p-0">
             {filteredAssets.length === 0 ? (
-              <EmptyState 
+              <EmptyState
                 title="Nenhum ativo encontrado"
                 description="Comece adicionando um novo ativo ao sistema"
               />
@@ -174,15 +183,17 @@ export default function Assets() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAssets.map(asset => {
+                    {filteredAssets.map((asset) => {
                       const humanizedId = toHumanizedId(asset.id, asset.categoria);
                       return (
-                        <TableRow 
+                        <TableRow
                           key={asset.id}
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/assets/${asset.id}`)}
                         >
-                          <TableCell className="font-bold text-base text-primary">{humanizedId}</TableCell>
+                          <TableCell className="font-bold text-base text-primary">
+                            {humanizedId}
+                          </TableCell>
                           <TableCell className="font-medium">{asset.nome}</TableCell>
                           <TableCell>{categoryLabels[asset.categoria]}</TableCell>
                           <TableCell>
@@ -198,10 +209,10 @@ export default function Assets() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem 
-                                  onClick={(e) => { 
-                                    e.stopPropagation(); 
-                                    navigate(`/assets/${asset.id}`); 
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/assets/${asset.id}`);
                                   }}
                                 >
                                   <Eye className="w-4 h-4 mr-2" />
@@ -209,10 +220,10 @@ export default function Assets() {
                                 </DropdownMenuItem>
                                 {userCanEdit && (
                                   <>
-                                    <DropdownMenuItem 
-                                      onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        navigate(`/assets/${asset.id}/edit`); 
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/assets/${asset.id}/edit`);
                                       }}
                                     >
                                       <Edit className="w-4 h-4 mr-2" />
@@ -246,4 +257,9 @@ export default function Assets() {
 }
 
 // Importar DropdownMenu
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';

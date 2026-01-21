@@ -36,11 +36,7 @@ export function RequiredFieldIndicator({
 /**
  * Variante para ser usada inline com texto
  */
-export function RequiredBadge({
-  className = '',
-}: {
-  className?: string;
-}) {
+export function RequiredBadge({ className = '' }: { className?: string }) {
   return (
     <span
       className={`inline-block bg-red-50 text-red-700 text-xs px-2 py-1 rounded-md ml-2 font-medium ${className}`}

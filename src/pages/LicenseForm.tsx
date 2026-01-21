@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { ArrowLeft, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ArrowLeft, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -14,27 +14,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useData } from "@/contexts/DataContext";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { useToast } from "@/hooks/use-toast";
-import type { License, LicenseType, LicenseStatus } from "@/types";
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useData } from '@/contexts/DataContext';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { useToast } from '@/hooks/use-toast';
+import type { License, LicenseType, LicenseStatus } from '@/types';
 
 const licenseSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório").max(100, "Nome muito longo"),
+  nome: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
   fornecedor: z.string().optional(),
-  tipo: z.enum(["perpetua", "assinatura", "volume", "oem"]),
-  quantidadeTotal: z.coerce.number().min(1, "Quantidade deve ser maior que zero"),
-  quantidadeUsada: z.coerce.number().min(0, "Quantidade em uso deve ser positiva"),
-  dataVencimento: z.string().min(1, "Data de vencimento é obrigatória"),
+  tipo: z.enum(['perpetua', 'assinatura', 'volume', 'oem']),
+  quantidadeTotal: z.coerce.number().min(1, 'Quantidade deve ser maior que zero'),
+  quantidadeUsada: z.coerce.number().min(0, 'Quantidade em uso deve ser positiva'),
+  dataVencimento: z.string().min(1, 'Data de vencimento é obrigatória'),
   notas: z.string().optional(),
 });
 
@@ -53,13 +53,13 @@ const LicenseForm = () => {
   const form = useForm<LicenseFormData>({
     resolver: zodResolver(licenseSchema),
     defaultValues: {
-      nome: "",
-      fornecedor: "",
-      tipo: "assinatura" as LicenseType,
+      nome: '',
+      fornecedor: '',
+      tipo: 'assinatura' as LicenseType,
       quantidadeTotal: 1,
       quantidadeUsada: 0,
-      dataVencimento: "",
-      notas: "",
+      dataVencimento: '',
+      notas: '',
     },
   });
 
@@ -67,12 +67,12 @@ const LicenseForm = () => {
     if (existingLicense) {
       form.reset({
         nome: existingLicense.nome,
-        fornecedor: existingLicense.fornecedor || "",
+        fornecedor: existingLicense.fornecedor || '',
         tipo: existingLicense.tipo,
         quantidadeTotal: existingLicense.quantidadeTotal,
         quantidadeUsada: existingLicense.quantidadeUsada,
         dataVencimento: existingLicense.dataVencimento,
-        notas: existingLicense.notas || "",
+        notas: existingLicense.notas || '',
       });
     }
   }, [existingLicense, form]);
@@ -84,15 +84,15 @@ const LicenseForm = () => {
       (expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    if (daysUntilExpiration < 0) return "vencida";
-    if (daysUntilExpiration <= 30) return "vencendo";
-    return "ativa";
+    if (daysUntilExpiration < 0) return 'vencida';
+    if (daysUntilExpiration <= 30) return 'vencendo';
+    return 'ativa';
   };
 
   const onSubmit = async (data: LicenseFormData) => {
     if (data.quantidadeUsada > data.quantidadeTotal) {
-      form.setError("quantidadeUsada", {
-        message: "Quantidade em uso não pode ser maior que a total",
+      form.setError('quantidadeUsada', {
+        message: 'Quantidade em uso não pode ser maior que a total',
       });
       return;
     }
@@ -107,7 +107,7 @@ const LicenseForm = () => {
           status,
         });
         if (success) {
-          navigate("/licenses");
+          navigate('/licenses');
         }
       } else {
         const result = await addLicense({
@@ -121,14 +121,14 @@ const LicenseForm = () => {
           notas: data.notas || undefined,
         });
         if (result) {
-          navigate("/licenses");
+          navigate('/licenses');
         }
       }
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao salvar a licença.",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'Ocorreu um erro ao salvar a licença.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -136,24 +136,24 @@ const LicenseForm = () => {
   };
 
   const typeOptions: { value: LicenseType; label: string }[] = [
-    { value: "assinatura", label: "Assinatura" },
-    { value: "perpetua", label: "Perpétua" },
-    { value: "volume", label: "Volume" },
-    { value: "oem", label: "OEM" },
+    { value: 'assinatura', label: 'Assinatura' },
+    { value: 'perpetua', label: 'Perpétua' },
+    { value: 'volume', label: 'Volume' },
+    { value: 'oem', label: 'OEM' },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/licenses")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/licenses')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <PageHeader
-          title={isEditing ? "Editar Licença" : "Nova Licença"}
+          title={isEditing ? 'Editar Licença' : 'Nova Licença'}
           description={
             isEditing
-              ? "Atualize as informações da licença"
-              : "Preencha os dados para cadastrar uma nova licença"
+              ? 'Atualize as informações da licença'
+              : 'Preencha os dados para cadastrar uma nova licença'
           }
         />
       </div>
@@ -281,16 +281,12 @@ const LicenseForm = () => {
               />
 
               <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/licenses")}
-                >
+                <Button type="button" variant="outline" onClick={() => navigate('/licenses')}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoading}>
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Salvando..." : isEditing ? "Atualizar" : "Salvar"}
+                  {isLoading ? 'Salvando...' : isEditing ? 'Atualizar' : 'Salvar'}
                 </Button>
               </div>
             </form>

@@ -66,8 +66,10 @@ const ticketToDbUpdate = (updates: Partial<Ticket>): DbTicketUpdate => {
   if (updates.unidade !== undefined) dbUpdate.unidade = updates.unidade;
   if (updates.assetId !== undefined) dbUpdate.asset_id = updates.assetId || null;
   if (updates.assetNome !== undefined) dbUpdate.asset_nome = updates.assetNome || null;
-  if (updates.protocoloExterno !== undefined) dbUpdate.protocolo_externo = updates.protocoloExterno || null;
-  if (updates.contatoFornecedor !== undefined) dbUpdate.contato_fornecedor = updates.contatoFornecedor || null;
+  if (updates.protocoloExterno !== undefined)
+    dbUpdate.protocolo_externo = updates.protocoloExterno || null;
+  if (updates.contatoFornecedor !== undefined)
+    dbUpdate.contato_fornecedor = updates.contatoFornecedor || null;
   if (updates.responsavelId !== undefined) dbUpdate.responsavel_id = updates.responsavelId;
   if (updates.responsavelNome !== undefined) dbUpdate.responsavel_nome = updates.responsavelNome;
   if (updates.slaDeadline !== undefined) dbUpdate.sla_deadline = updates.slaDeadline;
@@ -128,7 +130,7 @@ export function useTickets() {
       if (error) throw error;
 
       const newTicket = dbToTicket(data);
-      setTickets(prev => [newTicket, ...prev]);
+      setTickets((prev) => [newTicket, ...prev]);
       toast.success('Chamado criado com sucesso');
       return newTicket;
     } catch (error: any) {
@@ -147,10 +149,8 @@ export function useTickets() {
 
       if (error) throw error;
 
-      setTickets(prev =>
-        prev.map(ticket =>
-          ticket.id === id ? { ...ticket, ...updates } : ticket
-        )
+      setTickets((prev) =>
+        prev.map((ticket) => (ticket.id === id ? { ...ticket, ...updates } : ticket))
       );
       toast.success('Chamado atualizado com sucesso');
       return true;
@@ -163,14 +163,11 @@ export function useTickets() {
 
   const deleteTicket = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('tickets')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('tickets').delete().eq('id', id);
 
       if (error) throw error;
 
-      setTickets(prev => prev.filter(ticket => ticket.id !== id));
+      setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
       toast.success('Chamado excluído com sucesso');
       return true;
     } catch (error: any) {
@@ -181,7 +178,7 @@ export function useTickets() {
   };
 
   const getTicketById = (id: string): Ticket | undefined => {
-    return tickets.find(ticket => ticket.id === id);
+    return tickets.find((ticket) => ticket.id === id);
   };
 
   const changeTicketStatus = async (
@@ -211,15 +208,13 @@ export function useTickets() {
     interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>
   ): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('ticket_interactions')
-        .insert({
-          ticket_id: ticketId,
-          user_id: interaction.userId,
-          user_name: interaction.userName,
-          message: interaction.message,
-          type: interaction.type,
-        });
+      const { error } = await supabase.from('ticket_interactions').insert({
+        ticket_id: ticketId,
+        user_id: interaction.userId,
+        user_name: interaction.userName,
+        message: interaction.message,
+        type: interaction.type,
+      });
 
       if (error) throw error;
       await fetchTickets();
@@ -254,7 +249,7 @@ export function useTickets() {
   };
 
   const getTicketsByAssetId = (assetId: string): Ticket[] => {
-    return tickets.filter(ticket => ticket.assetId === assetId);
+    return tickets.filter((ticket) => ticket.assetId === assetId);
   };
 
   return {

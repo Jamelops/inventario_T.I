@@ -1,8 +1,8 @@
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { MessageSquare, Phone, Mail, RefreshCw, ArrowRightLeft } from "lucide-react";
-import { TicketInteraction, ticketInteractionTypeLabels } from "@/types/tickets";
-import { cn } from "@/lib/utils";
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { MessageSquare, Phone, Mail, RefreshCw, ArrowRightLeft } from 'lucide-react';
+import { TicketInteraction, ticketInteractionTypeLabels } from '@/types/tickets';
+import { cn } from '@/lib/utils';
 
 interface TicketTimelineProps {
   interactions: TicketInteraction[];
@@ -44,13 +44,13 @@ export function TicketTimeline({ interactions }: TicketTimelineProps) {
 
       {sortedInteractions.map((interaction) => {
         const Icon = interactionIcons[interaction.type];
-        
+
         return (
           <div key={interaction.id} className="relative flex gap-4 pl-10">
             {/* Icon */}
             <div
               className={cn(
-                "absolute left-0 p-2 rounded-full",
+                'absolute left-0 p-2 rounded-full',
                 interactionColors[interaction.type]
               )}
             >
@@ -62,7 +62,9 @@ export function TicketTimeline({ interactions }: TicketTimelineProps) {
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-medium">{interaction.userName}</span>
                 <span className="text-xs text-muted-foreground">
-                  {format(new Date(interaction.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  {format(new Date(interaction.createdAt), "dd/MM/yyyy 'às' HH:mm", {
+                    locale: ptBR,
+                  })}
                 </span>
               </div>
               <div className="text-xs text-muted-foreground mb-1">

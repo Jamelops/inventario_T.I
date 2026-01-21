@@ -16,9 +16,9 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // This allows users to remain logged in when they refresh the page
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,        // ✅ Persist sessions across page reloads
-    persistSession: true,          // ✅ CRITICAL: Enable session persistence
-    autoRefreshToken: true,        // ✅ Auto-refresh access token before expiry
-    detectSessionInUrl: true,      // ✅ Detect session in URL (for OAuth redirects)
-  }
+    storage: localStorage, // ✅ Persist sessions across page reloads
+    persistSession: true, // ✅ CRITICAL: Enable session persistence
+    autoRefreshToken: true, // ✅ Auto-refresh access token before expiry
+    detectSessionInUrl: true, // ✅ Detect session in URL (for OAuth redirects)
+  },
 });

@@ -1,6 +1,15 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { AssetStatus, LicenseStatus, MaintenanceStatus, MaintenancePriority, statusLabels, licenseStatusLabels, maintenanceStatusLabels, priorityLabels } from '@/types';
+import {
+  AssetStatus,
+  LicenseStatus,
+  MaintenanceStatus,
+  MaintenancePriority,
+  statusLabels,
+  licenseStatusLabels,
+  maintenanceStatusLabels,
+  priorityLabels,
+} from '@/types';
 
 interface StatusBadgeProps {
   status: AssetStatus | LicenseStatus | MaintenanceStatus;
@@ -14,13 +23,13 @@ const statusColors: Record<string, string> = {
   inativo: 'bg-slate-100 text-slate-700 border-slate-200',
   manutencao: 'bg-amber-100 text-amber-700 border-amber-200',
   arquivado: 'bg-slate-100 text-slate-500 border-slate-200',
-  
+
   // License status
   ativa: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   vencendo: 'bg-amber-100 text-amber-700 border-amber-200',
   vencida: 'bg-red-100 text-red-700 border-red-200',
   cancelada: 'bg-slate-100 text-slate-500 border-slate-200',
-  
+
   // Maintenance status
   pendente: 'bg-sky-100 text-sky-700 border-sky-200',
   em_andamento: 'bg-violet-100 text-violet-700 border-violet-200',
@@ -35,7 +44,7 @@ export function StatusBadge({ status, type = 'asset', className }: StatusBadgePr
   };
 
   return (
-    <Badge 
+    <Badge
       variant="outline"
       className={cn(
         'font-medium',
@@ -61,14 +70,7 @@ const priorityColors: Record<MaintenancePriority, string> = {
 
 export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
   return (
-    <Badge 
-      variant="outline"
-      className={cn(
-        'font-medium',
-        priorityColors[priority],
-        className
-      )}
-    >
+    <Badge variant="outline" className={cn('font-medium', priorityColors[priority], className)}>
       {priorityLabels[priority]}
     </Badge>
   );

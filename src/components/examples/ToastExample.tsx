@@ -42,17 +42,11 @@ export function ToastExample() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-4">
-        <Button
-          onClick={() => toast.success('Toast de 10 segundos', 10000)}
-          variant="outline"
-        >
+        <Button onClick={() => toast.success('Toast de 10 segundos', 10000)} variant="outline">
           Success (10s)
         </Button>
 
-        <Button
-          onClick={() => toast.error('Toast permanente', 0)}
-          variant="outline"
-        >
+        <Button onClick={() => toast.error('Toast permanente', 0)} variant="outline">
           Error (Permanente)
         </Button>
       </div>

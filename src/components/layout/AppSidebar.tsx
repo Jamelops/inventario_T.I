@@ -1,4 +1,13 @@
-import { LayoutDashboard, Package, FileKey, Wrench, Settings, ChevronLeft, ChevronRight, Headphones } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Package,
+  FileKey,
+  Wrench,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Headphones,
+} from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sidebar,
@@ -80,11 +89,7 @@ export function AppSidebar() {
           onClick={toggleSidebar}
           className="w-full justify-center"
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </SidebarFooter>
     </Sidebar>

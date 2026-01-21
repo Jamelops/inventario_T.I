@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, Calendar, MoreHorizontal, Edit, Trash, Download } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  MoreHorizontal,
+  Edit,
+  Trash,
+  Download,
+} from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/useToast';
@@ -10,10 +19,28 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { licenseStatusLabels, licenseTypeLabels, LicenseStatus, LicenseType } from '@/types';
 import { exportToExcel, formatDate, ExportColumn } from '@/lib/export-to-excel';
 
@@ -34,7 +61,7 @@ export default function Licenses() {
     );
   }
 
-  const filteredLicenses = licenses.filter(license => {
+  const filteredLicenses = licenses.filter((license) => {
     const matchesSearch = license.nome.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || license.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -47,8 +74,16 @@ export default function Licenses() {
       { header: 'Tipo', key: 'tipo', format: (v) => licenseTypeLabels[v as LicenseType] || v },
       { header: 'Quantidade Total', key: 'quantidadeTotal' },
       { header: 'Em Uso', key: 'quantidadeUsada' },
-      { header: 'Disponível', key: 'quantidadeTotal', format: (v, row) => (row.quantidadeTotal - row.quantidadeUsada).toString() },
-      { header: 'Status', key: 'status', format: (v) => licenseStatusLabels[v as LicenseStatus] || v },
+      {
+        header: 'Disponível',
+        key: 'quantidadeTotal',
+        format: (v, row) => (row.quantidadeTotal - row.quantidadeUsada).toString(),
+      },
+      {
+        header: 'Status',
+        key: 'status',
+        format: (v) => licenseStatusLabels[v as LicenseStatus] || v,
+      },
       { header: 'Data de Vencimento', key: 'dataVencimento', format: (v) => formatDate(v) },
     ];
     await exportToExcel(filteredLicenses, columns, { filename: 'licencas', toast });
@@ -65,12 +100,7 @@ export default function Licenses() {
         actions={
           userCanEdit && (
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleExportToExcel}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
                 <Download className="w-4 h-4" />
                 Exportar para Excel
               </Button>
@@ -106,7 +136,9 @@ export default function Licenses() {
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
                 {Object.entries(licenseStatusLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -139,17 +171,26 @@ export default function Licenses() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLicenses.map(license => (
+                {filteredLicenses.map((license) => (
                   <TableRow key={license.id}>
                     <TableCell className="font-medium">{license.nome}</TableCell>
-                    <TableCell className="hidden md:table-cell">{licenseTypeLabels[license.tipo]}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {licenseTypeLabels[license.tipo]}
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1 min-w-32">
                         <div className="flex justify-between text-xs">
-                          <span>{license.quantidadeUsada}/{license.quantidadeTotal}</span>
-                          <span>{getUsagePercent(license.quantidadeUsada, license.quantidadeTotal)}%</span>
+                          <span>
+                            {license.quantidadeUsada}/{license.quantidadeTotal}
+                          </span>
+                          <span>
+                            {getUsagePercent(license.quantidadeUsada, license.quantidadeTotal)}%
+                          </span>
                         </div>
-                        <Progress value={getUsagePercent(license.quantidadeUsada, license.quantidadeTotal)} className="h-2" />
+                        <Progress
+                          value={getUsagePercent(license.quantidadeUsada, license.quantidadeTotal)}
+                          className="h-2"
+                        />
                       </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
@@ -158,16 +199,26 @@ export default function Licenses() {
                         {new Date(license.dataVencimento).toLocaleDateString('pt-BR')}
                       </span>
                     </TableCell>
-                    <TableCell><StatusBadge status={license.status} type="license" /></TableCell>
+                    <TableCell>
+                      <StatusBadge status={license.status} type="license" />
+                    </TableCell>
                     <TableCell>
                       {userCanEdit && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Editar</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive"><Trash className="mr-2 h-4 w-4" />Excluir</DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive">
+                              <Trash className="mr-2 h-4 w-4" />
+                              Excluir
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}

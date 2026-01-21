@@ -33,9 +33,7 @@ export function KPICard({ title, value, icon, trend, description, className }: K
   return (
     <Card className={cn('transition-shadow hover:shadow-md', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center text-primary">
           {icon}
         </div>
@@ -50,12 +48,8 @@ export function KPICard({ title, value, icon, trend, description, className }: K
                 {Math.abs(trend.value)}%
               </span>
             )}
-            {trend?.label && (
-              <span className="text-muted-foreground">{trend.label}</span>
-            )}
-            {description && !trend && (
-              <span className="text-muted-foreground">{description}</span>
-            )}
+            {trend?.label && <span className="text-muted-foreground">{trend.label}</span>}
+            {description && !trend && <span className="text-muted-foreground">{description}</span>}
           </div>
         )}
       </CardContent>

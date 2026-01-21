@@ -5,13 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const HumanizedIdsPanel = () => {
-  const { 
-    syncHumanizedIds, 
-    isGenerating, 
-    getStatsByCategory,
-    CATEGORY_PREFIXES,
-  } = useHumanizedAssetIds();
-  
+  const { syncHumanizedIds, isGenerating, getStatsByCategory, CATEGORY_PREFIXES } =
+    useHumanizedAssetIds();
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const stats = getStatsByCategory;
@@ -47,7 +43,8 @@ export const HumanizedIdsPanel = () => {
                   ⚠️ Operação de Sincronização
                 </h3>
                 <p className="text-sm text-amber-800 dark:text-amber-300">
-                  Isso irá gerar e sincronizar IDs humanizados para {totalAssets} ativo(s) no banco de dados.
+                  Isso irá gerar e sincronizar IDs humanizados para {totalAssets} ativo(s) no banco
+                  de dados.
                 </p>
               </div>
             </div>
@@ -59,11 +56,13 @@ export const HumanizedIdsPanel = () => {
               ℹ️ Formato dos IDs:
             </h3>
             <div className="grid grid-cols-2 gap-2 text-sm text-blue-800 dark:text-blue-300">
-              {Object.entries(CATEGORY_PREFIXES).slice(0, 6).map(([key, prefix]) => (
-                <div key={key}>
-                  <span className="font-mono font-bold">{prefix}###</span> - {key}
-                </div>
-              ))}
+              {Object.entries(CATEGORY_PREFIXES)
+                .slice(0, 6)
+                .map(([key, prefix]) => (
+                  <div key={key}>
+                    <span className="font-mono font-bold">{prefix}###</span> - {key}
+                  </div>
+                ))}
             </div>
           </div>
 
@@ -145,9 +144,7 @@ export const HumanizedIdsPanel = () => {
                     <span className="font-semibold text-gray-900 dark:text-white capitalize">
                       {category}
                     </span>
-                    <span className="text-2xl font-bold text-primary">
-                      {categoryStats.count}
-                    </span>
+                    <span className="text-2xl font-bold text-primary">{categoryStats.count}</span>
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     <span className="font-mono font-bold text-primary">{prefix}</span> -{' '}
@@ -201,7 +198,8 @@ export const HumanizedIdsPanel = () => {
           <div>
             <p className="font-semibold text-gray-900 dark:text-white mb-1">✨ IDs Humanizados:</p>
             <p>
-              Cada ativo recebe um ID fácil de ler baseado em sua categoria, como NB001, DT002, SRV001.
+              Cada ativo recebe um ID fácil de ler baseado em sua categoria, como NB001, DT002,
+              SRV001.
             </p>
           </div>
           <div>
@@ -212,9 +210,7 @@ export const HumanizedIdsPanel = () => {
           </div>
           <div>
             <p className="font-semibold text-gray-900 dark:text-white mb-1">📊 Agrupamento:</p>
-            <p>
-              Os IDs são agrupados por categoria com numeração sequencial (001, 002, 003...).
-            </p>
+            <p>Os IDs são agrupados por categoria com numeração sequencial (001, 002, 003...).</p>
           </div>
         </CardContent>
       </Card>

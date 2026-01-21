@@ -1,7 +1,7 @@
 /**
  * Sistema de IDs Humanizados
  * Converte UUIDs para IDs legíveis como: N1, N2, D1, D2, M1, etc.
- * 
+ *
  * Prefixos por categoria:
  * - N: Notebook
  * - D: Desktop
@@ -12,12 +12,12 @@
  */
 
 export const categoryPrefixes: Record<string, string> = {
-  'notebook': 'N',
-  'desktop': 'D',
-  'monitor': 'M',
-  'impressora': 'I',
-  'servidor': 'S',
-  'outros': 'O',
+  notebook: 'N',
+  desktop: 'D',
+  monitor: 'M',
+  impressora: 'I',
+  servidor: 'S',
+  outros: 'O',
 };
 
 // Mapa global para armazenar UUID -> ID humanizado

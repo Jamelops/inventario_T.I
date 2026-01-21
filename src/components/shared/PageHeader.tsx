@@ -58,9 +58,7 @@ export function PageHeader({ title, description, breadcrumbs, actions }: PageHea
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">{title}</h1>
-          {description && (
-            <p className="mt-1 text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="mt-1 text-muted-foreground">{description}</p>}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>

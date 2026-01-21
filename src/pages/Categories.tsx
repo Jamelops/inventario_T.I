@@ -101,7 +101,7 @@ export default function Categories() {
 
   const handleDelete = async () => {
     if (deletingCategory) {
-      const assetsUsingCategory = assets.filter(a => a.categoria === deletingCategory.id);
+      const assetsUsingCategory = assets.filter((a) => a.categoria === deletingCategory.id);
       if (assetsUsingCategory.length > 0) {
         toast({
           title: 'Não é possível excluir',
@@ -123,7 +123,7 @@ export default function Categories() {
   };
 
   const getCategoryAssetCount = (categoryId: string) => {
-    return assets.filter(a => a.categoria === categoryId).length;
+    return assets.filter((a) => a.categoria === categoryId).length;
   };
 
   return (
@@ -196,9 +196,7 @@ export default function Categories() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
-            </DialogTitle>
+            <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
             <DialogDescription>
               {editingCategory
                 ? 'Atualize as informações da categoria'
@@ -229,9 +227,7 @@ export default function Categories() {
             <Button variant="outline" onClick={handleCloseDialog}>
               Cancelar
             </Button>
-            <Button onClick={handleSave}>
-              {editingCategory ? 'Atualizar' : 'Criar'}
-            </Button>
+            <Button onClick={handleSave}>{editingCategory ? 'Atualizar' : 'Criar'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -248,7 +244,10 @@ export default function Categories() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

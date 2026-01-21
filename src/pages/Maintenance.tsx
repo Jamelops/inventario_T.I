@@ -8,7 +8,13 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { PriorityBadge } from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MaintenanceStatus, maintenanceStatusLabels, MaintenanceTask, MaintenancePriority, priorityLabels } from '@/types';
+import {
+  MaintenanceStatus,
+  maintenanceStatusLabels,
+  MaintenanceTask,
+  MaintenancePriority,
+  priorityLabels,
+} from '@/types';
 import { MaintenanceCardDialog } from '@/components/maintenance/MaintenanceCardDialog';
 import { cn } from '@/lib/utils';
 import { exportToExcel, formatDate, ExportColumn } from '@/lib/export-to-excel';
@@ -23,7 +29,12 @@ const columnColors: Record<MaintenanceStatus, string> = {
 };
 
 export default function Maintenance() {
-  const { maintenanceTasks = [], loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
+  const {
+    maintenanceTasks = [],
+    loading,
+    moveMaintenanceTask,
+    updateMaintenanceTask,
+  } = useMaintenanceTasks();
   const { canEdit } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -31,8 +42,8 @@ export default function Maintenance() {
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const getTasksByStatus = (status: MaintenanceStatus) => 
-    (maintenanceTasks || []).filter(t => t.status === status);
+  const getTasksByStatus = (status: MaintenanceStatus) =>
+    (maintenanceTasks || []).filter((t) => t.status === status);
 
   if (loading) {
     return (
@@ -74,11 +85,23 @@ export default function Maintenance() {
       { header: 'ID', key: 'id' },
       { header: 'Descrição', key: 'descricao' },
       { header: 'Ativo Relacionado', key: 'assetNome' },
-      { header: 'Status', key: 'status', format: (v) => maintenanceStatusLabels[v as MaintenanceStatus] || v },
-      { header: 'Prioridade', key: 'prioridade', format: (v) => priorityLabels[v as MaintenancePriority] || v },
+      {
+        header: 'Status',
+        key: 'status',
+        format: (v) => maintenanceStatusLabels[v as MaintenanceStatus] || v,
+      },
+      {
+        header: 'Prioridade',
+        key: 'prioridade',
+        format: (v) => priorityLabels[v as MaintenancePriority] || v,
+      },
       { header: 'Responsável', key: 'responsavel' },
       { header: 'Data Agendada', key: 'dataAgendada', format: (v) => formatDate(v) },
-      { header: 'Data de Conclusão', key: 'dataConclusao', format: (v) => v ? formatDate(v) : '' },
+      {
+        header: 'Data de Conclusão',
+        key: 'dataConclusao',
+        format: (v) => (v ? formatDate(v) : ''),
+      },
     ];
     exportToExcel(maintenanceTasks || [], columns, { filename: 'manutencao', toast });
   };
@@ -98,21 +121,12 @@ export default function Maintenance() {
         breadcrumbs={[{ label: 'Manutenção' }]}
         actions={
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExportToExcel}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
               <Download className="w-4 h-4" />
               Exportar para Excel
             </Button>
             {userCanEdit && (
-              <Button 
-                size="sm"
-                onClick={() => navigate('/maintenance/new')}
-                className="gap-2"
-              >
+              <Button size="sm" onClick={() => navigate('/maintenance/new')} className="gap-2">
                 <Plus className="w-4 h-4" />
                 Nova Tarefa
               </Button>
@@ -122,7 +136,7 @@ export default function Maintenance() {
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {columns.map(status => (
+        {columns.map((status) => (
           <div
             key={status}
             onDrop={(e) => handleDrop(e, status)}
@@ -139,10 +153,11 @@ export default function Maintenance() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 min-h-48">
-                {getTasksByStatus(status).map(task => {
+                {getTasksByStatus(status).map((task) => {
                   const daysInMaintenance = getDaysInMaintenance(task.dataAgendada);
-                  const showWarning = (status === 'pendente' || status === 'em_andamento') && daysInMaintenance > 3;
-                  
+                  const showWarning =
+                    (status === 'pendente' || status === 'em_andamento') && daysInMaintenance > 3;
+
                   return (
                     <div
                       key={task.id}
@@ -162,7 +177,7 @@ export default function Maintenance() {
                       <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                         {task.descricao}
                       </p>
-                      
+
                       {/* Extended info */}
                       {task.localManutencao && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
@@ -176,7 +191,7 @@ export default function Maintenance() {
                           <span className="truncate">{task.situacaoEquipamento}</span>
                         </div>
                       )}
-                      
+
                       <div className="flex items-center justify-between text-xs text-muted-foreground mt-2 pt-2 border-t">
                         <span className="flex items-center gap-1">
                           <User className="h-3 w-3" />
@@ -184,10 +199,13 @@ export default function Maintenance() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(task.dataAgendada).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                          {new Date(task.dataAgendada).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'short',
+                          })}
                         </span>
                       </div>
-                      
+
                       {showWarning && (
                         <div className="flex items-center gap-1 text-xs text-amber-600 mt-2">
                           <Clock className="h-3 w-3" />

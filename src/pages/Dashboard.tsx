@@ -11,10 +11,23 @@ import { DashboardCustomizer } from '@/components/dashboard/DashboardCustomizer'
 import { categoryLabels, DashboardWidget } from '@/types';
 import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+const COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 export default function Dashboard() {
-  const { assets, licenses, dashboardConfig, updateDashboardConfig, assetsLoading, licensesLoading } = useData();
+  const {
+    assets,
+    licenses,
+    dashboardConfig,
+    updateDashboardConfig,
+    assetsLoading,
+    licensesLoading,
+  } = useData();
   const { tasks, loading: maintenanceLoading } = useMaintenanceTasks();
 
   if (assetsLoading || licensesLoading || maintenanceLoading) {
@@ -27,16 +40,21 @@ export default function Dashboard() {
 
   // Calculate KPIs
   const totalAssets = assets.length;
-  const assetsInMaintenance = assets.filter(a => a.status === 'manutencao').length;
-  const expiredLicenses = licenses.filter(l => l.status === 'vencida' || l.status === 'vencendo').length;
+  const assetsInMaintenance = assets.filter((a) => a.status === 'manutencao').length;
+  const expiredLicenses = licenses.filter(
+    (l) => l.status === 'vencida' || l.status === 'vencendo'
+  ).length;
   const totalValue = assets.reduce((sum, a) => sum + (a.valor || 0), 0);
 
   // Category distribution for pie chart
   const categoryData = Object.entries(
-    assets.reduce((acc, asset) => {
-      acc[asset.categoria] = (acc[asset.categoria] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>)
+    assets.reduce(
+      (acc, asset) => {
+        acc[asset.categoria] = (acc[asset.categoria] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    )
   ).map(([name, value]) => ({
     name: categoryLabels[name as keyof typeof categoryLabels] || name,
     value,
@@ -44,11 +62,11 @@ export default function Dashboard() {
 
   // Upcoming items
   const upcomingLicenses = licenses
-    .filter(l => l.status === 'vencendo' || l.status === 'vencida')
+    .filter((l) => l.status === 'vencendo' || l.status === 'vencida')
     .slice(0, 5);
 
   const pendingTasks = tasks
-    .filter(t => t.status === 'pendente' || t.status === 'em_andamento')
+    .filter((t) => t.status === 'pendente' || t.status === 'em_andamento')
     .slice(0, 5);
 
   const handleUpdateWidgets = (widgets: DashboardWidget[]) => {
@@ -56,10 +74,10 @@ export default function Dashboard() {
   };
 
   const visibleWidgets = dashboardConfig.widgets
-    .filter(w => w.visible)
+    .filter((w) => w.visible)
     .sort((a, b) => a.order - b.order);
 
-  const isWidgetVisible = (id: string) => visibleWidgets.some(w => w.id === id);
+  const isWidgetVisible = (id: string) => visibleWidgets.some((w) => w.id === id);
 
   const renderWidget = (widgetId: string) => {
     switch (widgetId) {
@@ -137,11 +155,16 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {upcomingLicenses.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma licença próxima do vencimento</p>
+                <p className="text-sm text-muted-foreground">
+                  Nenhuma licença próxima do vencimento
+                </p>
               ) : (
                 <div className="space-y-3">
-                  {upcomingLicenses.map(license => (
-                    <div key={license.id} className="flex items-center justify-between rounded-lg border p-3">
+                  {upcomingLicenses.map((license) => (
+                    <div
+                      key={license.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div>
                         <p className="font-medium text-sm">{license.nome}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -172,8 +195,11 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground">Nenhuma manutenção pendente</p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {pendingTasks.map(task => (
-                    <div key={task.id} className="flex items-center justify-between rounded-lg border p-3">
+                  {pendingTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div>
                         <p className="font-medium text-sm">{task.assetNome}</p>
                         <p className="text-xs text-muted-foreground">{task.descricao}</p>
@@ -215,9 +241,7 @@ export default function Dashboard() {
 
       {/* Grid para os demais widgets */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {visibleWidgets
-          .filter(w => w.id !== 'kpis')
-          .map(widget => renderWidget(widget.id))}
+        {visibleWidgets.filter((w) => w.id !== 'kpis').map((widget) => renderWidget(widget.id))}
       </div>
     </div>
   );

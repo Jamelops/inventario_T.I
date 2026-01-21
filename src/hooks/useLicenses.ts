@@ -24,7 +24,10 @@ const dbToLicense = (dbLicense: DbLicense): License => ({
   dataAtualizacao: dbLicense.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
 });
 
-const licenseToDbInsert = (license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>, userId: string): DbLicenseInsert => ({
+const licenseToDbInsert = (
+  license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>,
+  userId: string
+): DbLicenseInsert => ({
   nome: license.nome,
   tipo: license.tipo,
   quantidade_total: license.quantidadeTotal,
@@ -85,7 +88,9 @@ export function useLicenses() {
     fetchLicenses();
   }, [fetchLicenses]);
 
-  const addLicense = async (license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>): Promise<License | null> => {
+  const addLicense = async (
+    license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>
+  ): Promise<License | null> => {
     if (!user) {
       toast.error('Usuário não autenticado');
       return null;
@@ -101,7 +106,7 @@ export function useLicenses() {
       if (error) throw error;
 
       const newLicense = dbToLicense(data);
-      setLicenses(prev => [newLicense, ...prev]);
+      setLicenses((prev) => [newLicense, ...prev]);
       toast.success('Licença criada com sucesso');
       return newLicense;
     } catch (error: any) {
@@ -120,11 +125,13 @@ export function useLicenses() {
 
       if (error) throw error;
 
-      setLicenses(prev => prev.map(license =>
-        license.id === id
-          ? { ...license, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
-          : license
-      ));
+      setLicenses((prev) =>
+        prev.map((license) =>
+          license.id === id
+            ? { ...license, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
+            : license
+        )
+      );
       toast.success('Licença atualizada com sucesso');
       return true;
     } catch (error: any) {
@@ -136,14 +143,11 @@ export function useLicenses() {
 
   const deleteLicense = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('licenses')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('licenses').delete().eq('id', id);
 
       if (error) throw error;
 
-      setLicenses(prev => prev.filter(license => license.id !== id));
+      setLicenses((prev) => prev.filter((license) => license.id !== id));
       toast.success('Licença excluída com sucesso');
       return true;
     } catch (error: any) {
@@ -154,7 +158,7 @@ export function useLicenses() {
   };
 
   const getLicenseById = (id: string): License | undefined => {
-    return licenses.find(license => license.id === id);
+    return licenses.find((license) => license.id === id);
   };
 
   return {
