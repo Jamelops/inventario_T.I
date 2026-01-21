@@ -15,7 +15,7 @@ export const AssetCreateSchema = z.object({
   serialNumber: z.string()
     .min(1, 'Número de série é obrigatório')
     .max(100, 'Máximo 100 caracteres')
-    .regex(/^[A-Z0-9\-\.]+$/i, 'Apenas letras, números, hífens e pontos permitidos')
+    .regex(/^[A-Z0-9\-.]+$/i, 'Apenas letras, números, hífens e pontos permitidos')
     .toUpperCase(),
 
   price: z.number()
@@ -67,7 +67,7 @@ export const LicenseCreateSchema = z.object({
   licenseKey: z.string()
     .min(5, 'Chave de licença muito curta')
     .max(255, 'Máximo 255 caracteres')
-    .regex(/^[A-Z0-9\-]+$/i, 'Formato de chave inválido'),
+    .regex(/^[A-Z0-9-]+$/i, 'Formato de chave inválido'),
 
   expiryDate: z.string()
     .refine(date => new Date(date) > new Date(), 'Data de expiração deve ser no futuro'),
