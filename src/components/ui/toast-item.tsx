@@ -51,23 +51,16 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
   const IconComponent = config.icon;
   const duration = toast.duration || 4000;
 
-  // DEBUG: Log renderização
-  useEffect(() => {
-    console.log('%c[ToastItem] Renderizado', 'color: #2563eb; font-weight: bold;', {
-      id: toast.id,
-      type: toast.type,
-      message: toast.message,
-      messageLength: toast.message?.length || 0,
-      messageIsEmpty: !toast.message || toast.message.trim().length === 0,
-      duration,
-      config: Object.keys(config),
-    });
-  }, [toast, config, duration]);
-
+  // ✅ Validate onClose is a function before using
   const handleClose = useCallback(() => {
     setIsExiting(true);
     setTimeout(() => {
-      onClose(toast.id);
+      // ✅ Check if onClose is actually a function
+      if (typeof onClose === 'function') {
+        onClose(toast.id);
+      } else {
+        console.warn('[ToastItem] onClose is not a function:', typeof onClose);
+      }
     }, 300);
   }, [onClose, toast.id]);
 
@@ -89,6 +82,9 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
       handleClose();
     }
   }, [progress, handleClose]);
+
+  // ✅ Render message safely
+  const displayMessage = toast.message ?? '(mensagem vazia)';
 
   return (
     <div
@@ -113,9 +109,9 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
                 config.textColor
               )}
               data-testid="toast-message"
-              data-message={toast.message}
+              data-message={displayMessage}
             >
-              {toast.message || '(mensagem vazia)'}
+              {displayMessage}
             </p>
           </div>
           <button
