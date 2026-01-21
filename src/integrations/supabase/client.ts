@@ -2,11 +2,23 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
+// Debug logging in development
+if (import.meta.env.DEV) {
+  console.log('🔍 [Supabase Client] Environment Check:', {
+    url: SUPABASE_URL ? '✅ Set' : '❌ Missing',
+    key: SUPABASE_PUBLISHABLE_KEY ? '✅ Set' : '❌ Missing',
+  });
+}
+
+// Warn if credentials are missing but don't throw - app can handle gracefully
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('Missing Supabase environment variables');
+  console.warn(
+    '⚠️  [Supabase Client] Missing environment variables. ' +
+    'Make sure .env has VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY'
+  );
 }
 
 // Import the supabase client like this:
