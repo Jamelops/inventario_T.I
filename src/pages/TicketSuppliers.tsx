@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { useTickets } from '@/contexts/TicketContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { TicketSupplier } from '@/hooks/useTicketSuppliers';
 
 export default function TicketSuppliers() {
