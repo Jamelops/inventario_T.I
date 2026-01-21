@@ -36,53 +36,73 @@ export default function Profiles() {
   const [loadingProfiles, setLoadingProfiles] = useState(true);
   const [activatingEmail, setActivatingEmail] = useState<string | null>(null);
   const [showUserCreationModal, setShowUserCreationModal] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
+  // Check auth and permissions
   useEffect(() => {
-    if (!user && !loading) {
+    if (loading) return;
+
+    // If not authenticated, redirect to auth
+    if (!user) {
       navigate('/auth');
       return;
     }
-    
-    if (!loading && !isAdmin()) {
+
+    // If not admin, redirect to home
+    if (!isAdmin()) {
       navigate('/');
-    }
-  }, [user, loading, isAdmin, navigate]);
-
-  useEffect(() => {
-    if (isAdmin()) {
-      fetchProfiles();
-      fetchUserRoles();
-    }
-  }, [isAdmin]);
-
-  const fetchProfiles = async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to fetch profiles');
-      }
       return;
     }
-    setProfiles(data as FullProfile[]);
-    setLoadingProfiles(false);
+
+    // Auth check complete
+    setHasCheckedAuth(true);
+  }, [user, loading, isAdmin, navigate]);
+
+  // Only fetch if auth check passed
+  useEffect(() => {
+    if (!hasCheckedAuth) return;
+
+    fetchProfiles();
+    fetchUserRoles();
+  }, [hasCheckedAuth]);
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch profiles:', error);
+        }
+        return;
+      }
+      setProfiles(data as FullProfile[]);
+    } finally {
+      setLoadingProfiles(false);
+    }
   };
 
   const fetchUserRoles = async () => {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('user_id, role');
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
 
-    if (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to fetch user roles');
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch user roles:', error);
+        }
+        return;
       }
-      return;
+      setUserRoles(data as UserRole[]);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error fetching roles:', error);
+      }
     }
-    setUserRoles(data as UserRole[]);
   };
 
   const updateProfileStatus = async (userId: string, status: 'pending' | 'approved' | 'rejected') => {
@@ -191,7 +211,8 @@ export default function Profiles() {
     }
   };
 
-  if (loading || loadingProfiles) {
+  // Show loading during auth check
+  if (loading || !hasCheckedAuth) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -199,6 +220,7 @@ export default function Profiles() {
     );
   }
 
+  // Should not reach here if not admin (redirect happens in useEffect)
   if (!isAdmin()) {
     return null;
   }
