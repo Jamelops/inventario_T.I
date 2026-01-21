@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { User, CheckCircle, Clock, XCircle, Shield, Mail } from 'lucide-react';
 
 interface FullProfile {
