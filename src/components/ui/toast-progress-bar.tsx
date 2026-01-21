@@ -1,6 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/useToast';
 
+const colorMap = {
+  success: 'bg-emerald-500',
+  error: 'bg-red-500',
+  warning: 'bg-amber-500',
+  info: 'bg-blue-500',
+} as const;
+
+// Default color for unknown types
+const DEFAULT_COLOR = 'bg-gray-300';
+
 export function ToastProgressBar() {
   const { toasts } = useToast();
   const [progress, setProgress] = useState(100);
@@ -10,17 +20,11 @@ export function ToastProgressBar() {
   const duration = activeToast?.duration || 4000;
   const activeToastId = activeToast?.id;
 
-  // Cores por tipo de toast
-  const colorMap = {
-    success: 'bg-emerald-500',
-    error: 'bg-red-500',
-    warning: 'bg-amber-500',
-    info: 'bg-blue-500',
-  };
-
-  const progressColor = activeToast
-    ? colorMap[activeToast.type as keyof typeof colorMap]
-    : 'bg-gray-300';
+  // ✅ Safe color retrieval with fallback
+  const progressColor =
+    activeToast && activeToast.type in colorMap
+      ? colorMap[activeToast.type as keyof typeof colorMap]
+      : DEFAULT_COLOR;
 
   // Anima a barra de progressão
   useEffect(() => {
