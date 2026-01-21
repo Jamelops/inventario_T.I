@@ -20,7 +20,7 @@ import { Plus } from 'lucide-react';
 import { TicketInteraction, ticketInteractionTypeLabels } from '@/types/tickets';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTickets } from '@/contexts/TicketContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 
 interface AddInteractionDialogProps {
   ticketId: string;
