@@ -235,6 +235,7 @@ export default function Auth() {
                     placeholder="seu@email.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -246,6 +247,7 @@ export default function Auth() {
                     placeholder="Digite sua senha"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
+                    autoComplete="current-password"
                     required
                   />
                 </div>
@@ -265,6 +267,7 @@ export default function Auth() {
                     placeholder="Bruno Lopes"
                     value={signupUsername}
                     onChange={(e) => setSignupUsername(e.target.value)}
+                    autoComplete="name"
                     required
                   />
                   <p className="text-xs text-muted-foreground">Use seu nome completo ou apelido</p>
@@ -277,6 +280,7 @@ export default function Auth() {
                     placeholder="seu@email.com"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -288,6 +292,7 @@ export default function Auth() {
                     placeholder="Digite sua senha"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
+                    autoComplete="new-password"
                     required
                   />
                   <p className="text-xs text-muted-foreground">
@@ -302,6 +307,7 @@ export default function Auth() {
                     placeholder="Repita sua senha"
                     value={signupConfirmPassword}
                     onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
                     required
                   />
                 </div>
