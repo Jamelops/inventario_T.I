@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/useToast';
 
 export function ToastProgressBar() {
   const { toasts } = useToast();
   const [progress, setProgress] = useState(100);
 
-  // Pega o primeiro toast ativo
-  const activeToast = toasts.length > 0 ? toasts[0] : null;
+  // Péga o primeiro toast ativo
+  const activeToast = useMemo(() => (toasts.length > 0 ? toasts[0] : null), [toasts]);
   const duration = activeToast?.duration || 4000;
+  const activeToastId = activeToast?.id;
 
   // Cores por tipo de toast
   const colorMap = {
@@ -21,7 +22,7 @@ export function ToastProgressBar() {
     ? colorMap[activeToast.type as keyof typeof colorMap]
     : 'bg-gray-300';
 
-  // Anima a barra de progresso
+  // Anima a barra de progressão
   useEffect(() => {
     if (!activeToast || duration <= 0) {
       setProgress(100);
@@ -38,7 +39,7 @@ export function ToastProgressBar() {
     }, 50);
 
     return () => clearInterval(interval);
-  }, [activeToast?.id, duration]);
+  }, [activeToastId, duration]);
 
   // Se não há toast ativo, não mostra nada
   if (!activeToast) return null;
