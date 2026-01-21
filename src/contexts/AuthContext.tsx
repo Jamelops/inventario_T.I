@@ -163,11 +163,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (cachedRole) setUserRole(cachedRole);
             if (cachedUsernames) setProfileUsernames(cachedUsernames);
             
-            // Show UI immediately with cached data
+            // CRITICAL: Set loading to false immediately - never block UI
             setLoading(false);
           }
           
-          // BACKGROUND: Fetch fresh data with timeout
+          // BACKGROUND: Fetch fresh data with timeout - but don't block loading
           if (profileLoadTimeout) clearTimeout(profileLoadTimeout);
           profileLoadTimeout = setTimeout(async () => {
             try {
@@ -177,8 +177,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               ]);
               
               if (mounted) {
-                if (profileData.status === 'fulfilled') setProfile(profileData.value);
-                if (roleData.status === 'fulfilled') setUserRole(roleData.value);
+                // Update with fresh data
+                if (profileData.status === 'fulfilled') {
+                  if (profileData.value) {
+                    setProfile(profileData.value);
+                  }
+                }
+                if (roleData.status === 'fulfilled') {
+                  if (roleData.value) {
+                    setUserRole(roleData.value);
+                  }
+                }
               }
             } catch (error) {
               if (import.meta.env.DEV) {
@@ -213,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Safety timeout: 2 seconds max (loading state should be false by then)
+    // Safety timeout: 1 second max - ALWAYS unblock the UI
     loadingTimeout = setTimeout(() => {
       if (mounted && loading) {
         if (import.meta.env.DEV) {
@@ -221,7 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false);
       }
-    }, 2000);
+    }, 1000);
 
     return () => {
       mounted = false;
@@ -302,11 +311,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Fetch fresh data in background with timeout
         fetchProfile(data.user.id)
-          .then(p => setProfile(p))
-          .catch(err => console.error('Profile fetch error:', err));
+          .then(p => {
+            if (p) setProfile(p);
+          })
+          .catch(err => {
+            if (import.meta.env.DEV) console.error('Profile fetch error:', err);
+          });
         fetchUserRole(data.user.id)
-          .then(r => setUserRole(r))
-          .catch(err => console.error('Role fetch error:', err));
+          .then(r => {
+            if (r) setUserRole(r);
+          })
+          .catch(err => {
+            if (import.meta.env.DEV) console.error('Role fetch error:', err);
+          });
         
         // Fetch usernames deferred
         setTimeout(() => {
