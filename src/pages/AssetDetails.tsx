@@ -24,7 +24,7 @@ import { useTickets } from '@/contexts/TicketContext';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { HardwareSpecsDisplay } from '@/components/assets/HardwareSpecsDisplay';
 import { TicketStatusBadge } from '@/components/tickets/TicketStatusBadge';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
 import { categoryLabels, maintenanceStatusLabels } from '@/types';
 
