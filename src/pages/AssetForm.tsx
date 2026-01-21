@@ -30,7 +30,7 @@ import {
   RequiredFieldIndicator,
   RequiredFieldsHint,
 } from '@/components/shared/RequiredFieldIndicator';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useMoneyFormat } from '@/hooks/useMoneyFormat';
 import { useAuth } from '@/contexts/AuthContext';
 import type { AssetStatus, AssetCategory } from '@/types';
