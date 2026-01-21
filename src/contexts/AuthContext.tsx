@@ -71,7 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         3000 // 3 second timeout
       );
 
-      if (error) throw error;
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Profile fetch error:', error);
+        }
+        return null;
+      }
       
       // Cache the result (24 hour TTL)
       if (data) {
@@ -98,7 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         3000 // 3 second timeout
       );
 
-      if (error) throw error;
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Role fetch error:', error);
+        }
+        return null;
+      }
       
       const role = data?.role as AppRole | null;
       
@@ -122,7 +132,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.rpc('get_all_usernames'),
         5000 // 5 second timeout for RPC
       );
-      if (error) throw error;
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch usernames:', error);
+        }
+        return;
+      }
       
       // Cache the result (1 hour TTL)
       await authCache.set('usernames', data, 60 * 60 * 1000).catch(() => {});
@@ -182,10 +197,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   if (profileData.value) {
                     setProfile(profileData.value);
                   }
+                  // Log if profile not found
+                  if (!profileData.value && import.meta.env.DEV) {
+                    console.warn('No profile found for user:', session.user.id);
+                  }
                 }
                 if (roleData.status === 'fulfilled') {
                   if (roleData.value) {
                     setUserRole(roleData.value);
+                  }
+                  // Default to viewer if no role
+                  if (!roleData.value && import.meta.env.DEV) {
+                    console.warn('No role found for user, defaulting to viewer');
                   }
                 }
               }
@@ -253,7 +276,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (userRole === 'admin' || userRole === 'manager') && profile?.status === 'approved';
   };
 
-  const isApproved = profile?.status === 'approved';
+  // FIXED: Handle case where profile might be null
+  const isApproved = profile?.status === 'approved' || false;
 
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -297,8 +321,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Sign in successful:', data.user?.id);
       }
 
-      // CRITICAL: Manually trigger auth state update if onAuthStateChange doesn't fire
-      if (data.session) {
+      // CRITICAL: Set loading to false - never block on data fetch
+      if (data.session && data.user) {
         // Manually restore from cache
         const cachedProfile = await authCache.get('profile').catch(() => null);
         const cachedRole = await authCache.get('role').catch(() => null);
@@ -307,28 +331,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(data.user);
         if (cachedProfile) setProfile(cachedProfile);
         if (cachedRole) setUserRole(cachedRole);
-        setLoading(false); // CRITICAL: Always set to false to unblock UI
+        setLoading(false); // CRITICAL: Always set to false immediately
         
-        // Fetch fresh data in background with timeout
-        fetchProfile(data.user.id)
-          .then(p => {
-            if (p) setProfile(p);
-          })
-          .catch(err => {
-            if (import.meta.env.DEV) console.error('Profile fetch error:', err);
-          });
-        fetchUserRole(data.user.id)
-          .then(r => {
-            if (r) setUserRole(r);
-          })
-          .catch(err => {
-            if (import.meta.env.DEV) console.error('Role fetch error:', err);
-          });
-        
-        // Fetch usernames deferred
+        // Fetch fresh data in background - completely non-blocking
         setTimeout(() => {
+          fetchProfile(data.user.id)
+            .then(p => {
+              if (p) setProfile(p);
+            })
+            .catch(err => {
+              if (import.meta.env.DEV) console.error('Profile fetch error:', err);
+            });
+          
+          fetchUserRole(data.user.id)
+            .then(r => {
+              if (r) setUserRole(r);
+            })
+            .catch(err => {
+              if (import.meta.env.DEV) console.error('Role fetch error:', err);
+            });
+          
+          // Fetch usernames
           fetchProfileUsernames();
-        }, 200);
+        }, 0);
       }
 
       toast({
