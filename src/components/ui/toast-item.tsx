@@ -37,13 +37,17 @@ const toastConfig = {
     iconColor: 'text-blue-600 dark:text-blue-400',
     textColor: 'text-blue-900 dark:text-blue-100',
   },
-};
+} as const;
+
+// Default config for unknown types (defensive programming)
+const DEFAULT_CONFIG = toastConfig.info;
 
 export function ToastItem({ toast, onClose }: ToastItemProps) {
   const [isExiting, setIsExiting] = useState(false);
   const [progress, setProgress] = useState(100);
 
-  const config = toastConfig[toast.type];
+  // ✅ Safe config retrieval with fallback
+  const config = toastConfig[toast.type as keyof typeof toastConfig] ?? DEFAULT_CONFIG;
   const IconComponent = config.icon;
   const duration = toast.duration || 4000;
 
