@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { Category } from '@/types';
 
 export default function Categories() {
@@ -112,8 +112,8 @@ export default function Categories() {
         const success = await deleteCategory(deletingCategory.id);
         if (success) {
           toast({
-            title: 'Categoria excluída',
-            description: `${deletingCategory.nome} foi excluída com sucesso.`,
+            title: 'Categoria excluída',
+            description: `${deletingCategory.nome} foi excluída com sucesso.`,
           });
         }
       }
