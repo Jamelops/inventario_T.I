@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { Toast } from '@/types/toast';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,14 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
       duration,
       config: Object.keys(config),
     });
-  }, [toast, config]);
+  }, [toast, config, duration]);
+
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onClose(toast.id);
+    }, 300);
+  }, [onClose, toast.id]);
 
   useEffect(() => {
     if (duration <= 0) return;
@@ -77,14 +84,7 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
     if (progress <= 0) {
       handleClose();
     }
-  }, [progress]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      onClose(toast.id);
-    }, 300);
-  };
+  }, [progress, handleClose]);
 
   return (
     <div
