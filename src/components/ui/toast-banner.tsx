@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { Toast } from '@/types/toast';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,13 @@ export function ToastBanner({ toast, onClose }: ToastBannerProps) {
   const IconComponent = config.icon;
   const duration = toast.duration || 4000;
 
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onClose(toast.id);
+    }, 300);
+  }, [onClose, toast.id]);
+
   // Auto-close com barra de progresso
   useEffect(() => {
     if (duration <= 0) return;
@@ -65,14 +72,7 @@ export function ToastBanner({ toast, onClose }: ToastBannerProps) {
     if (progress <= 0) {
       handleClose();
     }
-  }, [progress]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      onClose(toast.id);
-    }, 300);
-  };
+  }, [progress, handleClose]);
 
   return (
     <div
