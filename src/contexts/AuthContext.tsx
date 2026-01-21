@@ -220,7 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (profileLoadTimeout) clearTimeout(profileLoadTimeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loading]);
 
   const hasRole = (role: AppRole): boolean => {
     return userRole === role;
