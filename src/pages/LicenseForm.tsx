@@ -25,7 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/DataContext';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import type { License, LicenseType, LicenseStatus } from '@/types';
 
 const licenseSchema = z.object({
