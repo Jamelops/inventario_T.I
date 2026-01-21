@@ -6,14 +6,22 @@ import tseslint from "@typescript-eslint/eslint-plugin";
 import tsparser from "@typescript-eslint/parser";
 
 export default [
-  { ignores: ["dist"] },
+  { ignores: ["dist", "node_modules"] },
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: "module",
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        React: "readonly",
+      },
       parser: tsparser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
     },
     plugins: {
       "@typescript-eslint": tseslint,
@@ -24,8 +32,12 @@ export default [
       ...js.configs.recommended.rules,
       ...tseslint.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
       "@typescript-eslint/no-unused-vars": "off",
+      "no-undef": "off",
     },
   },
 ];
