@@ -142,7 +142,7 @@ export function UserCreationModal({ isOpen, onClose, onSuccess }: UserCreationMo
             <Input
               id="modal-username"
               type="text"
-              placeholder="Bruno Lopes"
+              placeholder="Seu nome de usuário"
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               disabled={isLoading}
