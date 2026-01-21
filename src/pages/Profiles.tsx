@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { UserCreationModal } from '@/components/UserCreationModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +35,7 @@ export default function Profiles() {
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
   const [activatingEmail, setActivatingEmail] = useState<string | null>(null);
+  const [showUserCreationModal, setShowUserCreationModal] = useState(false);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -205,175 +208,193 @@ export default function Profiles() {
   const rejectedProfiles = profiles.filter(p => p.status === 'rejected');
 
   return (
-    <div>
+    <>
       <PageHeader
         title="Gerenciamento de Usuários"
         description="Aprove, rejeite e gerencie permissões de usuários"
         breadcrumbs={[{ label: 'Usuários' }]}
+        actions={
+          <Button
+            size="sm"
+            onClick={() => setShowUserCreationModal(true)}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Novo Usuário
+          </Button>
+        }
       />
 
-      {/* Pending Approvals */}
-      {pendingProfiles.length > 0 && (
+      <UserCreationModal
+        isOpen={showUserCreationModal}
+        onClose={() => setShowUserCreationModal(false)}
+        onSuccess={fetchProfiles}
+      />
+
+      <div>
+        {/* Pending Approvals */}
+        {pendingProfiles.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-500" />
+              Aguardando Aprovação ({pendingProfiles.length})
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {pendingProfiles.map((profile) => (
+                <Card key={profile.id} className="border-amber-200 bg-amber-50/50">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-amber-100 text-amber-800">
+                          {profile.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base truncate">{profile.username}</CardTitle>
+                        <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      Solicitado em {new Date(profile.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => updateProfileStatus(profile.user_id, 'approved')}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Aprovar
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          className="flex-1"
+                          onClick={() => updateProfileStatus(profile.user_id, 'rejected')}
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Rejeitar
+                        </Button>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => activateUserEmail(profile.email)}
+                        disabled={activatingEmail === profile.email}
+                      >
+                        <Mail className="h-4 w-4 mr-1" />
+                        {activatingEmail === profile.email ? 'Ativando...' : 'Ativar Email'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Approved Users */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-amber-500" />
-            Aguardando Aprovação ({pendingProfiles.length})
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            Usuários Ativos ({approvedProfiles.length})
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {pendingProfiles.map((profile) => (
-              <Card key={profile.id} className="border-amber-200 bg-amber-50/50">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-amber-100 text-amber-800">
-                        {profile.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base truncate">{profile.username}</CardTitle>
-                      <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+            {approvedProfiles.map((profile) => {
+              const role = getUserRole(profile.user_id);
+              return (
+                <Card key={profile.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {profile.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-base truncate">{profile.username}</CardTitle>
+                          {role === 'admin' && <Shield className="h-4 w-4 text-primary" />}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-xs text-muted-foreground">
-                    Solicitado em {new Date(profile.created_at).toLocaleDateString('pt-BR')}
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => updateProfileStatus(profile.user_id, 'approved')}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Aprovar
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        className="flex-1"
-                        onClick={() => updateProfileStatus(profile.user_id, 'rejected')}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Rejeitar
-                      </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Permissão:</span>
+                      <Select value={role} onValueChange={(value) => updateUserRole(profile.user_id, value as any)}>
+                        <SelectTrigger className="w-32 h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="manager">Gerente</SelectItem>
+                          <SelectItem value="viewer">Visualizador</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Button
-                      size="sm"
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Status:</span>
+                      {getStatusBadge(profile.status)}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Rejected Users */}
+        {rejectedProfiles.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-500" />
+              Usuários Rejeitados ({rejectedProfiles.length})
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {rejectedProfiles.map((profile) => (
+                <Card key={profile.id} className="opacity-60">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-muted text-muted-foreground">
+                          {profile.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base truncate">{profile.username}</CardTitle>
+                        <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Button 
+                      size="sm" 
                       variant="outline"
                       className="w-full"
-                      onClick={() => activateUserEmail(profile.email)}
-                      disabled={activatingEmail === profile.email}
+                      onClick={() => updateProfileStatus(profile.user_id, 'approved')}
                     >
-                      <Mail className="h-4 w-4 mr-1" />
-                      {activatingEmail === profile.email ? 'Ativando...' : 'Ativar Email'}
+                      Reativar Usuário
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Approved Users */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <CheckCircle className="h-5 w-5 text-green-500" />
-          Usuários Ativos ({approvedProfiles.length})
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {approvedProfiles.map((profile) => {
-            const role = getUserRole(profile.user_id);
-            return (
-              <Card key={profile.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {profile.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base truncate">{profile.username}</CardTitle>
-                        {role === 'admin' && <Shield className="h-4 w-4 text-primary" />}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Permissão:</span>
-                    <Select value={role} onValueChange={(value) => updateUserRole(profile.user_id, value as any)}>
-                      <SelectTrigger className="w-32 h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="manager">Gerente</SelectItem>
-                        <SelectItem value="viewer">Visualizador</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status:</span>
-                    {getStatusBadge(profile.status)}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        {profiles.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Nenhum usuário cadastrado ainda.</p>
+          </div>
+        )}
       </div>
-
-      {/* Rejected Users */}
-      {rejectedProfiles.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <XCircle className="h-5 w-5 text-red-500" />
-            Usuários Rejeitados ({rejectedProfiles.length})
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {rejectedProfiles.map((profile) => (
-              <Card key={profile.id} className="opacity-60">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-muted text-muted-foreground">
-                        {profile.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base truncate">{profile.username}</CardTitle>
-                      <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => updateProfileStatus(profile.user_id, 'approved')}
-                  >
-                    Reativar Usuário
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {profiles.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Nenhum usuário cadastrado ainda.</p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
