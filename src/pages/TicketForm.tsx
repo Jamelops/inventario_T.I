@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
-import { useTickets } from "@/hooks/useTickets";
+import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Ticket, TicketStatus, ticketStatusLabels, ticketPriorityLabels } from "@/types/tickets";
 
@@ -41,8 +41,8 @@ type TicketFormData = z.infer<typeof ticketSchema>;
 export default function TicketForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tickets, addTicket, updateTicket, getTicketById } = useTickets();
-  const { user } = useAuth();
+  const { addTicket, updateTicket, getTicketById } = useTickets();
+  const { profile } = useAuth();
 
   const isEditing = !!id;
   const existingTicket = isEditing ? getTicketById(id) : undefined;
@@ -76,8 +76,8 @@ export default function TicketForm() {
       descricao: data.descricao.trim(),
       prioridade: data.prioridade as any,
       status: "aberto" as TicketStatus,
-      responsavel: user?.user_metadata?.username || user?.email || "Usuário",
-      responsavelEmail: user?.email,
+      responsavel: profile?.username || "Usuário",
+      responsavelEmail: profile?.email,
       departamento: data.departamento?.trim() || undefined,
       dataCriacao: isEditing && existingTicket ? existingTicket.dataCriacao : now,
     };
