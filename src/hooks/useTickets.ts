@@ -227,6 +227,10 @@ export function useTickets() {
     return tickets.find(ticket => ticket.id === id);
   };
 
+  const getTicketsByAssetId = (assetId: string): Ticket[] => {
+    return tickets.filter(ticket => ticket.assetId === assetId);
+  };
+
   const changeTicketStatus = async (
     id: string,
     newStatus: TicketStatus,
@@ -311,6 +315,7 @@ export function useTickets() {
     updateTicket,
     deleteTicket,
     getTicketById,
+    getTicketsByAssetId,
     changeTicketStatus,
     addInteraction,
     duplicateTicket,
