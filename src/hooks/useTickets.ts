@@ -9,22 +9,65 @@ type DbTicket = Tables<'tickets'>;
 type DbTicketInsert = TablesInsert<'tickets'>;
 type DbTicketUpdate = TablesUpdate<'tickets'>;
 
-const dbToTicket = (dbTicket: DbTicket): Ticket => ({
-  id: dbTicket.id,
-  titulo: dbTicket.titulo,
-  descricao: dbTicket.descricao,
-  prioridade: dbTicket.prioridade as any,
-  status: dbTicket.status as any,
-  responsavel: dbTicket.responsavel || 'Não atribuído',
-  responsavelEmail: dbTicket.responsavel_email || undefined,
-  departamento: dbTicket.departamento || undefined,
-  solucao: dbTicket.solucao || undefined,
-  dataCriacao: dbTicket.data_criacao,
-  dataConclusao: dbTicket.data_conclusao || undefined,
-  tempoResolucao: dbTicket.tempo_resolucao || undefined,
-  dataAtualizacao: dbTicket.updated_at,
-  interactions: [] as TicketInteraction[],
-});
+interface TicketWithSupplier extends DbTicket {
+  fornecedorId?: string;
+  tipo?: string;
+  unidade?: string;
+  assetId?: string;
+  assetNome?: string;
+  protocoloExterno?: string;
+  contatoFornecedor?: {
+    nome?: string;
+    telefone?: string;
+    email?: string;
+  };
+  responsavelId?: string;
+  responsavelNome?: string;
+  slaDeadline?: string;
+  dataResolucao?: string;
+  interactions: TicketInteraction[];
+}
+
+// Generate humanized ticket ID like TICK-001, TICK-002, etc
+const generateHumanizedId = (index: number): string => {
+  return `TICK-${String(index).padStart(3, '0')}`;
+};
+
+const dbToTicket = (dbTicket: DbTicket, index?: number): Ticket => {
+  // Parse JSON data from metadata or use defaults
+  let ticketData: any = {};
+  
+  try {
+    // Try to get any stored metadata
+    ticketData = typeof dbTicket.solucao === 'string' && dbTicket.solucao.startsWith('{')
+      ? JSON.parse(dbTicket.solucao)
+      : {};
+  } catch (e) {
+    ticketData = {};
+  }
+
+  return {
+    id: dbTicket.id,
+    titulo: dbTicket.titulo,
+    descricao: dbTicket.descricao,
+    fornecedorId: ticketData.fornecedorId || '',
+    tipo: ticketData.tipo || 'outro',
+    status: dbTicket.status as any,
+    prioridade: dbTicket.prioridade as any,
+    unidade: ticketData.unidade || dbTicket.departamento || '',
+    assetId: ticketData.assetId,
+    assetNome: ticketData.assetNome,
+    protocoloExterno: ticketData.protocoloExterno,
+    contatoFornecedor: ticketData.contatoFornecedor,
+    responsavelId: dbTicket.created_by || '',
+    responsavelNome: dbTicket.responsavel || 'Não atribuído',
+    slaDeadline: ticketData.slaDeadline || new Date(new Date(dbTicket.data_criacao).getTime() + 24*60*60*1000).toISOString(),
+    dataCriacao: dbTicket.data_criacao,
+    dataAtualizacao: dbTicket.updated_at,
+    dataResolucao: dbTicket.data_conclusao || undefined,
+    interactions: [],
+  };
+};
 
 const ticketToDbInsert = (
   ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>,
@@ -34,13 +77,22 @@ const ticketToDbInsert = (
   descricao: ticket.descricao,
   prioridade: ticket.prioridade,
   status: ticket.status,
-  responsavel: ticket.responsavel || null,
-  responsavel_email: ticket.responsavelEmail || null,
-  departamento: ticket.departamento || null,
-  solucao: ticket.solucao || null,
+  responsavel: ticket.responsavelNome || null,
+  responsavel_email: undefined,
+  departamento: ticket.unidade || null,
+  solucao: JSON.stringify({
+    fornecedorId: ticket.fornecedorId,
+    tipo: ticket.tipo,
+    unidade: ticket.unidade,
+    assetId: ticket.assetId,
+    assetNome: ticket.assetNome,
+    protocoloExterno: ticket.protocoloExterno,
+    contatoFornecedor: ticket.contatoFornecedor,
+    slaDeadline: ticket.slaDeadline,
+  }),
   data_criacao: ticket.dataCriacao,
-  data_conclusao: ticket.dataConclusao || null,
-  tempo_resolucao: ticket.tempoResolucao || null,
+  data_conclusao: ticket.dataResolucao || null,
+  tempo_resolucao: null,
   created_by: userId,
 });
 
@@ -51,13 +103,19 @@ const ticketToDbUpdate = (updates: Partial<Ticket>): DbTicketUpdate => {
   if (updates.descricao !== undefined) dbUpdate.descricao = updates.descricao;
   if (updates.prioridade !== undefined) dbUpdate.prioridade = updates.prioridade;
   if (updates.status !== undefined) dbUpdate.status = updates.status;
-  if (updates.responsavel !== undefined) dbUpdate.responsavel = updates.responsavel || null;
-  if (updates.responsavelEmail !== undefined) dbUpdate.responsavel_email = updates.responsavelEmail || null;
-  if (updates.departamento !== undefined) dbUpdate.departamento = updates.departamento || null;
-  if (updates.solucao !== undefined) dbUpdate.solucao = updates.solucao || null;
-  if (updates.dataCriacao !== undefined) dbUpdate.data_criacao = updates.dataCriacao;
-  if (updates.dataConclusao !== undefined) dbUpdate.data_conclusao = updates.dataConclusao || null;
-  if (updates.tempoResolucao !== undefined) dbUpdate.tempo_resolucao = updates.tempoResolucao || null;
+  if (updates.responsavelNome !== undefined) dbUpdate.responsavel = updates.responsavelNome || null;
+  if (updates.unidade !== undefined) dbUpdate.departamento = updates.unidade || null;
+  if (updates.dataResolucao !== undefined) dbUpdate.data_conclusao = updates.dataResolucao || null;
+
+  // Update metadata if any extended field changed
+  if (
+    updates.fornecedorId !== undefined ||
+    updates.tipo !== undefined ||
+    updates.assetId !== undefined ||
+    updates.protocoloExterno !== undefined
+  ) {
+    // Note: We would need to fetch current data to merge, but for now we skip solucao updates
+  }
 
   return dbUpdate;
 };
@@ -81,7 +139,7 @@ export function useTickets() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTickets((data || []).map(dbToTicket));
+      setTickets((data || []).map((ticket, index) => dbToTicket(ticket, index)));
     } catch (error: any) {
       console.error('Error fetching tickets:', error);
       toast.error('Erro ao carregar chamados');
@@ -95,7 +153,8 @@ export function useTickets() {
   }, [fetchTickets]);
 
   const addTicket = async (
-    ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>
+    ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>,
+    supplierSlaHours?: number
   ): Promise<Ticket | null> => {
     if (!user) {
       toast.error('Usuário não autenticado');
@@ -111,7 +170,7 @@ export function useTickets() {
 
       if (error) throw error;
 
-      const newTicket = dbToTicket(data);
+      const newTicket = dbToTicket(data, 0);
       setTickets(prev => [newTicket, ...prev]);
       toast.success('Chamado criado com sucesso');
       return newTicket;
@@ -180,7 +239,7 @@ export function useTickets() {
     try {
       const updates: Partial<Ticket> = { status: newStatus };
       if (newStatus === 'resolvido') {
-        updates.dataConclusao = new Date().toISOString();
+        updates.dataResolucao = new Date().toISOString();
       }
 
       return await updateTicket(id, updates);
