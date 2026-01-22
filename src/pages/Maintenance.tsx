@@ -22,15 +22,6 @@ const columnColors: Record<MaintenanceStatus, string> = {
   arquivado: 'border-t-slate-400',
 };
 
-// 🔥 DEBUG MODE - Set to false to disable logs
-const DEBUG = true;
-const log = (msg: string, data?: any) => {
-  if (DEBUG) {
-    const timestamp = new Date().toLocaleTimeString('pt-BR');
-    console.log(`[${timestamp}] 🏪 Maintenance: ${msg}`, data || '');
-  }
-};
-
 export default function Maintenance() {
   const { maintenanceTasks = [], loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
   const { canEdit } = useAuth();
@@ -39,9 +30,7 @@ export default function Maintenance() {
   const userCanEdit = canEdit();
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [droppedTaskId, setDroppedTaskId] = useState<string | null>(null);
-  const [dragSourceElement, setDragSourceElement] = useState<HTMLElement | null>(null);
 
   const getTasksByStatus = (status: MaintenanceStatus) => 
     (maintenanceTasks || []).filter(t => t.status === status);
@@ -54,47 +43,30 @@ export default function Maintenance() {
     );
   }
 
-  const handleDragStart = (e: React.DragEvent, taskId: string, taskDescription: string) => {
-    log(`🚀 DragStart iniciado - Task: ${taskId}`);
-    
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
     try {
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('taskId', taskId);
-      log(`✅ setData executado com sucesso - taskId: ${taskId}`);
       
       const element = e.currentTarget as HTMLElement;
-      setDragSourceElement(element);
-      setDraggedTaskId(taskId);
-      log(`🎯 draggedTaskId atualizado: ${taskId}`);
-      
-      // Add opacity to the element directly
       element.style.opacity = '0.5';
       element.style.transform = 'scale(0.95)';
-      log(`👁️ Card original com opacity = 0.5 e scale = 0.95`);
       
     } catch (error) {
-      log(`❌ Erro em DragStart:`, error);
+      console.error('Erro em DragStart:', error);
     }
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    log(`⏹️ DragEnd acionado`);
-    
     const element = e.currentTarget as HTMLElement;
     
-    // Restore element immediately
     element.style.opacity = '1';
     element.style.transform = 'scale(1)';
     element.style.transition = 'all 300ms ease-out';
-    log(`♻️ Card restaurado com opacity = 1 e scale = 1`);
     
-    // Clear state after animation completes
     setTimeout(() => {
-      setDraggedTaskId(null);
       setDroppedTaskId(null);
-      setDragSourceElement(null);
       element.style.transition = '';
-      log(`🧹 draggedTaskId limpado`);
     }, 300);
   };
 
@@ -102,43 +74,32 @@ export default function Maintenance() {
     e.preventDefault();
     e.stopPropagation();
     
-    log(`📬 Drop acionado - Status alvo: ${targetStatus}`);
-    
     try {
       const taskId = e.dataTransfer.getData('taskId');
-      log(`📋 Task ID recuperado: ${taskId}`);
       
       if (!taskId) {
-        log(`⚠️ Task ID vazio ou undefined!`);
         return;
       }
       
       if (!userCanEdit) {
-        log(`🚫 Usuário não tem permissão para editar`);
         toast.error('Você não tem permissão para editar tarefas');
         return;
       }
       
       const task = maintenanceTasks.find(t => t.id === taskId);
       if (!task) {
-        log(`❌ Task não encontrada: ${taskId}`);
         return;
       }
       
       if (task.status === targetStatus) {
-        log(`ℹ️ Task já estava no status ${targetStatus}`);
         return;
       }
       
-      // Set dropped state for visual feedback
       setDroppedTaskId(taskId);
-      
-      log(`⚙️ Movendo task ${taskId} de "${task.status}" para "${targetStatus}"`);
       await moveMaintenanceTask(taskId, targetStatus);
-      log(`✅ Task movida com sucesso!`);
       
     } catch (error) {
-      log(`❌ Erro ao fazer drop:`, error);
+      console.error('Erro ao fazer drop:', error);
       toast.error('Erro ao mover tarefa');
     }
   };
@@ -149,21 +110,17 @@ export default function Maintenance() {
   };
 
   const handleCardClick = (task: MaintenanceTask) => {
-    log(`🖱️ Card clicado - Task: ${task.id}`);
     setSelectedTask(task);
     setDialogOpen(true);
   };
 
   const handleSaveTask = async (updates: Partial<MaintenanceTask>) => {
     if (selectedTask) {
-      log(`💾 Salvando atualizações da task: ${selectedTask.id}`, updates);
       await updateMaintenanceTask(selectedTask.id, updates);
-      log(`✅ Task atualizada com sucesso!`);
     }
   };
 
   const handleExportToExcel = () => {
-    log(`📊 Exportando para Excel`);
     const columns: ExportColumn[] = [
       { header: 'ID', key: 'id' },
       { header: 'Descrição', key: 'descricao' },
@@ -175,7 +132,6 @@ export default function Maintenance() {
       { header: 'Data de Conclusão', key: 'dataConclusao', format: (v) => v ? formatDate(v) : '' },
     ];
     exportToExcel(maintenanceTasks || [], columns, { filename: 'manutencao', toast });
-    log(`✅ Exportação iniciada`);
   };
 
   const getDaysInMaintenance = (dataAgendada: string) => {
@@ -245,7 +201,7 @@ export default function Maintenance() {
                       <div
                         key={task.id}
                         draggable={userCanEdit}
-                        onDragStart={(e) => handleDragStart(e, task.id, task.descricao)}
+                        onDragStart={(e) => handleDragStart(e, task.id)}
                         onDragEnd={handleDragEnd}
                         onClick={() => handleCardClick(task)}
                         className={cn(
