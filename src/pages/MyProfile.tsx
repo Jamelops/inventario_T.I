@@ -182,10 +182,6 @@ export default function MyProfile() {
               <Lock className="h-4 w-4 mr-2" />
               Alterar Senha
             </Button>
-
-            <p className="text-xs text-muted-foreground">
-              Permissões e status são gerenciados por administradores.
-            </p>
           </CardContent>
         </Card>
       </div>
