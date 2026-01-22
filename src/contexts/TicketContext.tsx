@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import { Ticket, TicketInteraction, TicketStatus } from '@/types/tickets';
 import { TicketSupplier } from '@/hooks/useTicketSuppliers';
 
@@ -22,3 +22,11 @@ export interface TicketContextType {
 }
 
 export const TicketContext = createContext<TicketContextType | undefined>(undefined);
+
+export const useTickets = () => {
+  const context = useContext(TicketContext);
+  if (!context) {
+    throw new Error('useTickets deve ser usado dentro de TicketProvider');
+  }
+  return context;
+};
