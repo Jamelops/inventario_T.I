@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useData } from "@/contexts/DataContext";
-import { useTickets } from "@/contexts/TicketContext";
+import { useTicket } from "@/hooks/useTicket";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { HardwareSpecsDisplay } from "@/components/assets/HardwareSpecsDisplay";
 import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
@@ -34,7 +34,7 @@ const AssetDetails = () => {
   const { toast } = useToast();
   const { assets, updateAsset, assetsLoading } = useData();
   const { maintenanceTasks } = useMaintenanceTasks();
-  const { getTicketsByAssetId, getSupplierById } = useTickets();
+  const { getTicketsByAssetId, getSupplierById } = useTicket();
 
   const asset = assets.find((a) => a.id === id);
   const assetMaintenances = maintenanceTasks.filter((t) => t.assetId === id);
