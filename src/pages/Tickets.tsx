@@ -43,7 +43,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
 import { TicketKanban } from "@/components/tickets/TicketKanban";
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
-import { useTickets } from "@/contexts/TicketContext";
+import { useTickets } from "@/hooks/useTicketsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/useToast";
 import {
