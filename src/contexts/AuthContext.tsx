@@ -107,22 +107,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (import.meta.env.DEV) {
           console.error('Role fetch error:', error);
         }
-        return null;
+        return 'viewer'; // Default to viewer if not found
       }
       
-      const role = data?.role as AppRole | null;
+      const role = (data?.role as AppRole) || 'viewer';
       
       // Cache the result (24 hour TTL)
-      if (role) {
-        await authCache.set('role', role, 24 * 60 * 60 * 1000).catch(() => {});
-      }
+      await authCache.set('role', role, 24 * 60 * 60 * 1000).catch(() => {});
       
       return role;
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to fetch user role:', error);
       }
-      return null;
+      return 'viewer'; // Default to viewer on error
     }
   };
 
@@ -193,23 +191,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (mounted) {
                 // Update with fresh data
-                if (profileData.status === 'fulfilled') {
-                  if (profileData.value) {
-                    setProfile(profileData.value);
-                  }
-                  // Log if profile not found
-                  if (!profileData.value && import.meta.env.DEV) {
-                    console.warn('No profile found for user:', session.user.id);
-                  }
+                if (profileData.status === 'fulfilled' && profileData.value) {
+                  setProfile(profileData.value);
                 }
-                if (roleData.status === 'fulfilled') {
-                  if (roleData.value) {
-                    setUserRole(roleData.value);
-                  }
-                  // Default to viewer if no role
-                  if (!roleData.value && import.meta.env.DEV) {
-                    console.warn('No role found for user, defaulting to viewer');
-                  }
+                
+                if (roleData.status === 'fulfilled' && roleData.value) {
+                  setUserRole(roleData.value);
+                } else {
+                  // Ensure viewer role as fallback
+                  setUserRole('viewer');
                 }
               }
             } catch (error) {
@@ -245,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Safety timeout: 1 second max - ALWAYS unblock the UI
+    // Safety timeout: 500ms max - ALWAYS unblock the UI
     loadingTimeout = setTimeout(() => {
       if (mounted && loading) {
         if (import.meta.env.DEV) {
@@ -253,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false);
       }
-    }, 1000);
+    }, 500);
 
     return () => {
       mounted = false;
@@ -276,8 +266,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (userRole === 'admin' || userRole === 'manager') && profile?.status === 'approved';
   };
 
-  // FIXED: Handle case where profile might be null
-  const isApproved = profile?.status === 'approved' || false;
+  // FIXED: Handle case where profile might be null - always return boolean
+  const isApproved = profile?.status === 'approved' ?? false;
 
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -325,7 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.session && data.user) {
         // Manually restore from cache
         const cachedProfile = await authCache.get('profile').catch(() => null);
-        const cachedRole = await authCache.get('role').catch(() => null);
+        const cachedRole = await authCache.get('role').catch(() => 'viewer');
         
         setSession(data.session);
         setUser(data.user);
