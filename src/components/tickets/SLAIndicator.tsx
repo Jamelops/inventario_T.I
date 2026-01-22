@@ -1,11 +1,11 @@
-import { differenceInHours, differenceInMinutes, isPast, format, isValid } from "date-fns";
+import { differenceInHours, differenceInMinutes, isPast, format, isValid, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TicketStatus } from "@/types/tickets";
 
 interface SLAIndicatorProps {
-  slaDeadline: string;
+  slaDeadline: string | null | undefined;
   status: TicketStatus;
   className?: string;
   showDetails?: boolean;
@@ -13,11 +13,52 @@ interface SLAIndicatorProps {
 
 export function SLAIndicator({ slaDeadline, status, className, showDetails = false }: SLAIndicatorProps) {
   try {
-    const deadline = new Date(slaDeadline);
+    // Handle null, undefined, or empty string
+    if (!slaDeadline) {
+      return (
+        <div
+          className={cn(
+            "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
+            "bg-muted text-muted-foreground",
+            className
+          )}
+        >
+          <Clock className="h-3 w-3" />
+          SLA não definido
+        </div>
+      );
+    }
+
+    // Try to parse the date string
+    let deadline: Date;
+    
+    try {
+      // Try ISO string first
+      deadline = parseISO(slaDeadline.toString().trim());
+      
+      // If it fails, try new Date()
+      if (!isValid(deadline)) {
+        deadline = new Date(slaDeadline);
+      }
+    } catch (e) {
+      deadline = new Date(slaDeadline);
+    }
     
     // Validate that the date is valid
     if (!isValid(deadline)) {
-      throw new Error('Invalid SLA deadline date');
+      console.warn('Invalid SLA deadline date:', slaDeadline);
+      return (
+        <div
+          className={cn(
+            "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
+            "bg-muted text-muted-foreground",
+            className
+          )}
+        >
+          <Clock className="h-3 w-3" />
+          SLA inválido
+        </div>
+      );
     }
     
     const now = new Date();
@@ -104,9 +145,9 @@ export function SLAIndicator({ slaDeadline, status, className, showDetails = fal
       </div>
     );
   } catch (error) {
-    console.error('Error in SLAIndicator:', error);
+    console.error('Error in SLAIndicator:', error, 'slaDeadline:', slaDeadline);
     
-    // Fallback UI when date is invalid
+    // Fallback UI when something goes wrong
     return (
       <div
         className={cn(
