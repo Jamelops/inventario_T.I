@@ -1,7 +1,6 @@
-import React, { createContext, ReactNode } from 'react';
+import { createContext } from 'react';
 import { Ticket, TicketInteraction, TicketStatus } from '@/types/tickets';
-import { useTickets } from '@/hooks/useTickets';
-import { useTicketSuppliers, TicketSupplier } from '@/hooks/useTicketSuppliers';
+import { TicketSupplier } from '@/hooks/useTicketSuppliers';
 
 export interface TicketContextType {
   tickets: Ticket[];
@@ -22,48 +21,3 @@ export interface TicketContextType {
 }
 
 export const TicketContext = createContext<TicketContextType | undefined>(undefined);
-
-export function TicketProvider({ children }: { children: ReactNode }) {
-  const {
-    tickets,
-    loading: ticketsLoading,
-    addTicket,
-    updateTicket,
-    deleteTicket,
-    getTicketById,
-    changeTicketStatus,
-    addInteraction,
-    duplicateTicket,
-  } = useTickets();
-
-  const {
-    suppliers,
-    loading: suppliersLoading,
-    addSupplier,
-    updateSupplier,
-    deleteSupplier,
-    getSupplierById,
-  } = useTicketSuppliers();
-
-  return (
-    <TicketContext.Provider value={{
-      tickets,
-      ticketsLoading,
-      suppliers,
-      suppliersLoading,
-      addTicket,
-      updateTicket,
-      deleteTicket,
-      getTicketById,
-      changeTicketStatus,
-      addInteraction,
-      duplicateTicket,
-      getSupplierById,
-      addSupplier,
-      updateSupplier,
-      deleteSupplier,
-    }}>
-      {children}
-    </TicketContext.Provider>
-  );
-}
