@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { Plus, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { z } from 'zod';
@@ -64,29 +62,6 @@ export function UserCreationModal({ isOpen, onClose, onSuccess }: UserCreationMo
     onClose();
   };
 
-  const createUserRole = async (userId: string) => {
-    try {
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: userId,
-          role: 'viewer' as any,
-        }]);
-
-      if (roleError) {
-        if (import.meta.env.DEV) {
-          console.error('Failed to create user role:', roleError);
-        }
-        // Don't throw - user was created, just role failed
-        // Admin can set it manually later
-      }
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('Error creating user role:', err);
-      }
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -101,7 +76,6 @@ export function UserCreationModal({ isOpen, onClose, onSuccess }: UserCreationMo
         return;
       }
 
-      // 1. First, attempt sign up
       const { error: signupError } = await signUp(
         formData.email,
         formData.password,
@@ -114,51 +88,20 @@ export function UserCreationModal({ isOpen, onClose, onSuccess }: UserCreationMo
         } else {
           setError(signupError.message);
         }
-        setIsLoading(false);
-        return;
-      }
-
-      // 2. Get the user ID - we need to fetch the newly created user
-      // The user should exist in auth.users now
-      // We'll need to wait a moment for the profile to be created
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 3. Fetch the user ID from profiles table
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('email', formData.email)
-        .maybeSingle();
-
-      if (profileError || !profileData) {
-        if (import.meta.env.DEV) {
-          console.error('Failed to fetch newly created user:', profileError);
-        }
-        // User was created but we couldn't fetch the ID
-        // This is okay - the role can be set manually
-        toast({
-          title: 'Aviso',
-          description: 'Usuário criado, mas atribua uma permissão manualmente.',
-          variant: 'default',
-        });
       } else {
-        // 4. Create the user role
-        await createUserRole(profileData.user_id);
-
         toast({
           title: 'Sucesso!',
           description: 'Novo usuário criado. Aguardando sua aprovação.',
         });
+        
+        handleReset();
+        
+        if (onSuccess) {
+          await onSuccess();
+        }
+        
+        handleClose();
       }
-      
-      handleReset();
-      
-      // Call onSuccess callback if provided
-      if (onSuccess) {
-        await onSuccess();
-      }
-      
-      handleClose();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar usuário';
       setError(errorMessage);
