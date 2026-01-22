@@ -68,12 +68,10 @@ export function UserCreationModal({ isOpen, onClose, onSuccess }: UserCreationMo
     try {
       const { error: roleError } = await supabase
         .from('user_roles')
-        .insert([
-          {
-            user_id: userId,
-            role: 'viewer', // Default role for new users
-          }
-        ]);
+        .insert([{
+          user_id: userId,
+          role: 'viewer' as any,
+        }]);
 
       if (roleError) {
         if (import.meta.env.DEV) {
