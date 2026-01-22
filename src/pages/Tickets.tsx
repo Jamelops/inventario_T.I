@@ -43,7 +43,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
 import { TicketKanban } from "@/components/tickets/TicketKanban";
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
-import { useTicket } from "@/hooks/useTicket";
+import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/useToast";
 import {
@@ -59,7 +59,7 @@ type ViewType = "table" | "kanban";
 
 export default function Tickets() {
   const navigate = useNavigate();
-  const { tickets = [], suppliers = [], getSupplierById, changeTicketStatus } = useTicket();
+  const { tickets = [], suppliers = [], getSupplierById, changeTicketStatus } = useTickets();
   const { profile } = useAuth();
   const toast = useToast();
 
