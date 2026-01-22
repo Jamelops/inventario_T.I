@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTickets } from '@/contexts/TicketContext';
+import { useTickets } from '@/hooks/useTicketsContext';
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
@@ -140,4 +140,3 @@ export default function Settings() {
       </div>
     </div>
   );
-}
