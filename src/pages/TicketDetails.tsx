@@ -27,7 +27,7 @@ import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/Tic
 import { TicketTimeline } from "@/components/tickets/TicketTimeline";
 import { AddInteractionDialog } from "@/components/tickets/AddInteractionDialog";
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
-import { useTickets } from "@/hooks/useTicketsContext";
+import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   TicketStatus,
@@ -272,4 +272,3 @@ export default function TicketDetails() {
       </div>
     </div>
   );
-}
