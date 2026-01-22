@@ -36,6 +36,15 @@ const STATUSES = [
   { value: 'encerrado', label: 'Encerrado' },
 ];
 
+// 🔥 MODO DEBUG - Mudar para false se não quiser logs
+const DEBUG = true;
+const log = (msg: string, data?: any) => {
+  if (DEBUG) {
+    const timestamp = new Date().toLocaleTimeString('pt-BR');
+    console.log(`[${timestamp}] 🎯 TicketKanban: ${msg}`, data || '');
+  }
+};
+
 export function TicketKanban({
   tickets,
   suppliers,
@@ -51,61 +60,80 @@ export function TicketKanban({
     isDragging: false,
   });
 
+  // 🔥 DEBUG: Log na montagem
+  useEffect(() => {
+    log('✅ TicketKanban MONTADO - Listeners sendo configurados...');
+  }, []);
+
   // 🔥 NOVO: Global listeners sempre ativas para drag robusto
   useEffect(() => {
+    log('⚙️ Configurando listeners globais (mousemove + mouseup)');
+
     const handleMouseMove = (e: MouseEvent) => {
-      // Só atualiza se de fato está arrastando
-      if (!dragStateRef.current.isDragging || !dragStateRef.current.draggingEl) {
-        return;
-      }
+      // 🔥 DEBUG: Log apenas quando realmente arrastando
+      if (dragStateRef.current.isDragging) {
+        const { dragOffset, draggingEl } = dragStateRef.current;
 
-      const { dragOffset, draggingEl } = dragStateRef.current;
+        if (!draggingEl) {
+          log('⚠️ Clone não existe durante mousemove!');
+          return;
+        }
 
-      // Atualizar posição do clone
-      if (e.clientX !== 0 || e.clientY !== 0) {
-        draggingEl.style.left = e.clientX - dragOffset.x + 'px';
-        draggingEl.style.top = e.clientY - dragOffset.y + 'px';
+        // Atualizar posição do clone
+        if (e.clientX !== 0 || e.clientY !== 0) {
+          draggingEl.style.left = e.clientX - dragOffset.x + 'px';
+          draggingEl.style.top = e.clientY - dragOffset.y + 'px';
+        }
       }
     };
 
     const handleMouseUp = (e: MouseEvent) => {
-      // Se estava arrastando, faz cleanup
-      if (!dragStateRef.current.isDragging) return;
+      // 🔥 DEBUG: Log quando solta
+      if (dragStateRef.current.isDragging) {
+        log('🛑 Mouse UP - Finalizando arraste');
 
-      dragStateRef.current.isDragging = false;
-      const { draggingEl, sourceCard } = dragStateRef.current;
+        dragStateRef.current.isDragging = false;
+        const { draggingEl, sourceCard } = dragStateRef.current;
 
-      // Remove clone
-      if (draggingEl?.parentNode) {
-        draggingEl.parentNode.removeChild(draggingEl);
+        // Remove clone
+        if (draggingEl?.parentNode) {
+          log('🗑️ Removendo clone do DOM');
+          draggingEl.parentNode.removeChild(draggingEl);
+        }
+
+        // Restore source card
+        if (sourceCard) {
+          log('♻️ Restaurando opacity do card original');
+          sourceCard.style.opacity = '1';
+          sourceCard.style.transition = 'opacity 200ms ease-out';
+        }
+
+        // Limpar estado
+        dragStateRef.current = {
+          draggedTicket: null,
+          dragOffset: { x: 0, y: 0 },
+          draggingEl: null,
+          sourceCard: null,
+          isDragging: false,
+        };
       }
-
-      // Restore source card
-      if (sourceCard) {
-        sourceCard.style.opacity = '1';
-        sourceCard.style.transition = 'opacity 200ms ease-out';
-      }
-
-      // Limpar estado
-      dragStateRef.current = {
-        draggedTicket: null,
-        dragOffset: { x: 0, y: 0 },
-        draggingEl: null,
-        sourceCard: null,
-        isDragging: false,
-      };
     };
 
-    // 🔥 Adicionar listeners globais SEMPRE
+    // 🔥 CRÍTICO: Adicionar listeners GLOBALMENTE
+    log('📌 Adicionando listeners ao document');
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
+    // 🔥 DEBUG: Verificar que listeners foram adicionados
+    log('✅ Listeners adicionados com sucesso!');
+
     // Cleanup
     return () => {
+      log('🧹 Removendo listeners (component desmontando)');
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []); // ✅ Array vazio = listeners SEMPRE ativos
+  }, []); // ✅ Array VAZIO = listeners SEMPRE ativos
 
   const getSupplierIcon = (fornecedorId: string) => {
     const supplier = getSupplierById?.(fornecedorId);
@@ -125,14 +153,17 @@ export function TicketKanban({
   };
 
   const handleDragStart = (e: React.DragEvent, ticket: Ticket) => {
+    log(`🚀 DragStart iniciado - Ticket: ${ticket.id}`, ticket);
+
     const card = e.currentTarget as HTMLElement;
 
     e.dataTransfer!.effectAllowed = 'move';
 
     try {
       e.dataTransfer!.setData('text/plain', ticket.id);
+      log('✅ setData executado com sucesso');
     } catch (err) {
-      console.warn('setData falhou:', err);
+      log('❌ setData FALHOU:', err);
     }
 
     // Create a high-fidelity clone
@@ -150,6 +181,8 @@ export function TicketKanban({
     clone.style.borderRadius = card.style.borderRadius || '8px';
     clone.classList.add('drag-preview');
 
+    log('🎨 Clone criado e estilizado');
+
     // Calculate position
     const rect = card.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
@@ -158,7 +191,15 @@ export function TicketKanban({
     clone.style.left = e.clientX - offsetX + 'px';
     clone.style.top = e.clientY - offsetY + 'px';
 
+    log('📍 Posição do clone calculada', {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      offsetX,
+      offsetY,
+    });
+
     document.body.appendChild(clone);
+    log('✅ Clone adicionado ao DOM');
 
     // 🔥 CRÍTICO: Atualizar state IMEDIATAMENTE
     dragStateRef.current = {
@@ -169,9 +210,16 @@ export function TicketKanban({
       isDragging: true, // FLAG ATIVA
     };
 
+    log('🚩 Flag isDragging = TRUE', {
+      hasClone: !!clone,
+      hasSourceCard: !!card,
+      isDragging: dragStateRef.current.isDragging,
+    });
+
     // Visual feedback
     card.style.opacity = '0.4';
     card.style.transition = 'opacity 150ms ease-out';
+    log('👁️ Card original tornando transparente');
   };
 
   // 🔥 handleDrag é APENAS fallback para o evento drag nativo
@@ -190,17 +238,20 @@ export function TicketKanban({
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
+    log('⏹️ DragEnd acionado');
     dragStateRef.current.isDragging = false;
 
     const { draggingEl, sourceCard } = dragStateRef.current;
 
     // Remove clone
     if (draggingEl?.parentNode) {
+      log('🗑️ Removendo clone no dragEnd');
       draggingEl.parentNode.removeChild(draggingEl);
     }
 
     // Restore source card
     if (sourceCard) {
+      log('♻️ Restaurando card no dragEnd');
       sourceCard.style.opacity = '1';
       sourceCard.style.transition = 'opacity 200ms ease-out';
     }
@@ -222,10 +273,14 @@ export function TicketKanban({
 
   const handleDrop = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
+    log(`📥 Drop acionado - Status alvo: ${targetStatus}`);
 
     const ticket = dragStateRef.current.draggedTicket;
     if (ticket) {
+      log(`✅ Chamando onStatusChange: ${ticket.id} → ${targetStatus}`);
       onStatusChange(ticket.id, targetStatus);
+    } else {
+      log('❌ Nenhum ticket arrastado!');
     }
   };
 
