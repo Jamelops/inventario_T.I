@@ -25,6 +25,7 @@ interface DragState {
   draggedTicket: Ticket | null;
   dragOffset: { x: number; y: number };
   draggingEl: HTMLElement | null;
+  sourceCard: HTMLElement | null;
 }
 
 const STATUSES = [
@@ -45,6 +46,7 @@ export function TicketKanban({
     draggedTicket: null,
     dragOffset: { x: 0, y: 0 },
     draggingEl: null,
+    sourceCard: null,
   });
 
   const getSupplierIcon = (fornecedorId: string) => {
@@ -65,23 +67,27 @@ export function TicketKanban({
   };
 
   const handleDragStart = (e: React.DragEvent, ticket: Ticket) => {
+    const card = e.currentTarget as HTMLElement;
+
     e.dataTransfer!.effectAllowed = 'move';
     e.dataTransfer!.setData('text/plain', ticket.id);
 
-    // Create a clone element for the drag preview
-    const card = e.currentTarget as HTMLElement;
+    // Create a high-fidelity clone for the drag preview
     const clone = card.cloneNode(true) as HTMLElement;
 
-    // Style the clone
+    // Style the clone with smooth animation
     clone.style.position = 'fixed';
     clone.style.pointerEvents = 'none';
     clone.style.zIndex = '9999';
-    clone.style.opacity = '0.9';
-    clone.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
-    clone.style.transform = 'scale(1.05) rotate(5deg)';
+    clone.style.opacity = '0.95';
+    clone.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.15)';
+    clone.style.transform = 'scale(1.05)';
+    clone.style.transition = 'none';
     clone.style.width = card.offsetWidth + 'px';
+    clone.style.borderRadius = card.style.borderRadius || '8px';
+    clone.classList.add('drag-preview');
 
-    // Position it at the cursor
+    // Calculate position offset from cursor
     const rect = card.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
@@ -91,42 +97,51 @@ export function TicketKanban({
 
     document.body.appendChild(clone);
 
-    // Store the state
+    // Store state
     dragStateRef.current = {
       draggedTicket: ticket,
       dragOffset: { x: offsetX, y: offsetY },
       draggingEl: clone,
+      sourceCard: card,
     };
 
-    // Set opacity on original card
-    card.style.opacity = '0.3';
+    // Add visual feedback to source card
+    card.style.opacity = '0.4';
+    card.style.transition = 'opacity 150ms ease-out';
   };
 
   const handleDrag = (e: React.DragEvent) => {
     if (!dragStateRef.current.draggingEl) return;
 
-    const { dragOffset } = dragStateRef.current;
-    dragStateRef.current.draggingEl.style.left = e.clientX - dragOffset.x + 'px';
-    dragStateRef.current.draggingEl.style.top = e.clientY - dragOffset.y + 'px';
+    const { dragOffset, draggingEl } = dragStateRef.current;
+
+    // Smoothly update clone position
+    if (e.clientX !== 0 || e.clientY !== 0) {
+      draggingEl.style.left = e.clientX - dragOffset.x + 'px';
+      draggingEl.style.top = e.clientY - dragOffset.y + 'px';
+    }
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    const { draggingEl } = dragStateRef.current;
+    const { draggingEl, sourceCard } = dragStateRef.current;
 
     // Remove clone
-    if (draggingEl && draggingEl.parentNode) {
+    if (draggingEl?.parentNode) {
       draggingEl.parentNode.removeChild(draggingEl);
     }
 
-    // Reset opacity on source card
-    const card = e.currentTarget as HTMLElement;
-    card.style.opacity = '1';
+    // Restore source card with animation
+    if (sourceCard) {
+      sourceCard.style.opacity = '1';
+      sourceCard.style.transition = 'opacity 200ms ease-out';
+    }
 
     // Clear state
     dragStateRef.current = {
       draggedTicket: null,
       dragOffset: { x: 0, y: 0 },
       draggingEl: null,
+      sourceCard: null,
     };
   };
 
@@ -225,7 +240,7 @@ export function TicketKanban({
                   onDragStart={(e) => handleDragStart(e, ticket)}
                   onDrag={handleDrag}
                   onDragEnd={handleDragEnd}
-                  className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                  className="cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-150"
                 >
                   <CardContent className="p-3">
                     <TicketCardContent ticket={ticket} />
