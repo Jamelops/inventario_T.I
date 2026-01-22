@@ -26,6 +26,7 @@ interface DragState {
   dragOffset: { x: number; y: number };
   draggingEl: HTMLElement | null;
   sourceCard: HTMLElement | null;
+  isDragging: boolean; // 🔥 NOVO: flag para rastrear se está arrastando
 }
 
 const STATUSES = [
@@ -47,6 +48,7 @@ export function TicketKanban({
     dragOffset: { x: 0, y: 0 },
     draggingEl: null,
     sourceCard: null,
+    isDragging: false, // 🔥 NOVO: inicializar flag
   });
 
   const getSupplierIcon = (fornecedorId: string) => {
@@ -69,8 +71,15 @@ export function TicketKanban({
   const handleDragStart = (e: React.DragEvent, ticket: Ticket) => {
     const card = e.currentTarget as HTMLElement;
 
+    // 🔥 NOVO: Usar effectAllowed ANTES de setData
     e.dataTransfer!.effectAllowed = 'move';
-    e.dataTransfer!.setData('text/plain', ticket.id);
+    
+    // 🔥 NOVO: Usar try-catch para garantir que setData execute
+    try {
+      e.dataTransfer!.setData('text/plain', ticket.id);
+    } catch (err) {
+      console.warn('setData falhou:', err);
+    }
 
     // Create a high-fidelity clone for the drag preview
     const clone = card.cloneNode(true) as HTMLElement;
@@ -97,12 +106,16 @@ export function TicketKanban({
 
     document.body.appendChild(clone);
 
+    // 🔥 NOVO: Setar flag ANTES de atualizar o resto do estado
+    dragStateRef.current.isDragging = true;
+    
     // Store state
     dragStateRef.current = {
       draggedTicket: ticket,
       dragOffset: { x: offsetX, y: offsetY },
       draggingEl: clone,
       sourceCard: card,
+      isDragging: true, // 🔥 NOVO: garantir que está true
     };
 
     // Add visual feedback to source card
@@ -111,7 +124,10 @@ export function TicketKanban({
   };
 
   const handleDrag = (e: React.DragEvent) => {
-    if (!dragStateRef.current.draggingEl) return;
+    // 🔥 NOVO: Verificar se de fato está arrastando
+    if (!dragStateRef.current.isDragging || !dragStateRef.current.draggingEl) {
+      return;
+    }
 
     const { dragOffset, draggingEl } = dragStateRef.current;
 
@@ -123,6 +139,9 @@ export function TicketKanban({
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
+    // 🔥 NOVO: Setar flag PRIMEIRO
+    dragStateRef.current.isDragging = false;
+    
     const { draggingEl, sourceCard } = dragStateRef.current;
 
     // Remove clone
@@ -142,6 +161,7 @@ export function TicketKanban({
       dragOffset: { x: 0, y: 0 },
       draggingEl: null,
       sourceCard: null,
+      isDragging: false, // 🔥 NOVO: resetar flag
     };
   };
 
@@ -152,9 +172,11 @@ export function TicketKanban({
 
   const handleDrop = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
-    const ticketId = e.dataTransfer?.getData('text/plain');
-    if (ticketId) {
-      onStatusChange(ticketId, targetStatus);
+    
+    // 🔥 NOVO: Usar dragStateRef ao invés de getData (mais confiável)
+    const ticket = dragStateRef.current.draggedTicket;
+    if (ticket) {
+      onStatusChange(ticket.id, targetStatus);
     }
   };
 
