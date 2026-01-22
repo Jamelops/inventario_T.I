@@ -118,8 +118,8 @@ export default function TicketForm() {
     const nowDate = new Date();
 
     // Calculate SLA deadline based on supplier SLA hours
-    const slaHours = supplier?.slaHoras || 24; // Default 24h if not found
-    const slaDeadline = addHours(nowDate, slaHours).toISOString();
+    const slaHoras = supplier?.slaHoras || 24; // Default 24h if not found
+    const slaDeadline = addHours(nowDate, slaHoras).toISOString();
 
     const ticketData = {
       titulo: data.titulo.trim(),
