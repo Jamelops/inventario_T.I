@@ -42,25 +42,21 @@ export interface SupplierContact {
   email?: string;
 }
 
+// Ticket type alinhado com a schema do Supabase
 export interface Ticket {
   id: string;
   titulo: string;
   descricao: string;
-  fornecedorId: string;
-  tipo: TicketType;
-  status: TicketStatus;
   prioridade: TicketPriority;
-  unidade: string;
-  assetId?: string;
-  assetNome?: string;
-  protocoloExterno?: string;
-  contatoFornecedor?: SupplierContact;
-  responsavelId: string;
-  responsavelNome: string;
-  slaDeadline: string;
+  status: TicketStatus;
+  responsavel?: string;
+  responsavelEmail?: string;
+  departamento?: string;
+  solucao?: string;
   dataCriacao: string;
+  dataConclusao?: string;
+  tempoResolucao?: number;
   dataAtualizacao: string;
-  dataResolucao?: string;
   interactions: TicketInteraction[];
 }
 
