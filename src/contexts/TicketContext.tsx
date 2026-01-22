@@ -11,6 +11,7 @@ export interface TicketContextType {
   updateTicket: (id: string, ticket: Partial<Ticket>) => Promise<boolean>;
   deleteTicket: (id: string) => Promise<boolean>;
   getTicketById: (id: string) => Ticket | undefined;
+  getTicketsByAssetId: (assetId: string) => Ticket[];
   changeTicketStatus: (id: string, newStatus: TicketStatus, userId: string, userName: string) => Promise<boolean>;
   addInteraction: (ticketId: string, interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>) => Promise<boolean>;
   duplicateTicket: (id: string, userId: string, userName: string) => Promise<Ticket | null>;
