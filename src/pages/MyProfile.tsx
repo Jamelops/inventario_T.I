@@ -3,19 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Save, User, Mail, Shield } from 'lucide-react';
+import { Save, User, Mail, Shield, Lock } from 'lucide-react';
 
 export default function MyProfile() {
   const { user, profile, userRole, loading, fetchProfileUsernames } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -90,6 +92,11 @@ export default function MyProfile() {
         breadcrumbs={[{ label: 'Minha Conta' }]}
       />
 
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -146,7 +153,7 @@ export default function MyProfile() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Permissões e Status
+              Permissões e Segurança
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -167,7 +174,16 @@ export default function MyProfile() {
               </span>
             </div>
 
-            <p className="text-xs text-muted-foreground mt-4">
+            <Button 
+              onClick={() => setIsChangePasswordOpen(true)}
+              variant="outline"
+              className="w-full mt-2"
+            >
+              <Lock className="h-4 w-4 mr-2" />
+              Alterar Senha
+            </Button>
+
+            <p className="text-xs text-muted-foreground">
               Permissões e status são gerenciados por administradores.
             </p>
           </CardContent>
