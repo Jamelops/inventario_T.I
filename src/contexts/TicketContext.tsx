@@ -1,14 +1,14 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, ReactNode } from 'react';
 import { Ticket, TicketInteraction, TicketStatus } from '@/types/tickets';
 import { useTickets as useTicketsHook } from '@/hooks/useTickets';
 import { useTicketSuppliers, TicketSupplier } from '@/hooks/useTicketSuppliers';
 
-interface TicketContextType {
+export interface TicketContextType {
   tickets: Ticket[];
   ticketsLoading: boolean;
   suppliers: TicketSupplier[];
   suppliersLoading: boolean;
-  addTicket: (ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>) => Promise<Ticket | null>;
+  addTicket: (ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>, supplierSlaHours?: number) => Promise<Ticket | null>;
   updateTicket: (id: string, ticket: Partial<Ticket>) => Promise<boolean>;
   deleteTicket: (id: string) => Promise<boolean>;
   getTicketById: (id: string) => Ticket | undefined;
@@ -21,7 +21,7 @@ interface TicketContextType {
   deleteSupplier: (id: string) => Promise<boolean>;
 }
 
-const TicketContext = createContext<TicketContextType | undefined>(undefined);
+export const TicketContext = createContext<TicketContextType | undefined>(undefined);
 
 export function TicketProvider({ children }: { children: ReactNode }) {
   const {
@@ -66,12 +66,4 @@ export function TicketProvider({ children }: { children: ReactNode }) {
       {children}
     </TicketContext.Provider>
   );
-}
-
-export function useTickets() {
-  const context = useContext(TicketContext);
-  if (context === undefined) {
-    throw new Error('useTickets must be used within a TicketProvider');
-  }
-  return context;
 }
