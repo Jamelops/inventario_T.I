@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
-import { useTickets } from "@/contexts/TicketContext";
+import { useTickets } from "@/hooks/useTicketsContext";
 import { useData } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {

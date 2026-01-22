@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus } from "lucide-react";
 import { TicketInteraction, ticketInteractionTypeLabels } from "@/types/tickets";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTickets } from "@/contexts/TicketContext";
+import { useTickets } from "@/hooks/useTicketsContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddInteractionDialogProps {
