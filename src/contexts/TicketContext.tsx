@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode } from 'react';
 import { Ticket, TicketInteraction, TicketStatus } from '@/types/tickets';
-import { useTickets as useTicketsHook } from '@/hooks/useTickets';
+import { useTickets } from '@/hooks/useTickets';
 import { useTicketSuppliers, TicketSupplier } from '@/hooks/useTicketSuppliers';
 
 export interface TicketContextType {
@@ -34,7 +34,7 @@ export function TicketProvider({ children }: { children: ReactNode }) {
     changeTicketStatus,
     addInteraction,
     duplicateTicket,
-  } = useTicketsHook();
+  } = useTickets();
 
   const {
     suppliers,
