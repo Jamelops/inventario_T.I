@@ -8,14 +8,13 @@ interface TicketContextType {
   ticketsLoading: boolean;
   suppliers: TicketSupplier[];
   suppliersLoading: boolean;
-  addTicket: (ticket: Omit<Ticket, 'id' | 'dataCriacao' | 'dataAtualizacao' | 'interactions' | 'slaDeadline'>, supplierSlaHours?: number) => Promise<Ticket | null>;
+  addTicket: (ticket: Omit<Ticket, 'id' | 'dataAtualizacao' | 'interactions'>) => Promise<Ticket | null>;
   updateTicket: (id: string, ticket: Partial<Ticket>) => Promise<boolean>;
   deleteTicket: (id: string) => Promise<boolean>;
   getTicketById: (id: string) => Ticket | undefined;
   changeTicketStatus: (id: string, newStatus: TicketStatus, userId: string, userName: string) => Promise<boolean>;
   addInteraction: (ticketId: string, interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>) => Promise<boolean>;
-  duplicateTicket: (id: string, userId: string, userName: string, supplierSlaHours?: number) => Promise<Ticket | null>;
-  getTicketsByAssetId: (assetId: string) => Ticket[];
+  duplicateTicket: (id: string, userId: string, userName: string) => Promise<Ticket | null>;
   getSupplierById: (id: string) => TicketSupplier | undefined;
   addSupplier: (supplier: Omit<TicketSupplier, 'id' | 'createdAt' | 'updatedAt'>) => Promise<TicketSupplier | null>;
   updateSupplier: (id: string, supplier: Partial<TicketSupplier>) => Promise<boolean>;
@@ -35,7 +34,6 @@ export function TicketProvider({ children }: { children: ReactNode }) {
     changeTicketStatus,
     addInteraction,
     duplicateTicket,
-    getTicketsByAssetId,
   } = useTicketsHook();
 
   const {
@@ -60,7 +58,6 @@ export function TicketProvider({ children }: { children: ReactNode }) {
       changeTicketStatus,
       addInteraction,
       duplicateTicket,
-      getTicketsByAssetId,
       getSupplierById,
       addSupplier,
       updateSupplier,
