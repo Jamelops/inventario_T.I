@@ -253,22 +253,34 @@ export function useTickets() {
     ticketId: string,
     interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>
   ): Promise<boolean> => {
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      console.error('User not authenticated for adding interaction');
+      return false;
+    }
+
     try {
       const { error } = await supabase
         .from('ticket_interactions')
         .insert({
           ticket_id: ticketId,
-          user_id: interaction.userId,
+          user_id: user.id || interaction.userId,
           user_name: interaction.userName,
           message: interaction.message,
           type: interaction.type,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      toast.success('Interação adicionada com sucesso');
       await fetchTickets();
       return true;
     } catch (error: any) {
       console.error('Error adding interaction:', error);
+      toast.error(`Erro ao adicionar interação: ${error.message}`);
       return false;
     }
   };
