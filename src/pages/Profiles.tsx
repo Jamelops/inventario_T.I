@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { UserCreationModal } from '@/components/UserCreationModal';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,8 @@ export default function Profiles() {
   const [activatingEmail, setActivatingEmail] = useState<string | null>(null);
   const [showUserCreationModal, setShowUserCreationModal] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<{ id: string; email: string } | null>(null);
 
   // Check auth and permissions
   useEffect(() => {
@@ -253,6 +256,16 @@ export default function Profiles() {
         onSuccess={fetchProfiles}
       />
 
+      <ChangePasswordModal
+        isOpen={changePasswordOpen}
+        onClose={() => {
+          setChangePasswordOpen(false);
+          setSelectedUserForPassword(null);
+        }}
+        targetUserId={selectedUserForPassword?.id}
+        targetUserEmail={selectedUserForPassword?.email}
+      />
+
       <div>
         {/* Pending Approvals */}
         {pendingProfiles.length > 0 && (
@@ -363,6 +376,18 @@ export default function Profiles() {
                       <span className="text-sm text-muted-foreground">Status:</span>
                       {getStatusBadge(profile.status)}
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setSelectedUserForPassword({ id: profile.user_id, email: profile.email });
+                        setChangePasswordOpen(true);
+                      }}
+                    >
+                      <Lock className="h-4 w-4 mr-1" />
+                      Alterar Senha
+                    </Button>
                   </CardContent>
                 </Card>
               );
