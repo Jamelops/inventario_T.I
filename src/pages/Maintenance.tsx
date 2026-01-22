@@ -40,6 +40,7 @@ export default function Maintenance() {
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [droppedTaskId, setDroppedTaskId] = useState<string | null>(null);
 
   const getTasksByStatus = (status: MaintenanceStatus) => 
     (maintenanceTasks || []).filter(t => t.status === status);
@@ -80,8 +81,12 @@ export default function Maintenance() {
     element.style.opacity = '1';
     log(`♻️ Card restaurado com opacity = 1`);
     
-    setDraggedTaskId(null);
-    log(`🧹 draggedTaskId limpado`);
+    // Delay clearance to allow animation
+    setTimeout(() => {
+      setDraggedTaskId(null);
+      setDroppedTaskId(null);
+      log(`🧹 draggedTaskId limpado`);
+    }, 300);
   };
 
   const handleDrop = async (e: React.DragEvent, targetStatus: MaintenanceStatus) => {
@@ -115,6 +120,9 @@ export default function Maintenance() {
         log(`ℹ️ Task já estava no status ${targetStatus}`);
         return;
       }
+      
+      // Set dropped state for visual feedback
+      setDroppedTaskId(taskId);
       
       log(`⚙️ Movendo task ${taskId} de "${task.status}" para "${targetStatus}"`);
       await moveMaintenanceTask(taskId, targetStatus);
@@ -222,6 +230,8 @@ export default function Maintenance() {
                   {getTasksByStatus(status).map(task => {
                     const daysInMaintenance = getDaysInMaintenance(task.dataAgendada);
                     const showWarning = (status === 'pendente' || status === 'em_andamento') && daysInMaintenance > 3;
+                    const isDragging = draggedTaskId === task.id;
+                    const isDropped = droppedTaskId === task.id;
                     
                     return (
                       <div
@@ -231,10 +241,11 @@ export default function Maintenance() {
                         onDragEnd={handleDragEnd}
                         onClick={() => handleCardClick(task)}
                         className={cn(
-                          'rounded-lg border bg-card p-3 shadow-sm transition-all hover:shadow-md cursor-pointer',
+                          'rounded-lg border bg-card p-3 shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer',
                           userCanEdit && 'cursor-grab active:cursor-grabbing',
                           showWarning && 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20',
-                          draggedTaskId === task.id && 'opacity-50'
+                          isDragging && 'opacity-50 scale-95 shadow-lg',
+                          isDropped && 'scale-105 shadow-lg border-green-400 bg-green-50/30 dark:bg-green-950/20'
                         )}
                       >
                         <div className="flex items-start justify-between gap-2 mb-2">
