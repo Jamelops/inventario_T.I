@@ -12,6 +12,8 @@ import {
   Laptop,
   Building2,
   Download,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +41,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { TicketStatusBadge, TicketPriorityBadge } from "@/components/tickets/TicketStatusBadge";
+import { TicketKanban } from "@/components/tickets/TicketKanban";
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/contexts/TicketContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,6 +55,8 @@ import {
 } from "@/types/tickets";
 import { exportToExcel, formatDateTime, ExportColumn } from "@/lib/export-to-excel";
 
+type ViewType = "table" | "kanban";
+
 export default function Tickets() {
   const navigate = useNavigate();
   const { tickets = [], suppliers = [], getSupplierById, changeTicketStatus } = useTickets();
@@ -62,6 +67,7 @@ export default function Tickets() {
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [viewType, setViewType] = useState<ViewType>("table");
 
   const activeSuppliers = (suppliers || []).filter(s => s?.ativo);
 
@@ -198,9 +204,31 @@ export default function Tickets() {
       {/* Filters */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filtros
+          <CardTitle className="text-base flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filtros
+            </div>
+            <div className="flex gap-1 border rounded-lg p-1 bg-muted">
+              <Button
+                variant={viewType === "table" ? "default" : "ghost"}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => setViewType("table")}
+                title="Visualização em tabela"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewType === "kanban" ? "default" : "ghost"}
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => setViewType("kanban")}
+                title="Visualização em kanban"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -260,113 +288,129 @@ export default function Tickets() {
       </Card>
 
       {/* Results */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">
-            {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''} encontrado{filteredTickets.length !== 1 ? 's' : ''}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Desktop Table */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Fornecedor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>SLA</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTickets.map((ticket) => (
-                  <TableRow key={ticket.id}>
-                    <TableCell className="font-medium">{ticket.id}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getSupplierIcon(ticket.fornecedorId)}
-                        <span className="line-clamp-1 max-w-[200px]">{ticket.titulo}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getSupplierName(ticket.fornecedorId)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="cursor-pointer">
-                            <TicketStatusBadge status={ticket.status} />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          {Object.entries(ticketStatusLabels).map(([value, label]) => (
-                            <DropdownMenuItem
-                              key={value}
-                              onClick={() => handleStatusChange(ticket.id, value as TicketStatus)}
-                              disabled={ticket.status === value}
-                            >
-                              {label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                    <TableCell>
-                      <TicketPriorityBadge priority={ticket.prioridade} />
-                    </TableCell>
-                    <TableCell>
-                      <SLAIndicator slaDeadline={ticket.slaDeadline} status={ticket.status} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {format(new Date(ticket.dataCriacao), "dd/MM/yyyy", { locale: ptBR })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => navigate(`/tickets/${ticket.id}/edit`)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {sortedTickets.length === 0 && (
+      {viewType === "kanban" ? (
+        <div className="rounded-lg border bg-card">
+          <div className="p-4">
+            <h3 className="text-sm font-semibold mb-4">
+              {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''} encontrado{filteredTickets.length !== 1 ? 's' : ''}
+            </h3>
+            <TicketKanban
+              tickets={filteredTickets}
+              suppliers={suppliers}
+              getSupplierById={getSupplierById}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
+        </div>
+      ) : (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''} encontrado{filteredTickets.length !== 1 ? 's' : ''}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      Nenhum chamado encontrado.
-                    </TableCell>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Fornecedor</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Prioridade</TableHead>
+                    <TableHead>SLA</TableHead>
+                    <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {sortedTickets.map((ticket) => (
+                    <TableRow key={ticket.id}>
+                      <TableCell className="font-medium">{ticket.id}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getSupplierIcon(ticket.fornecedorId)}
+                          <span className="line-clamp-1 max-w-[200px]">{ticket.titulo}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getSupplierName(ticket.fornecedorId)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="cursor-pointer">
+                              <TicketStatusBadge status={ticket.status} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {Object.entries(ticketStatusLabels).map(([value, label]) => (
+                              <DropdownMenuItem
+                                key={value}
+                                onClick={() => handleStatusChange(ticket.id, value as TicketStatus)}
+                                disabled={ticket.status === value}
+                              >
+                                {label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                      <TableCell>
+                        <TicketPriorityBadge priority={ticket.prioridade} />
+                      </TableCell>
+                      <TableCell>
+                        <SLAIndicator slaDeadline={ticket.slaDeadline} status={ticket.status} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {format(new Date(ticket.dataCriacao), "dd/MM/yyyy", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate(`/tickets/${ticket.id}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate(`/tickets/${ticket.id}/edit`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {sortedTickets.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        Nenhum chamado encontrado.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-          {/* Mobile Cards */}
-          <div className="md:hidden">
-            {sortedTickets.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">
-                Nenhum chamado encontrado.
-              </p>
-            ) : (
-              sortedTickets.map((ticket) => (
-                <TicketCard key={ticket.id} ticket={ticket} />
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            {/* Mobile Cards */}
+            <div className="md:hidden">
+              {sortedTickets.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">
+                  Nenhum chamado encontrado.
+                </p>
+              ) : (
+                sortedTickets.map((ticket) => (
+                  <TicketCard key={ticket.id} ticket={ticket} />
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
