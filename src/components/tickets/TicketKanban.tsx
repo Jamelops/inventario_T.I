@@ -26,7 +26,7 @@ interface DragState {
   dragOffset: { x: number; y: number };
   draggingEl: HTMLElement | null;
   sourceCard: HTMLElement | null;
-  isDragging: boolean; // 🔥 NOVO: flag para rastrear se está arrastando
+  isDragging: boolean;
 }
 
 const STATUSES = [
@@ -48,8 +48,66 @@ export function TicketKanban({
     dragOffset: { x: 0, y: 0 },
     draggingEl: null,
     sourceCard: null,
-    isDragging: false, // 🔥 NOVO: inicializar flag
+    isDragging: false,
   });
+
+  // 🔥 NOVO: useEffect para adicionar listeners globais
+  React.useEffect(() => {
+    if (!dragStateRef.current.isDragging) return;
+
+    // 🔥 Fallback: se drag não disparar, usar mousemove
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragStateRef.current.isDragging || !dragStateRef.current.draggingEl) {
+        return;
+      }
+
+      const { dragOffset, draggingEl } = dragStateRef.current;
+
+      if (e.clientX !== 0 || e.clientY !== 0) {
+        draggingEl.style.left = e.clientX - dragOffset.x + 'px';
+        draggingEl.style.top = e.clientY - dragOffset.y + 'px';
+      }
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!dragStateRef.current.isDragging) return;
+
+      dragStateRef.current.isDragging = false;
+
+      const { draggingEl, sourceCard } = dragStateRef.current;
+
+      if (draggingEl?.parentNode) {
+        draggingEl.parentNode.removeChild(draggingEl);
+      }
+
+      if (sourceCard) {
+        sourceCard.style.opacity = '1';
+        sourceCard.style.transition = 'opacity 200ms ease-out';
+      }
+
+      dragStateRef.current = {
+        draggedTicket: null,
+        dragOffset: { x: 0, y: 0 },
+        draggingEl: null,
+        sourceCard: null,
+        isDragging: false,
+      };
+
+      // Remover listeners
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    // 🔥 Adicionar listeners globais
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   const getSupplierIcon = (fornecedorId: string) => {
     const supplier = getSupplierById?.(fornecedorId);
@@ -71,10 +129,8 @@ export function TicketKanban({
   const handleDragStart = (e: React.DragEvent, ticket: Ticket) => {
     const card = e.currentTarget as HTMLElement;
 
-    // 🔥 NOVO: Usar effectAllowed ANTES de setData
     e.dataTransfer!.effectAllowed = 'move';
-    
-    // 🔥 NOVO: Usar try-catch para garantir que setData execute
+
     try {
       e.dataTransfer!.setData('text/plain', ticket.id);
     } catch (err) {
@@ -106,16 +162,15 @@ export function TicketKanban({
 
     document.body.appendChild(clone);
 
-    // 🔥 NOVO: Setar flag ANTES de atualizar o resto do estado
     dragStateRef.current.isDragging = true;
-    
+
     // Store state
     dragStateRef.current = {
       draggedTicket: ticket,
       dragOffset: { x: offsetX, y: offsetY },
       draggingEl: clone,
       sourceCard: card,
-      isDragging: true, // 🔥 NOVO: garantir que está true
+      isDragging: true,
     };
 
     // Add visual feedback to source card
@@ -124,7 +179,6 @@ export function TicketKanban({
   };
 
   const handleDrag = (e: React.DragEvent) => {
-    // 🔥 NOVO: Verificar se de fato está arrastando
     if (!dragStateRef.current.isDragging || !dragStateRef.current.draggingEl) {
       return;
     }
@@ -139,9 +193,8 @@ export function TicketKanban({
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    // 🔥 NOVO: Setar flag PRIMEIRO
     dragStateRef.current.isDragging = false;
-    
+
     const { draggingEl, sourceCard } = dragStateRef.current;
 
     // Remove clone
@@ -161,7 +214,7 @@ export function TicketKanban({
       dragOffset: { x: 0, y: 0 },
       draggingEl: null,
       sourceCard: null,
-      isDragging: false, // 🔥 NOVO: resetar flag
+      isDragging: false,
     };
   };
 
@@ -172,8 +225,7 @@ export function TicketKanban({
 
   const handleDrop = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
-    
-    // 🔥 NOVO: Usar dragStateRef ao invés de getData (mais confiável)
+
     const ticket = dragStateRef.current.draggedTicket;
     if (ticket) {
       onStatusChange(ticket.id, targetStatus);
