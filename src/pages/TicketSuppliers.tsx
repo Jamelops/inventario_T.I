@@ -22,7 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { useTickets } from "@/hooks/useTicketsContext";
+import { useTickets } from "@/contexts/TicketContext";
 import { useToast } from "@/hooks/use-toast";
 import { TicketSupplier } from '@/hooks/useTicketSuppliers';
 
@@ -202,4 +202,3 @@ export default function TicketSuppliers() {
       </Dialog>
     </div>
   );
-}

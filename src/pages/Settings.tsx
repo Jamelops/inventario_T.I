@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTickets } from '@/hooks/useTicketsContext';
+import { useTickets } from '@/contexts/TicketContext';
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
