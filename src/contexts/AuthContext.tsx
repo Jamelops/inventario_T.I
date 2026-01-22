@@ -266,8 +266,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (userRole === 'admin' || userRole === 'manager') && profile?.status === 'approved';
   };
 
-  // FIXED: Handle case where profile might be null - always return boolean
-  const isApproved = profile?.status === 'approved' ?? false;
+  const isApproved = profile?.status === 'approved' || false;
 
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
