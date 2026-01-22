@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Wifi,
@@ -51,18 +51,17 @@ export function TicketKanban({
     isDragging: false,
   });
 
-  // 🔥 NOVO: useEffect para adicionar listeners globais
-  React.useEffect(() => {
-    if (!dragStateRef.current.isDragging) return;
-
-    // 🔥 Fallback: se drag não disparar, usar mousemove
+  // 🔥 NOVO: Global listeners sempre ativas para drag robusto
+  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Só atualiza se de fato está arrastando
       if (!dragStateRef.current.isDragging || !dragStateRef.current.draggingEl) {
         return;
       }
 
       const { dragOffset, draggingEl } = dragStateRef.current;
 
+      // Atualizar posição do clone
       if (e.clientX !== 0 || e.clientY !== 0) {
         draggingEl.style.left = e.clientX - dragOffset.x + 'px';
         draggingEl.style.top = e.clientY - dragOffset.y + 'px';
@@ -70,21 +69,24 @@ export function TicketKanban({
     };
 
     const handleMouseUp = (e: MouseEvent) => {
+      // Se estava arrastando, faz cleanup
       if (!dragStateRef.current.isDragging) return;
 
       dragStateRef.current.isDragging = false;
-
       const { draggingEl, sourceCard } = dragStateRef.current;
 
+      // Remove clone
       if (draggingEl?.parentNode) {
         draggingEl.parentNode.removeChild(draggingEl);
       }
 
+      // Restore source card
       if (sourceCard) {
         sourceCard.style.opacity = '1';
         sourceCard.style.transition = 'opacity 200ms ease-out';
       }
 
+      // Limpar estado
       dragStateRef.current = {
         draggedTicket: null,
         dragOffset: { x: 0, y: 0 },
@@ -92,13 +94,9 @@ export function TicketKanban({
         sourceCard: null,
         isDragging: false,
       };
-
-      // Remover listeners
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    // 🔥 Adicionar listeners globais
+    // 🔥 Adicionar listeners globais SEMPRE
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
@@ -107,7 +105,7 @@ export function TicketKanban({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, []); // ✅ Array vazio = listeners SEMPRE ativos
 
   const getSupplierIcon = (fornecedorId: string) => {
     const supplier = getSupplierById?.(fornecedorId);
@@ -137,10 +135,10 @@ export function TicketKanban({
       console.warn('setData falhou:', err);
     }
 
-    // Create a high-fidelity clone for the drag preview
+    // Create a high-fidelity clone
     const clone = card.cloneNode(true) as HTMLElement;
 
-    // Style the clone with smooth animation
+    // Style the clone
     clone.style.position = 'fixed';
     clone.style.pointerEvents = 'none';
     clone.style.zIndex = '9999';
@@ -152,7 +150,7 @@ export function TicketKanban({
     clone.style.borderRadius = card.style.borderRadius || '8px';
     clone.classList.add('drag-preview');
 
-    // Calculate position offset from cursor
+    // Calculate position
     const rect = card.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
@@ -162,22 +160,22 @@ export function TicketKanban({
 
     document.body.appendChild(clone);
 
-    dragStateRef.current.isDragging = true;
-
-    // Store state
+    // 🔥 CRÍTICO: Atualizar state IMEDIATAMENTE
     dragStateRef.current = {
       draggedTicket: ticket,
       dragOffset: { x: offsetX, y: offsetY },
       draggingEl: clone,
       sourceCard: card,
-      isDragging: true,
+      isDragging: true, // FLAG ATIVA
     };
 
-    // Add visual feedback to source card
+    // Visual feedback
     card.style.opacity = '0.4';
     card.style.transition = 'opacity 150ms ease-out';
   };
 
+  // 🔥 handleDrag é APENAS fallback para o evento drag nativo
+  // O mousemove global é o principal
   const handleDrag = (e: React.DragEvent) => {
     if (!dragStateRef.current.isDragging || !dragStateRef.current.draggingEl) {
       return;
@@ -185,7 +183,6 @@ export function TicketKanban({
 
     const { dragOffset, draggingEl } = dragStateRef.current;
 
-    // Smoothly update clone position
     if (e.clientX !== 0 || e.clientY !== 0) {
       draggingEl.style.left = e.clientX - dragOffset.x + 'px';
       draggingEl.style.top = e.clientY - dragOffset.y + 'px';
@@ -202,7 +199,7 @@ export function TicketKanban({
       draggingEl.parentNode.removeChild(draggingEl);
     }
 
-    // Restore source card with animation
+    // Restore source card
     if (sourceCard) {
       sourceCard.style.opacity = '1';
       sourceCard.style.transition = 'opacity 200ms ease-out';
