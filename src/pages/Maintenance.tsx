@@ -41,6 +41,7 @@ export default function Maintenance() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [droppedTaskId, setDroppedTaskId] = useState<string | null>(null);
+  const [dragSourceElement, setDragSourceElement] = useState<HTMLElement | null>(null);
 
   const getTasksByStatus = (status: MaintenanceStatus) => 
     (maintenanceTasks || []).filter(t => t.status === status);
@@ -61,13 +62,15 @@ export default function Maintenance() {
       e.dataTransfer.setData('taskId', taskId);
       log(`✅ setData executado com sucesso - taskId: ${taskId}`);
       
+      const element = e.currentTarget as HTMLElement;
+      setDragSourceElement(element);
       setDraggedTaskId(taskId);
       log(`🎯 draggedTaskId atualizado: ${taskId}`);
       
-      // Visual feedback
-      const element = e.currentTarget as HTMLElement;
+      // Add opacity to the element directly
       element.style.opacity = '0.5';
-      log(`👁️ Card original com opacity = 0.5`);
+      element.style.transform = 'scale(0.95)';
+      log(`👁️ Card original com opacity = 0.5 e scale = 0.95`);
       
     } catch (error) {
       log(`❌ Erro em DragStart:`, error);
@@ -78,13 +81,19 @@ export default function Maintenance() {
     log(`⏹️ DragEnd acionado`);
     
     const element = e.currentTarget as HTMLElement;
-    element.style.opacity = '1';
-    log(`♻️ Card restaurado com opacity = 1`);
     
-    // Delay clearance to allow animation
+    // Restore element immediately
+    element.style.opacity = '1';
+    element.style.transform = 'scale(1)';
+    element.style.transition = 'all 300ms ease-out';
+    log(`♻️ Card restaurado com opacity = 1 e scale = 1`);
+    
+    // Clear state after animation completes
     setTimeout(() => {
       setDraggedTaskId(null);
       setDroppedTaskId(null);
+      setDragSourceElement(null);
+      element.style.transition = '';
       log(`🧹 draggedTaskId limpado`);
     }, 300);
   };
@@ -230,7 +239,6 @@ export default function Maintenance() {
                   {getTasksByStatus(status).map(task => {
                     const daysInMaintenance = getDaysInMaintenance(task.dataAgendada);
                     const showWarning = (status === 'pendente' || status === 'em_andamento') && daysInMaintenance > 3;
-                    const isDragging = draggedTaskId === task.id;
                     const isDropped = droppedTaskId === task.id;
                     
                     return (
@@ -244,7 +252,6 @@ export default function Maintenance() {
                           'rounded-lg border bg-card p-3 shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer',
                           userCanEdit && 'cursor-grab active:cursor-grabbing',
                           showWarning && 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20',
-                          isDragging && 'opacity-50 scale-95 shadow-lg',
                           isDropped && 'scale-105 shadow-lg border-green-400 bg-green-50/30 dark:bg-green-950/20'
                         )}
                       >
