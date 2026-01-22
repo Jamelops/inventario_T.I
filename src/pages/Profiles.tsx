@@ -159,7 +159,7 @@ export default function Profiles() {
     }
   };
 
-  const updateUserRole = async (userId: string, role: 'admin' | 'manager' | 'viewer') => {
+  const updateUserRole = async (userId: string, role: 'admin' | 'viewer') => {
     // Check if role exists
     const existingRole = userRoles.find(r => r.user_id === userId);
     
@@ -355,7 +355,6 @@ export default function Profiles() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="manager">Gerente</SelectItem>
                           <SelectItem value="viewer">Visualizador</SelectItem>
                         </SelectContent>
                       </Select>
