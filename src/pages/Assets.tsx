@@ -59,22 +59,24 @@ export default function Assets() {
       { 
         header: 'Categoria', 
         key: 'categoria',
-        format: (value: any) => {
-          return categoryLabels[value as AssetCategory] || value;
+        format: (value: unknown) => {
+          const raw = typeof value === 'string' ? value : '';
+          return categoryLabels[raw as AssetCategory] || raw;
         }
       },
       { 
         header: 'Status', 
         key: 'status',
-        format: (value: any) => {
-          return statusLabels[value as AssetStatus] || value;
+        format: (value: unknown) => {
+          const raw = typeof value === 'string' ? value : '';
+          return statusLabels[raw as AssetStatus] || raw;
         }
       },
       { header: 'Responsável', key: 'responsavel' },
       { 
         header: 'Valor', 
         key: 'valor',
-        format: (value: any) => formatCurrency(value)
+        format: (value: unknown) => formatCurrency(value)
       },
     ];
 

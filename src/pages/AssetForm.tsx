@@ -117,10 +117,10 @@ const AssetForm = () => {
   const categoria = form.watch("categoria");
 
   // Clean specifications by removing empty values
-  const cleanSpecifications = (specs: Record<string, any> | undefined) => {
+  const cleanSpecifications = (specs: Record<string, unknown> | undefined) => {
     if (!specs) return undefined;
     const cleaned = Object.fromEntries(
-      Object.entries(specs).filter(([_, value]) => value && value.trim && value.trim() !== '')
+      Object.entries(specs).filter(([, value]) => typeof value === 'string' && value.trim() !== '')
     );
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   };

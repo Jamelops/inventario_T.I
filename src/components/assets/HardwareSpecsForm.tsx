@@ -6,7 +6,7 @@ import { Cpu } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 
 interface HardwareSpecsFormProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<Record<string, unknown>>;
   categoria: string;
 }
 

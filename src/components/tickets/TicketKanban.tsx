@@ -11,12 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TicketStatusBadge, TicketPriorityBadge } from '@/components/tickets/TicketStatusBadge';
 import { SLAIndicator } from '@/components/tickets/SLAIndicator';
-import { Ticket, ticketStatusLabels } from '@/types/tickets';
+import { Ticket, TicketSupplierConfig, ticketStatusLabels } from '@/types/tickets';
 
 interface TicketKanbanProps {
   tickets: Ticket[];
-  suppliers: any[];
-  getSupplierById: (id: string) => any;
+  suppliers: TicketSupplierConfig[];
+  getSupplierById: (id: string) => TicketSupplierConfig | undefined;
   onStatusChange: (ticketId: string, newStatus: string) => void;
 }
 

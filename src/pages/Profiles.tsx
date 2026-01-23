@@ -162,7 +162,7 @@ export default function Profiles() {
     }
   };
 
-  const updateUserRole = async (userId: string, role: 'admin' | 'viewer') => {
+  const updateUserRole = async (userId: string, role: UserRole['role']) => {
     // Check if role exists
     const existingRole = userRoles.find(r => r.user_id === userId);
     
@@ -362,7 +362,7 @@ export default function Profiles() {
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Permissão:</span>
-                      <Select value={role} onValueChange={(value) => updateUserRole(profile.user_id, value as any)}>
+                      <Select value={role} onValueChange={(value) => updateUserRole(profile.user_id, value as UserRole['role'])}>
                         <SelectTrigger className="w-32 h-8">
                           <SelectValue />
                         </SelectTrigger>
