@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { License } from '@/types';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -75,7 +75,11 @@ export function useLicenses() {
       setLicenses((data || []).map(dbToLicense));
     } catch (error: any) {
       console.error('Error fetching licenses:', error);
-      toast.error('Erro ao carregar licenças');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar licenças',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -87,7 +91,11 @@ export function useLicenses() {
 
   const addLicense = async (license: Omit<License, 'id' | 'dataCriacao' | 'dataAtualizacao'>): Promise<License | null> => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      });
       return null;
     }
 
@@ -102,11 +110,18 @@ export function useLicenses() {
 
       const newLicense = dbToLicense(data);
       setLicenses(prev => [newLicense, ...prev]);
-      toast.success('Licença criada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Licença criada com sucesso',
+      });
       return newLicense;
     } catch (error: any) {
       console.error('Error adding license:', error);
-      toast.error('Erro ao criar licença: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao criar licença: ${error.message}`,
+        variant: 'destructive',
+      });
       return null;
     }
   };
@@ -125,11 +140,18 @@ export function useLicenses() {
           ? { ...license, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
           : license
       ));
-      toast.success('Licença atualizada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Licença atualizada com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error updating license:', error);
-      toast.error('Erro ao atualizar licença: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao atualizar licença: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
@@ -144,11 +166,18 @@ export function useLicenses() {
       if (error) throw error;
 
       setLicenses(prev => prev.filter(license => license.id !== id));
-      toast.success('Licença excluída com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Licença excluída com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error deleting license:', error);
-      toast.error('Erro ao excluir licença: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao excluir licença: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };

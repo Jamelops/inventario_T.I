@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { Category } from '@/types';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -54,7 +54,11 @@ export function useCategories() {
       setCategories((data || []).map(dbToCategory));
     } catch (error: any) {
       console.error('Error fetching categories:', error);
-      toast.error('Erro ao carregar categorias');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar categorias',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -66,7 +70,11 @@ export function useCategories() {
 
   const addCategory = async (category: Omit<Category, 'id'>): Promise<Category | null> => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      });
       return null;
     }
 
@@ -81,11 +89,18 @@ export function useCategories() {
 
       const newCategory = dbToCategory(data);
       setCategories(prev => [...prev, newCategory].sort((a, b) => a.nome.localeCompare(b.nome)));
-      toast.success('Categoria criada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Categoria criada com sucesso',
+      });
       return newCategory;
     } catch (error: any) {
       console.error('Error adding category:', error);
-      toast.error('Erro ao criar categoria: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao criar categoria: ${error.message}`,
+        variant: 'destructive',
+      });
       return null;
     }
   };
@@ -104,11 +119,18 @@ export function useCategories() {
           ? { ...category, ...updates }
           : category
       ));
-      toast.success('Categoria atualizada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Categoria atualizada com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error updating category:', error);
-      toast.error('Erro ao atualizar categoria: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao atualizar categoria: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
@@ -123,11 +145,18 @@ export function useCategories() {
       if (error) throw error;
 
       setCategories(prev => prev.filter(category => category.id !== id));
-      toast.success('Categoria excluída com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Categoria excluída com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error deleting category:', error);
-      toast.error('Erro ao excluir categoria: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao excluir categoria: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };

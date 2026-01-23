@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { Ticket, TicketInteraction, TicketStatus } from '@/types/tickets';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -142,7 +142,11 @@ export function useTickets() {
       setTickets((data || []).map((ticket, index) => dbToTicket(ticket, index)));
     } catch (error: any) {
       console.error('Error fetching tickets:', error);
-      toast.error('Erro ao carregar chamados');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar chamados',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -157,7 +161,11 @@ export function useTickets() {
     supplierSlaHours?: number
   ): Promise<Ticket | null> => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      });
       return null;
     }
 
@@ -172,11 +180,18 @@ export function useTickets() {
 
       const newTicket = dbToTicket(data, 0);
       setTickets(prev => [newTicket, ...prev]);
-      toast.success('Chamado criado com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Chamado criado com sucesso',
+      });
       return newTicket;
     } catch (error: any) {
       console.error('Error adding ticket:', error);
-      toast.error('Erro ao criar chamado: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao criar chamado: ${error.message}`,
+        variant: 'destructive',
+      });
       return null;
     }
   };
@@ -195,11 +210,18 @@ export function useTickets() {
           ticket.id === id ? { ...ticket, ...updates } : ticket
         )
       );
-      toast.success('Chamado atualizado com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Chamado atualizado com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error updating ticket:', error);
-      toast.error('Erro ao atualizar chamado: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao atualizar chamado: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
@@ -214,11 +236,18 @@ export function useTickets() {
       if (error) throw error;
 
       setTickets(prev => prev.filter(ticket => ticket.id !== id));
-      toast.success('Chamado excluído com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Chamado excluído com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error deleting ticket:', error);
-      toast.error('Erro ao excluir chamado: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao excluir chamado: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
@@ -258,7 +287,11 @@ export function useTickets() {
     interaction: Omit<TicketInteraction, 'id' | 'ticketId' | 'createdAt'>
   ): Promise<boolean> => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      });
       console.error('User not authenticated for adding interaction');
       return false;
     }
@@ -279,12 +312,19 @@ export function useTickets() {
         throw error;
       }
 
-      toast.success('Interação adicionada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Interação adicionada com sucesso',
+      });
       await fetchTickets();
       return true;
     } catch (error: any) {
       console.error('Error adding interaction:', error);
-      toast.error(`Erro ao adicionar interação: ${error.message}`);
+      toast({
+        title: 'Erro',
+        description: `Erro ao adicionar interação: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };

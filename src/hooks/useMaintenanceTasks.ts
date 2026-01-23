@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { MaintenanceTask, MaintenanceStatus } from '@/types';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -87,7 +87,11 @@ export function useMaintenanceTasks() {
       setTasks((data || []).map(dbToTask));
     } catch (error: any) {
       console.error('Error fetching tasks:', error);
-      toast.error('Erro ao carregar tarefas de manutenção');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar tarefas de manutenção',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -99,7 +103,11 @@ export function useMaintenanceTasks() {
 
   const addTask = async (task: Omit<MaintenanceTask, 'id' | 'dataCriacao' | 'dataAtualizacao'>): Promise<MaintenanceTask | null> => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      });
       return null;
     }
 
@@ -114,11 +122,18 @@ export function useMaintenanceTasks() {
 
       const newTask = dbToTask(data);
       setTasks(prev => [newTask, ...prev]);
-      toast.success('Tarefa de manutenção criada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Tarefa de manutenção criada com sucesso',
+      });
       return newTask;
     } catch (error: any) {
       console.error('Error adding task:', error);
-      toast.error('Erro ao criar tarefa: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao criar tarefa: ${error.message}`,
+        variant: 'destructive',
+      });
       return null;
     }
   };
@@ -137,11 +152,18 @@ export function useMaintenanceTasks() {
           ? { ...task, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
           : task
       ));
-      toast.success('Tarefa atualizada com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Tarefa atualizada com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error updating task:', error);
-      toast.error('Erro ao atualizar tarefa: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao atualizar tarefa: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
@@ -156,11 +178,18 @@ export function useMaintenanceTasks() {
       if (error) throw error;
 
       setTasks(prev => prev.filter(task => task.id !== id));
-      toast.success('Tarefa excluída com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Tarefa excluída com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error deleting task:', error);
-      toast.error('Erro ao excluir tarefa: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao excluir tarefa: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };

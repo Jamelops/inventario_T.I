@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { Asset, HardwareSpecs } from '@/types';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -88,7 +88,11 @@ export function useAssets() {
       setAssets((data || []).map(dbToAsset));
     } catch (error: any) {
       console.error('Error fetching assets:', error);
-      toast.error('Erro ao carregar ativos');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar ativos',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -100,7 +104,11 @@ export function useAssets() {
 
   const addAsset = async (asset: Omit<Asset, 'id' | 'dataCriacao' | 'dataAtualizacao'>): Promise<Asset | null> => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      });
       return null;
     }
 
@@ -115,11 +123,18 @@ export function useAssets() {
 
       const newAsset = dbToAsset(data);
       setAssets(prev => [newAsset, ...prev]);
-      toast.success('Ativo criado com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Ativo criado com sucesso',
+      });
       return newAsset;
     } catch (error: any) {
       console.error('Error adding asset:', error);
-      toast.error('Erro ao criar ativo: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao criar ativo: ${error.message}`,
+        variant: 'destructive',
+      });
       return null;
     }
   };
@@ -138,11 +153,18 @@ export function useAssets() {
           ? { ...asset, ...updates, dataAtualizacao: new Date().toISOString().split('T')[0] }
           : asset
       ));
-      toast.success('Ativo atualizado com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Ativo atualizado com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error updating asset:', error);
-      toast.error('Erro ao atualizar ativo: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao atualizar ativo: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
@@ -157,11 +179,18 @@ export function useAssets() {
       if (error) throw error;
 
       setAssets(prev => prev.filter(asset => asset.id !== id));
-      toast.success('Ativo excluído com sucesso');
+      toast({
+        title: 'Sucesso',
+        description: 'Ativo excluído com sucesso',
+      });
       return true;
     } catch (error: any) {
       console.error('Error deleting asset:', error);
-      toast.error('Erro ao excluir ativo: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: `Erro ao excluir ativo: ${error.message}`,
+        variant: 'destructive',
+      });
       return false;
     }
   };
