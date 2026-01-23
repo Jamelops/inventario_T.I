@@ -28,6 +28,20 @@ interface TicketWithSupplier extends DbTicket {
   interactions: TicketInteraction[];
 }
 
+type TicketMetadata = Partial<
+  Pick<
+    Ticket,
+    | 'fornecedorId'
+    | 'tipo'
+    | 'unidade'
+    | 'assetId'
+    | 'assetNome'
+    | 'protocoloExterno'
+    | 'contatoFornecedor'
+    | 'slaDeadline'
+  >
+>;
+
 // Generate humanized ticket ID like TICK-001, TICK-002, etc
 const generateHumanizedId = (index: number): string => {
   return `TICK-${String(index).padStart(3, '0')}`;
@@ -35,7 +49,7 @@ const generateHumanizedId = (index: number): string => {
 
 const dbToTicket = (dbTicket: DbTicket, index?: number): Ticket => {
   // Parse JSON data from metadata or use defaults
-  let ticketData: any = {};
+  let ticketData: TicketMetadata = {};
   
   try {
     // Try to get any stored metadata
@@ -52,8 +66,8 @@ const dbToTicket = (dbTicket: DbTicket, index?: number): Ticket => {
     descricao: dbTicket.descricao,
     fornecedorId: ticketData.fornecedorId || '',
     tipo: ticketData.tipo || 'outro',
-    status: dbTicket.status as any,
-    prioridade: dbTicket.prioridade as any,
+    status: dbTicket.status as Ticket['status'],
+    prioridade: dbTicket.prioridade as Ticket['prioridade'],
     unidade: ticketData.unidade || dbTicket.departamento || '',
     assetId: ticketData.assetId,
     assetNome: ticketData.assetNome,
@@ -140,7 +154,7 @@ export function useTickets() {
 
       if (error) throw error;
       setTickets((data || []).map((ticket, index) => dbToTicket(ticket, index)));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching tickets:', error);
       toast({
         title: 'Erro',
@@ -185,11 +199,12 @@ export function useTickets() {
         description: 'Chamado criado com sucesso',
       });
       return newTicket;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error adding ticket:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao criar chamado: ${error.message}`,
+        description: `Erro ao criar chamado: ${message}`,
         variant: 'destructive',
       });
       return null;
@@ -215,11 +230,12 @@ export function useTickets() {
         description: 'Chamado atualizado com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error updating ticket:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao atualizar chamado: ${error.message}`,
+        description: `Erro ao atualizar chamado: ${message}`,
         variant: 'destructive',
       });
       return false;
@@ -241,11 +257,12 @@ export function useTickets() {
         description: 'Chamado excluído com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error deleting ticket:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao excluir chamado: ${error.message}`,
+        description: `Erro ao excluir chamado: ${message}`,
         variant: 'destructive',
       });
       return false;
@@ -276,7 +293,7 @@ export function useTickets() {
       }
 
       return await updateTicket(id, updates);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error changing ticket status:', error);
       return false;
     }
@@ -318,11 +335,12 @@ export function useTickets() {
       });
       await fetchTickets();
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error adding interaction:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao adicionar interação: ${error.message}`,
+        description: `Erro ao adicionar interação: ${message}`,
         variant: 'destructive',
       });
       return false;

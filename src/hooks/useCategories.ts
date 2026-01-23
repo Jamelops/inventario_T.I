@@ -52,7 +52,7 @@ export function useCategories() {
 
       if (error) throw error;
       setCategories((data || []).map(dbToCategory));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching categories:', error);
       toast({
         title: 'Erro',
@@ -94,11 +94,12 @@ export function useCategories() {
         description: 'Categoria criada com sucesso',
       });
       return newCategory;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error adding category:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao criar categoria: ${error.message}`,
+        description: `Erro ao criar categoria: ${message}`,
         variant: 'destructive',
       });
       return null;
@@ -124,11 +125,12 @@ export function useCategories() {
         description: 'Categoria atualizada com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error updating category:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao atualizar categoria: ${error.message}`,
+        description: `Erro ao atualizar categoria: ${message}`,
         variant: 'destructive',
       });
       return false;
@@ -150,11 +152,12 @@ export function useCategories() {
         description: 'Categoria excluída com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error deleting category:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao excluir categoria: ${error.message}`,
+        description: `Erro ao excluir categoria: ${message}`,
         variant: 'destructive',
       });
       return false;

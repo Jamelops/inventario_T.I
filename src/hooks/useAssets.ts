@@ -13,8 +13,8 @@ type DbAssetUpdate = TablesUpdate<'assets'>;
 const dbToAsset = (dbAsset: DbAsset): Asset => ({
   id: dbAsset.id,
   nome: dbAsset.nome || '',
-  categoria: dbAsset.categoria as any || 'outros',
-  status: dbAsset.status as any || 'ativo',
+  categoria: (dbAsset.categoria as Asset['categoria']) || 'outros',
+  status: (dbAsset.status as Asset['status']) || 'ativo',
   numeroSerie: dbAsset.numero_serie || '',
   dataCompra: dbAsset.data_compra || '',
   valor: dbAsset.valor || 0,
@@ -86,7 +86,7 @@ export function useAssets() {
 
       if (error) throw error;
       setAssets((data || []).map(dbToAsset));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching assets:', error);
       toast({
         title: 'Erro',
@@ -128,11 +128,12 @@ export function useAssets() {
         description: 'Ativo criado com sucesso',
       });
       return newAsset;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error adding asset:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao criar ativo: ${error.message}`,
+        description: `Erro ao criar ativo: ${message}`,
         variant: 'destructive',
       });
       return null;
@@ -158,11 +159,12 @@ export function useAssets() {
         description: 'Ativo atualizado com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error updating asset:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao atualizar ativo: ${error.message}`,
+        description: `Erro ao atualizar ativo: ${message}`,
         variant: 'destructive',
       });
       return false;
@@ -184,11 +186,12 @@ export function useAssets() {
         description: 'Ativo excluído com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error deleting asset:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao excluir ativo: ${error.message}`,
+        description: `Erro ao excluir ativo: ${message}`,
         variant: 'destructive',
       });
       return false;

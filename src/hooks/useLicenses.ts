@@ -16,7 +16,7 @@ const dbToLicense = (dbLicense: DbLicense): License => ({
   quantidadeTotal: dbLicense.quantidade_total,
   quantidadeUsada: dbLicense.quantidade_usada,
   dataVencimento: dbLicense.data_vencimento,
-  status: dbLicense.status as any,
+  status: dbLicense.status as License['status'],
   fornecedor: dbLicense.fornecedor || undefined,
   chave: dbLicense.chave || undefined,
   notas: dbLicense.notas || undefined,
@@ -73,7 +73,7 @@ export function useLicenses() {
 
       if (error) throw error;
       setLicenses((data || []).map(dbToLicense));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching licenses:', error);
       toast({
         title: 'Erro',
@@ -115,11 +115,12 @@ export function useLicenses() {
         description: 'Licença criada com sucesso',
       });
       return newLicense;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error adding license:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao criar licença: ${error.message}`,
+        description: `Erro ao criar licença: ${message}`,
         variant: 'destructive',
       });
       return null;
@@ -145,11 +146,12 @@ export function useLicenses() {
         description: 'Licença atualizada com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error updating license:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao atualizar licença: ${error.message}`,
+        description: `Erro ao atualizar licença: ${message}`,
         variant: 'destructive',
       });
       return false;
@@ -171,11 +173,12 @@ export function useLicenses() {
         description: 'Licença excluída com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error deleting license:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao excluir licença: ${error.message}`,
+        description: `Erro ao excluir licença: ${message}`,
         variant: 'destructive',
       });
       return false;

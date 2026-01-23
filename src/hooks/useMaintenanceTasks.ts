@@ -16,8 +16,8 @@ const dbToTask = (dbTask: DbTask): MaintenanceTask => ({
   descricao: dbTask.descricao,
   responsavel: dbTask.responsavel,
   responsavelEmail: dbTask.responsavel_email || undefined,
-  prioridade: dbTask.prioridade as any,
-  status: dbTask.status as any,
+  prioridade: dbTask.prioridade as MaintenanceTask['prioridade'],
+  status: dbTask.status as MaintenanceTask['status'],
   dataAgendada: dbTask.data_agendada,
   dataConclusao: dbTask.data_conclusao || undefined,
   notas: dbTask.notas || undefined,
@@ -85,7 +85,7 @@ export function useMaintenanceTasks() {
 
       if (error) throw error;
       setTasks((data || []).map(dbToTask));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching tasks:', error);
       toast({
         title: 'Erro',
@@ -127,11 +127,12 @@ export function useMaintenanceTasks() {
         description: 'Tarefa de manutenção criada com sucesso',
       });
       return newTask;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error adding task:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao criar tarefa: ${error.message}`,
+        description: `Erro ao criar tarefa: ${message}`,
         variant: 'destructive',
       });
       return null;
@@ -157,11 +158,12 @@ export function useMaintenanceTasks() {
         description: 'Tarefa atualizada com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error updating task:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao atualizar tarefa: ${error.message}`,
+        description: `Erro ao atualizar tarefa: ${message}`,
         variant: 'destructive',
       });
       return false;
@@ -183,11 +185,12 @@ export function useMaintenanceTasks() {
         description: 'Tarefa excluída com sucesso',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado';
       console.error('Error deleting task:', error);
       toast({
         title: 'Erro',
-        description: `Erro ao excluir tarefa: ${error.message}`,
+        description: `Erro ao excluir tarefa: ${message}`,
         variant: 'destructive',
       });
       return false;
