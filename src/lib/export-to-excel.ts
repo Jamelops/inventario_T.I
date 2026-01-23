@@ -9,9 +9,23 @@ export interface ExportColumn {
 }
 
 // Interface para opções de exportação
+type ToastPayload = {
+  title?: string;
+  description?: string;
+  variant?: 'destructive';
+  duration?: number;
+};
+
+type ToastFn = (payload: ToastPayload) => void;
+type LegacyToast = {
+  success?: (message: string, duration?: number) => void;
+  warning?: (message: string, duration?: number) => void;
+  error?: (message: string, duration?: number) => void;
+};
+
 export interface ExportOptions {
   filename: string;
-  toast?: any; // Toast hook passado como parâmetro
+  toast?: ToastFn | LegacyToast;
 }
 
 // Função para formatar data
@@ -57,16 +71,36 @@ export async function exportToExcel(
 ) {
   try {
     const toast = options?.toast;
+    const toastFn = typeof toast === 'function' ? toast : null;
+    const legacyToast = toast && typeof toast === 'object' ? (toast as LegacyToast) : null;
+
+    const notify = (type: 'success' | 'warning' | 'error', message: string, duration?: number) => {
+      if (toastFn) {
+        const title = type === 'error' ? 'Erro' : type === 'warning' ? 'Atenção' : 'Sucesso';
+        const variant = type === 'error' ? 'destructive' : undefined;
+        toastFn({
+          title,
+          description: message,
+          ...(variant ? { variant } : {}),
+          ...(duration ? { duration } : {}),
+        });
+        return;
+      }
+
+      const legacy = legacyToast?.[type];
+      if (typeof legacy === 'function') {
+        legacy(message, duration);
+        return;
+      }
+
+      alert(message);
+    };
 
     // Validação 1: Dados vazios
     if (!data || data.length === 0) {
       const message = 'Nenhum dado para exportar';
       
-      if (toast && typeof toast.warning === 'function') {
-        toast.warning(message, 5000);
-      } else {
-        alert(message);
-      }
+      notify('warning', message, 5000);
       return;
     }
 
@@ -74,11 +108,7 @@ export async function exportToExcel(
     if (!options || !options.filename) {
       const message = 'Nome do arquivo não fornecido';
       
-      if (toast && typeof toast.error === 'function') {
-        toast.error(message, 5000);
-      } else {
-        alert(message);
-      }
+      notify('error', message, 5000);
       return;
     }
 
@@ -172,11 +202,7 @@ export async function exportToExcel(
     // ✅ SUCESSO - COM DURAÇÃO AUMENTADA (6 segundos)
     const successMessage = '✅ Arquivo exportado com sucesso!';
     
-    if (toast && typeof toast.success === 'function') {
-      toast.success(successMessage, 6000); // 6 segundos para o usuário ver
-    } else {
-      alert(successMessage);
-    }
+    notify('success', successMessage, 6000);
 
   } catch (error) {
     console.error('❌ ERRO ao exportar para Excel:', error);
@@ -184,11 +210,7 @@ export async function exportToExcel(
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     const finalMessage = `❌ Erro ao exportar: ${errorMessage}`;
     
-    if (options.toast && typeof options.toast.error === 'function') {
-      options.toast.error(finalMessage, 6000); // 6 segundos para o usuário ver
-    } else {
-      alert(finalMessage);
-    }
+    notify('error', finalMessage, 6000);
   }
 }
 

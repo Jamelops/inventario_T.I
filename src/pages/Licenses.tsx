@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, Calendar, MoreHorizontal, Edit, Trash, Download } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -20,7 +20,7 @@ import { exportToExcel, formatDate, ExportColumn } from '@/lib/export-to-excel';
 export default function Licenses() {
   const { licenses, licensesLoading } = useData();
   const { canEdit } = useAuth();
-  const toast = useToast();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
