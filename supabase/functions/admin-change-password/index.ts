@@ -91,29 +91,40 @@ Deno.serve(async (req) => {
 
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-  let callerRole: string | null = null;
-  const { data: roleData, error: roleError } = await supabaseAdmin.rpc("get_user_role", {
-    _user_id: caller.id,
-  });
+  let isAdminOrManager: boolean | null = null;
+  const [adminResult, managerResult] = await Promise.all([
+    supabaseAdmin.rpc("has_role", { _user_id: caller.id, _role: "admin" }),
+    supabaseAdmin.rpc("has_role", { _user_id: caller.id, _role: "manager" }),
+  ]);
 
-  if (roleError) {
-    const { data: roleRow, error: roleRowError } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .maybeSingle();
+  if (adminResult.data === true || managerResult.data === true) {
+    isAdminOrManager = true;
+  } else if (adminResult.data === false && managerResult.data === false) {
+    isAdminOrManager = false;
+  } else if (adminResult.error || managerResult.error) {
+    const { data: roleData, error: roleError } = await supabaseAdmin.rpc("get_user_role", {
+      _user_id: caller.id,
+    });
 
-    if (roleRowError) {
-      console.error("[admin-change-password] Role lookup failed:", roleRowError);
-      return jsonResponse(500, { error: "Failed to validate admin role" });
+    if (roleError) {
+      const { data: roleRow, error: roleRowError } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", caller.id)
+        .maybeSingle();
+
+      if (roleRowError) {
+        console.error("[admin-change-password] Role lookup failed:", roleRowError);
+        return jsonResponse(500, { error: "Failed to validate admin/manager role" });
+      }
+
+      isAdminOrManager = roleRow?.role === "admin" || roleRow?.role === "manager";
+    } else {
+      isAdminOrManager = roleData === "admin" || roleData === "manager";
     }
-
-    callerRole = roleRow?.role ?? null;
-  } else {
-    callerRole = roleData ?? null;
   }
 
-  if (callerRole !== "admin") {
+  if (!isAdminOrManager) {
     await supabaseAdmin
       .from("audit_logs")
       .insert([
@@ -123,7 +134,7 @@ Deno.serve(async (req) => {
           resource_id: targetUserId,
           user_id: caller.id,
           success: false,
-          error_message: "Caller is not admin",
+          error_message: "Caller is not admin or manager",
           metadata: {
             actor_id: caller.id,
             target_id: targetUserId,
@@ -135,7 +146,7 @@ Deno.serve(async (req) => {
       ])
       .catch(() => {});
 
-    return jsonResponse(403, { error: "Only admins can change passwords" });
+    return jsonResponse(403, { error: "Only admins or managers can change passwords" });
   }
 
   const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
