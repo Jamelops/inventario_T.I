@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/ui/toast-container";
+import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DataProvider } from "@/contexts/DataContext";
@@ -104,6 +105,7 @@ const App = () => (
           <TicketProvider>
             <ToastProvider>
               <ToastContainer />
+              <Toaster />
               <BrowserRouter>
                 <AppContent />
               </BrowserRouter>
