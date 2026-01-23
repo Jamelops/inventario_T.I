@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- context/provider exports required */
 import React, { createContext, useState, useCallback } from 'react';
 import { Toast, ToastContextType, ToastType } from '@/types/toast';
 

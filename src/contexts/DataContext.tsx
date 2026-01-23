@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- context/provider exports required */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Asset, License, Category, DashboardConfig } from '@/types';
 import { useAssets } from '@/hooks/useAssets';

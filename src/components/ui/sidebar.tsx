@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- multiple exports required for sidebar API */
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- shared constants alongside component */
 import { useState } from 'react';
 import { Settings2, GripVertical, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
