@@ -237,12 +237,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Safety timeout: 500ms max - ALWAYS unblock the UI
     loadingTimeout = setTimeout(() => {
-      if (mounted && loading) {
+      if (!mounted) return;
+      setLoading((current) => {
+        if (!current) return current;
         if (import.meta.env.DEV) {
           console.warn('Auth state initialization timeout - forcing loading off');
         }
-        setLoading(false);
-      }
+        return false;
+      });
     }, 500);
 
     return () => {

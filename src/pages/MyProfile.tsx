@@ -27,6 +27,7 @@ export default function MyProfile() {
 
   useEffect(() => {
     if (profile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form field when profile loads
       setUsername(profile.username);
     }
   }, [profile]);

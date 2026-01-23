@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Save } from "lucide-react";
@@ -159,7 +159,7 @@ export default function TicketForm() {
     }
   };
 
-  const selectedSupplierId = form.watch("fornecedorId");
+  const selectedSupplierId = useWatch({ control: form.control, name: "fornecedorId" });
   const selectedSupplier = selectedSupplierId ? getSupplierById(selectedSupplierId) : null;
 
   return (

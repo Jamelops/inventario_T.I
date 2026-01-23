@@ -7,6 +7,7 @@ export function ToastProgressBar() {
 
   // Pega o primeiro toast ativo
   const activeToast = toasts.length > 0 ? toasts[0] : null;
+  const activeToastId = activeToast?.id ?? null;
   const duration = activeToast?.duration || 4000;
 
   // Cores por tipo de toast
@@ -21,7 +22,8 @@ export function ToastProgressBar() {
 
   // Anima a barra de progresso
   useEffect(() => {
-    if (!activeToast || duration <= 0) {
+    if (!activeToastId || duration <= 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- keep progress reset consistent
       setProgress(100);
       return;
     }
@@ -36,7 +38,7 @@ export function ToastProgressBar() {
     }, 50);
 
     return () => clearInterval(interval);
-  }, [activeToast?.id, duration]);
+  }, [activeToastId, duration]);
 
   // Se não há toast ativo, não mostra nada
   if (!activeToast) return null;

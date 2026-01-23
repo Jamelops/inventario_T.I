@@ -66,6 +66,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Load dashboard from localStorage
   useEffect(() => {
     const storedDashboard = localStorage.getItem(STORAGE_KEYS.dashboard);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load persisted dashboard config after mount
     setDashboardConfig(storedDashboard ? JSON.parse(storedDashboard) : defaultDashboardConfig);
   }, []);
 

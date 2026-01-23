@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { Toast } from '@/types/toast';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,13 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
   const IconComponent = config.icon;
   const duration = toast.duration || 4000;
 
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onClose(toast.id);
+    }, 300);
+  }, [onClose, toast.id]);
+
   // DEBUG: Log renderização
   useEffect(() => {
     console.log('%c[ToastItem] Renderizado', 'color: #2563eb; font-weight: bold;', {
@@ -58,33 +65,30 @@ export function ToastItem({ toast, onClose }: ToastItemProps) {
       duration,
       config: Object.keys(config),
     });
-  }, [toast, config]);
+  }, [toast, config, duration]);
 
   useEffect(() => {
     if (duration <= 0) return;
 
     const interval = setInterval(() => {
+      let shouldClose = false;
       setProgress((prev) => {
         const newProgress = prev - (100 / (duration / 50));
+        if (newProgress <= 0) {
+          shouldClose = true;
+          return 0;
+        }
         return newProgress > 0 ? newProgress : 0;
       });
+
+      if (shouldClose) {
+        clearInterval(interval);
+        handleClose();
+      }
     }, 50);
 
     return () => clearInterval(interval);
-  }, [duration]);
-
-  useEffect(() => {
-    if (progress <= 0) {
-      handleClose();
-    }
-  }, [progress]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      onClose(toast.id);
-    }, 300);
-  };
+  }, [duration, handleClose]);
 
   return (
     <div
