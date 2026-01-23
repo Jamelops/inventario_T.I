@@ -100,13 +100,25 @@ export function ChangePasswordModal({
           return;
         }
 
-        const { error: updateError } = await supabase.auth.admin.updateUserById(
-          targetUserId,
-          { password: formData.newPassword }
+        const { data, error: invokeError } = await supabase.functions.invoke(
+          'admin-change-password',
+          {
+            body: {
+              targetUserId,
+              newPassword: formData.newPassword,
+            },
+          }
         );
 
-        if (updateError) {
-          setError(updateError.message);
+        if (invokeError) {
+          const message = data?.error || invokeError.message || 'Erro ao alterar senha';
+          setError(message);
+          setIsLoading(false);
+          return;
+        }
+
+        if (data?.error) {
+          setError(data.error);
           setIsLoading(false);
           return;
         }
