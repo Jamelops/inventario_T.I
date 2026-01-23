@@ -51,7 +51,7 @@ const AssetDetails = () => {
   if (!asset) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
-        <p className="text-muted-foreground">Ativo não encontrado</p>
+        <p className="text-muted-foreground">Ativo nao encontrado</p>
         <Button onClick={() => navigate("/assets")}>Voltar para Ativos</Button>
       </div>
     );
@@ -74,17 +74,25 @@ const AssetDetails = () => {
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Data invalida";
+      return format(date, "dd/MM/yyyy", { locale: ptBR });
+    } catch (error) {
+      console.error("Erro ao formatar data:", dateString, error);
+      return "Data invalida";
+    }
   };
 
   const infoItems = [
     { icon: Tag, label: "Categoria", value: categoryLabels[asset.categoria] },
-    { icon: Hash, label: "Número de Série", value: asset.numeroSerie },
+    { icon: Hash, label: "Numero de Serie", value: asset.numeroSerie },
     { icon: Calendar, label: "Data de Compra", value: formatDate(asset.dataCompra) },
     { icon: DollarSign, label: "Valor", value: formatCurrency(asset.valor) },
-    { icon: MapPin, label: "Localização", value: asset.localizacao },
-    { icon: User, label: "Responsável", value: asset.responsavel },
+    { icon: MapPin, label: "Localizacao", value: asset.localizacao },
+    { icon: User, label: "Responsavel", value: asset.responsavel },
   ];
 
   return (
@@ -110,7 +118,7 @@ const AssetDetails = () => {
           </Button>
           <Button variant="outline" onClick={() => navigate(`/maintenance/new?assetId=${id}`)}>
             <Wrench className="h-4 w-4 mr-2" />
-            Agendar Manutenção
+            Agendar Manutencao
           </Button>
           <Button variant="outline" onClick={() => navigate(`/tickets/new?assetId=${id}`)}>
             <Headphones className="h-4 w-4 mr-2" />
@@ -126,10 +134,10 @@ const AssetDetails = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Informações Principais */}
+        {/* Informacoes Principais */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Informações do Ativo</CardTitle>
+            <CardTitle>Informacoes do Ativo</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -150,7 +158,7 @@ const AssetDetails = () => {
               <>
                 <Separator className="my-6" />
                 <div>
-                  <h4 className="font-medium mb-2">Descrição</h4>
+                  <h4 className="font-medium mb-2">Descricao</h4>
                   <p className="text-muted-foreground">{asset.descricao}</p>
                 </div>
               </>
@@ -158,21 +166,21 @@ const AssetDetails = () => {
           </CardContent>
         </Card>
 
-        {/* Especificações de Hardware */}
+        {/* Especificacoes de Hardware */}
         <HardwareSpecsDisplay specs={asset.especificacoes} categoria={asset.categoria} />
 
-        {/* Histórico de Manutenções */}
+        {/* Historico de Manutencoes */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              Histórico de Manutenções
+              Historico de Manutencoes
             </CardTitle>
           </CardHeader>
           <CardContent>
             {assetMaintenances.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                Nenhuma manutenção registrada para este ativo.
+                Nenhuma manutencao registrada para este ativo.
               </p>
             ) : (
               <div className="space-y-4">
@@ -238,7 +246,7 @@ const AssetDetails = () => {
                         <TicketStatusBadge status={ticket.status} />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {supplier?.nome || 'Desconhecido'} • {format(new Date(ticket.dataCriacao), "dd/MM/yyyy", { locale: ptBR })}
+                        {supplier?.nome || 'Desconhecido'} • {formatDate(ticket.dataCriacao)}
                       </p>
                     </div>
                   );
