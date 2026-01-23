@@ -7,12 +7,17 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseLegacyKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const supabaseKey = supabaseAnonKey || supabaseLegacyKey;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Variáveis de ambiente não encontradas!');
-  console.error('Defina: VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY');
+  console.error('Defina: VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (ou legado VITE_SUPABASE_PUBLISHABLE_KEY)');
   process.exit(1);
+}
+if (!supabaseAnonKey && supabaseLegacyKey) {
+  console.warn('⚠️  [DEPRECATED] VITE_SUPABASE_PUBLISHABLE_KEY é legado. Use VITE_SUPABASE_ANON_KEY.');
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);

@@ -3,10 +3,19 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_LEGACY_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_KEY = SUPABASE_ANON_KEY || SUPABASE_LEGACY_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('Missing Supabase environment variables');
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error(
+    'Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or legacy VITE_SUPABASE_PUBLISHABLE_KEY).'
+  );
+}
+if (!SUPABASE_ANON_KEY && SUPABASE_LEGACY_KEY) {
+  console.warn(
+    '[DEPRECATED] VITE_SUPABASE_PUBLISHABLE_KEY is deprecated. Please use VITE_SUPABASE_ANON_KEY instead.'
+  );
 }
 
 // Import the supabase client like this:
@@ -14,7 +23,7 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 
 // Security: Use localStorage to persist sessions across page reloads
 // This allows users to remain logged in when they refresh the page
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     storage: localStorage,        // ✅ Persist sessions across page reloads
     persistSession: true,          // ✅ CRITICAL: Enable session persistence

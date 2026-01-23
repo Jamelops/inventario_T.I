@@ -3,7 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 import { useToast } from './useToast';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseLegacyKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const supabaseKey = supabaseAnonKey || supabaseLegacyKey;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    'Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or legacy VITE_SUPABASE_PUBLISHABLE_KEY).'
+  );
+}
+if (!supabaseAnonKey && supabaseLegacyKey) {
+  console.warn(
+    '[DEPRECATED] VITE_SUPABASE_PUBLISHABLE_KEY is deprecated. Please use VITE_SUPABASE_ANON_KEY instead.'
+  );
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
