@@ -163,9 +163,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (session?.user) {
           // INSTANT: Restore from cache while fetching new data
-          const cachedProfile = await authCache.get('profile').catch(() => null);
-          const cachedRole = await authCache.get('role').catch(() => null);
-          const cachedUsernames = await authCache.get('usernames').catch(() => null);
+          const cachedProfile = await authCache.get('profile').catch(() => null) as Profile | null;
+          const cachedRole = await authCache.get('role').catch(() => null) as AppRole | null;
+          const cachedUsernames = await authCache.get('usernames').catch(() => null) as ProfileUsername[] | null;
           
           if (mounted) {
             // Set user and session immediately
@@ -315,8 +315,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // CRITICAL: Set loading to false - never block on data fetch
       if (data.session && data.user) {
         // Manually restore from cache
-        const cachedProfile = await authCache.get('profile').catch(() => null);
-        const cachedRole = await authCache.get('role').catch(() => 'viewer');
+        const cachedProfile = await authCache.get('profile').catch(() => null) as Profile | null;
+        const cachedRole = await authCache.get('role').catch(() => 'viewer') as AppRole;
         
         setSession(data.session);
         setUser(data.user);

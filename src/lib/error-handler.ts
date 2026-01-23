@@ -10,7 +10,7 @@ export interface ApiError {
   message: string;
   code?: string;
   status?: number;
-  details?: any;
+  details?: unknown;
 }
 
 export interface HandleErrorOptions {
@@ -54,16 +54,34 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
   'rate limit exceeded': 'Limite de requisiões excedido',
 };
 
+type ErrorLike = {
+  message?: string;
+  error?: string;
+  userMessage?: string;
+  status?: number;
+  statusCode?: number;
+  code?: string;
+  stack?: string;
+};
+
+const getErrorDetails = (error: unknown): ErrorLike => {
+  if (typeof error === 'object' && error !== null) {
+    return error as ErrorLike;
+  }
+  return {};
+};
+
 /**
  * Extract user-friendly error message from API error
  */
-const getUserMessage = (error: any): string => {
+const getUserMessage = (error: unknown): string => {
   // If it's already a user-friendly message, return it
   if (typeof error === 'string') {
     return error;
   }
 
-  const errorMessage = error?.message || error?.error || JSON.stringify(error) || 'Erro desconhecido';
+  const errorDetails = getErrorDetails(error);
+  const errorMessage = errorDetails.message || errorDetails.error || JSON.stringify(error) || 'Erro desconhecido';
   const errorMessageLower = errorMessage.toLowerCase();
 
   // Check against known error patterns
@@ -74,8 +92,8 @@ const getUserMessage = (error: any): string => {
   }
 
   // If it's a custom user message (from Zod validation, etc), return it
-  if (error?.userMessage) {
-    return error.userMessage;
+  if (errorDetails.userMessage) {
+    return errorDetails.userMessage;
   }
 
   // Default fallback
@@ -87,7 +105,7 @@ const getUserMessage = (error: any): string => {
  * Use this in try-catch blocks throughout the app
  */
 export const handleApiError = (
-  error: any,
+  error: unknown,
   options: HandleErrorOptions = {}
 ): ApiError => {
   const {
@@ -98,10 +116,11 @@ export const handleApiError = (
 
   // Log full error in development only
   if (logToConsole && import.meta.env.DEV) {
+    const errorDetails = getErrorDetails(error);
     console.error('[API Error]', {
       timestamp: new Date().toISOString(),
       error,
-      stack: error?.stack,
+      stack: errorDetails.stack,
     });
   }
 
@@ -112,12 +131,13 @@ export const handleApiError = (
   }
 
   const userMessage = getUserMessage(error) || fallbackMessage;
-  const statusCode = error?.status || error?.statusCode || 500;
+  const errorDetails = getErrorDetails(error);
+  const statusCode = errorDetails.status || errorDetails.statusCode || 500;
 
   const apiError: ApiError = {
     message: userMessage,
     status: statusCode,
-    code: error?.code,
+    code: errorDetails.code,
   };
 
   // Show toast notification
@@ -135,8 +155,9 @@ export const handleApiError = (
 /**
  * Handle specific error types
  */
-export const handleErrorByType = (error: any) => {
-  const status = error?.status || error?.statusCode;
+export const handleErrorByType = (error: unknown) => {
+  const errorDetails = getErrorDetails(error);
+  const status = errorDetails.status || errorDetails.statusCode;
 
   switch (status) {
     case 400:
@@ -197,7 +218,7 @@ export const handleErrorByType = (error: any) => {
 /**
  * Safe error logging (doesn't expose sensitive data)
  */
-export const safeLogError = (context: string, error: any) => {
+export const safeLogError = (context: string, error: unknown) => {
   if (import.meta.env.PROD) {
     // In production, send to error tracking service
     console.log(`[${context}] Error occurred at ${new Date().toISOString()}`);
@@ -211,11 +232,12 @@ export const safeLogError = (context: string, error: any) => {
 /**
  * Create a safe error for API responses
  */
-export const createSafeApiError = (error: any) => {
+export const createSafeApiError = (error: unknown) => {
+  const errorDetails = getErrorDetails(error);
   return {
     error: {
       message: getUserMessage(error),
-      ...(import.meta.env.DEV && { originalError: error.message })
+      ...(import.meta.env.DEV && { originalError: errorDetails.message })
     }
   };
 };

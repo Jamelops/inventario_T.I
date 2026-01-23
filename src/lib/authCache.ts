@@ -10,7 +10,7 @@ const STORE_NAME = 'auth-cache';
 
 interface CachedAuthData {
   id: 'profile' | 'role' | 'usernames';
-  data: any;
+  data: unknown;
   timestamp: number;
   ttl?: number; // Time to live in milliseconds
 }
@@ -41,7 +41,7 @@ class AuthCache {
     });
   }
 
-  async set(id: 'profile' | 'role' | 'usernames', data: any, ttl?: number): Promise<void> {
+  async set(id: 'profile' | 'role' | 'usernames', data: unknown, ttl?: number): Promise<void> {
     if (!this.initialized) await this.init();
     if (!this.db) return;
 
@@ -60,7 +60,7 @@ class AuthCache {
     });
   }
 
-  async get(id: 'profile' | 'role' | 'usernames'): Promise<any | null> {
+  async get(id: 'profile' | 'role' | 'usernames'): Promise<unknown | null> {
     if (!this.initialized) await this.init();
     if (!this.db) return null;
 

@@ -5,7 +5,7 @@ export interface ExportColumn {
   key: string;
   header: string;
   width?: number;
-  format?: (value: any, row?: any) => string; // Função opcional para formatar o valor
+  format?: (value: unknown, row?: Record<string, unknown>) => string; // Função opcional para formatar o valor
 }
 
 // Interface para opções de exportação
@@ -29,7 +29,7 @@ export interface ExportOptions {
 }
 
 // Função para formatar data
-export function formatDate(date: any): string {
+export function formatDate(date: unknown): string {
   if (!date) return 'N/A';
   if (typeof date === 'string') {
     return new Date(date).toLocaleDateString('pt-BR');
@@ -41,7 +41,7 @@ export function formatDate(date: any): string {
 }
 
 // Função para formatar data e hora
-export function formatDateTime(date: any): string {
+export function formatDateTime(date: unknown): string {
   if (!date) return 'N/A';
   if (typeof date === 'string') {
     return new Date(date).toLocaleString('pt-BR');
@@ -53,9 +53,9 @@ export function formatDateTime(date: any): string {
 }
 
 // Função para formatar moeda
-export function formatCurrency(value: any): string {
+export function formatCurrency(value: unknown): string {
   if (!value) return 'R$ 0,00';
-  const num = parseFloat(value);
+  const num = typeof value === 'number' ? value : parseFloat(String(value));
   if (isNaN(num)) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -65,7 +65,7 @@ export function formatCurrency(value: any): string {
 
 // Função principal de exportação
 export async function exportToExcel(
-  data: any[],
+  data: Record<string, unknown>[],
   columns: ExportColumn[],
   options: ExportOptions
 ) {
@@ -148,7 +148,7 @@ export async function exportToExcel(
 
     // Adicionar dados
     data.forEach(item => {
-      const row: any = {};
+      const row: Record<string, unknown> = {};
       
       finalColumns.forEach(col => {
         let value = item[col.key];

@@ -33,10 +33,10 @@ export interface AuditLogEntry {
   resourceType: string;
   resourceId?: string;
   userId?: string;
-  changes?: Record<string, any>;
+  changes?: Record<string, unknown>;
   success: boolean;
   errorMessage?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -89,7 +89,7 @@ export const logSuccess = async (
   action: AuditAction,
   resourceType: string,
   resourceId?: string,
-  changes?: Record<string, any>
+  changes?: Record<string, unknown>
 ) => {
   await logAudit({
     action,
@@ -123,7 +123,7 @@ export const logFailure = async (
  */
 export const logSecurityEvent = async (
   action: AuditAction,
-  details: Record<string, any>
+  details: Record<string, unknown>
 ) => {
   await logAudit({
     action,
@@ -140,7 +140,7 @@ export const logSecurityEvent = async (
 const getClientIp = async (): Promise<string | null> => {
   try {
     // Try to get IP from CloudFlare (if behind CloudFlare)
-    const cfIp = (window as any).CF_CONNECTING_IP;
+    const cfIp = (window as Window & { CF_CONNECTING_IP?: string }).CF_CONNECTING_IP;
     if (cfIp) return cfIp;
 
     // Try to get from backend endpoint (if available)
@@ -203,10 +203,10 @@ export const detectSuspiciousActivity = (logs: AuditLogEntry[]): boolean => {
  * Create audit trail for data changes
  */
 export const createChangeAuditTrail = (
-  oldData: Record<string, any>,
-  newData: Record<string, any>
-): Record<string, any> => {
-  const changes: Record<string, any> = {};
+  oldData: Record<string, unknown>,
+  newData: Record<string, unknown>
+): Record<string, unknown> => {
+  const changes: Record<string, unknown> = {};
 
   for (const key in newData) {
     if (oldData[key] !== newData[key]) {
