@@ -4,6 +4,30 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 3000;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+const getSupabaseClient = async (jwt) => {
+    const { createClient } = await import('@supabase/supabase-js');
+    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+        },
+        global: {
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        }
+    });
+};
+
+const getBearerToken = (req) => {
+    const authHeader = req.headers.authorization || '';
+    if (!authHeader.startsWith('Bearer ')) return null;
+    return authHeader.slice('Bearer '.length).trim();
+};
 
 // Middleware
 app.use(cors());
@@ -198,6 +222,69 @@ app.get('/api/stats', (req, res) => {
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// GET /api/admin/audit-logs - List audit logs (admin/manager only)
+app.get('/api/admin/audit-logs', async (req, res) => {
+    try {
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            return res.status(500).json({
+                error: 'Missing Supabase env. Set SUPABASE_URL and SUPABASE_ANON_KEY.'
+            });
+        }
+
+        const token = getBearerToken(req);
+        if (!token) {
+            return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+        }
+
+        const supabase = await getSupabaseClient(token);
+        const { data: userData, error: userError } = await supabase.auth.getUser(token);
+
+        if (userError || !userData?.user) {
+            return res.status(401).json({ error: 'Invalid or expired session' });
+        }
+
+        const userId = userData.user.id;
+        const [adminCheck, managerCheck] = await Promise.all([
+            supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }),
+            supabase.rpc('has_role', { _user_id: userId, _role: 'manager' })
+        ]);
+
+        if (adminCheck.error || managerCheck.error) {
+            return res.status(500).json({ error: 'Failed to verify user role' });
+        }
+
+        const isAdminOrManager = Boolean(adminCheck.data || managerCheck.data);
+        if (!isAdminOrManager) {
+            return res.status(403).json({ error: 'Only admins or managers can view audit logs' });
+        }
+
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const pageSize = Math.min(Math.max(parseInt(req.query.pageSize, 10) || 20, 1), 100);
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, error, count } = await supabase
+            .from('audit_logs')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+        if (error) {
+            return res.status(500).json({ error: error.message || 'Failed to fetch audit logs' });
+        }
+
+        return res.json({
+            data: data || [],
+            page,
+            pageSize,
+            total: count || 0
+        });
+    } catch (err) {
+        console.error('Error fetching audit logs:', err);
+        return res.status(500).json({ error: 'Unexpected error while fetching audit logs' });
+    }
 });
 
 // Middleware de erro
