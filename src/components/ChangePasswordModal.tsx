@@ -64,6 +64,15 @@ export function ChangePasswordModal({
     setError(null);
   };
 
+  const showError = (message: string) => {
+    setError(message);
+    toast({
+      title: 'Erro',
+      description: message,
+      variant: 'destructive',
+    });
+  };
+
   const handleClose = () => {
     handleReset();
     onClose();
@@ -79,7 +88,7 @@ export function ChangePasswordModal({
       if (!isChangingOtherUser) {
         const validation = changePasswordSchema.safeParse(formData);
         if (!validation.success) {
-          setError(validation.error.errors[0].message);
+          showError(validation.error.errors[0].message);
           setIsLoading(false);
           return;
         }
@@ -88,14 +97,14 @@ export function ChangePasswordModal({
       if (isChangingOtherUser) {
         // Admin changing another user's password
         if (!formData.newPassword) {
-          setError('Nova senha é obrigatória');
+          showError('Nova senha é obrigatória');
           setIsLoading(false);
           return;
         }
 
         // Validate new password
         if (formData.newPassword.length < 10) {
-          setError('Nova senha deve ter pelo menos 10 caracteres');
+          showError('Nova senha deve ter pelo menos 10 caracteres');
           setIsLoading(false);
           return;
         }
@@ -112,13 +121,13 @@ export function ChangePasswordModal({
 
         if (invokeError) {
           const message = data?.error || invokeError.message || 'Erro ao alterar senha';
-          setError(message);
+          showError(message);
           setIsLoading(false);
           return;
         }
 
         if (data?.error) {
-          setError(data.error);
+          showError(data.error);
           setIsLoading(false);
           return;
         }
@@ -135,7 +144,7 @@ export function ChangePasswordModal({
         });
 
         if (signInError) {
-          setError('Senha atual incorreta');
+          showError('Senha atual incorreta');
           setIsLoading(false);
           return;
         }
@@ -145,7 +154,7 @@ export function ChangePasswordModal({
         });
 
         if (updateError) {
-          setError(updateError.message);
+          showError(updateError.message);
           setIsLoading(false);
           return;
         }
@@ -160,7 +169,7 @@ export function ChangePasswordModal({
       handleClose();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao alterar senha';
-      setError(errorMessage);
+      showError(errorMessage);
       if (import.meta.env.DEV) {
         console.error('Unexpected error:', err);
       }
