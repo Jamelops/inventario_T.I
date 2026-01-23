@@ -29,8 +29,7 @@ import { HardwareSpecsForm } from "@/components/assets/HardwareSpecsForm";
 import { RequiredFieldIndicator, RequiredFieldsHint } from "@/components/shared/RequiredFieldIndicator";
 import { useToast } from "@/hooks/use-toast";
 import { useMoneyFormat } from "@/hooks/useMoneyFormat";
-import { useAuth } from "@/contexts/AuthContext";
-import type { AssetStatus, AssetCategory } from "@/types";
+import type { AssetStatus, AssetCategory, Asset } from "@/types";
 
 const assetSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório").max(100, "Nome muito longo"),
@@ -46,7 +45,10 @@ const assetSchema = z.object({
     processador: z.string().optional(),
     memoriaRam: z.string().optional(),
     armazenamento: z.string().optional(),
-    tipoArmazenamento: z.enum(["SSD", "HDD", "NVMe", "RAID"]).optional(),
+    tipoArmazenamento: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.enum(["SSD", "HDD", "NVMe", "RAID"]).optional()
+    ),
     placaVideo: z.string().optional(),
     sistemaOperacional: z.string().optional(),
     portas: z.string().optional(),
@@ -63,7 +65,6 @@ const AssetForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
   const { assets, addAsset, updateAsset } = useData();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,7 +72,11 @@ const AssetForm = () => {
   const existingAsset = isEditing ? assets.find((a) => a.id === id) : null;
 
   // Hook para formatação de valor
-  const moneyFormat = useMoneyFormat(existingAsset?.valor ?? 0);
+  const {
+    value: moneyValue,
+    setRawValue: setMoneyRawValue,
+    getRawValue: getMoneyRawValue,
+  } = useMoneyFormat(existingAsset?.valor ?? 0);
 
   const form = useForm<AssetFormData>({
     resolver: zodResolver(assetSchema),
@@ -104,10 +109,10 @@ const AssetForm = () => {
         especificacoes: existingAsset.especificacoes ?? {},
       });
       
-      // Atualiza o moneyFormat com o valor existente
-      moneyFormat.setRawValue(existingAsset.valor);
+      // Atualiza o valor monetário com o valor existente
+      setMoneyRawValue(existingAsset.valor);
     }
-  }, [existingAsset, form, moneyFormat]);
+  }, [existingAsset, form, setMoneyRawValue]);
 
   const categoria = form.watch("categoria");
 
@@ -120,31 +125,39 @@ const AssetForm = () => {
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   };
 
-  // Map form data to database column names
-  const mapFormDataToDatabase = (data: AssetFormData, valor: number) => {
-    return {
-      nome: data.nome,
-      categoria: data.categoria,
-      numero_serie_custom: data.numeroSerie,
-      data_compra: data.dataCompra,
-      valor: valor,
-      localizacao: data.localizacao,
-      responsavel: data.responsavel,
-      responsavel_id: user?.id,  // ✅ Map current user ID to responsavel_id
-      status: data.status,
-      descricao: data.descricao ?? undefined,
-      especificacoes: cleanSpecifications(data.especificacoes),
-    };
+  const buildAssetPayload = (
+    data: AssetFormData,
+    valor: number
+  ): Omit<Asset, "id" | "dataCriacao" | "dataAtualizacao"> => ({
+    nome: data.nome,
+    categoria: data.categoria,
+    numeroSerie: data.numeroSerie,
+    dataCompra: data.dataCompra,
+    valor,
+    localizacao: data.localizacao,
+    responsavel: data.responsavel,
+    status: data.status,
+    descricao: data.descricao ?? "",
+    especificacoes: cleanSpecifications(data.especificacoes),
+  });
+
+  const handleMoneyChange = (
+    value: string,
+    onChange: (value: number) => void
+  ) => {
+    const digits = value.replace(/[^\d]/g, "");
+    const centavos = parseInt(digits || "0", 10) || 0;
+    const nextValue = centavos / 100;
+
+    setMoneyRawValue(nextValue);
+    onChange(nextValue);
   };
 
   const onSubmit = async (data: AssetFormData) => {
     setIsLoading(true);
     try {
-      // Usa o valor raw do hook
-      const valorReal = moneyFormat.getRawValue();
-
-      // Map form data to database column names
-      const assetData = mapFormDataToDatabase(data, valorReal);
+      const valorReal = data.valor ?? getMoneyRawValue();
+      const assetData = buildAssetPayload(data, valorReal);
 
       if (isEditing && existingAsset) {
         const success = await updateAsset(existingAsset.id, assetData);
@@ -339,22 +352,32 @@ const AssetForm = () => {
                 />
 
                 {/* Campo de Valor com Formatação Monetária */}
-                <FormItem>
-                  <FormLabel>
-                    Valor (R$)
-                    <RequiredFieldIndicator required={true} />
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={moneyFormat.value}
-                      onChange={moneyFormat.handleChange}
-                      placeholder="R$ 0,00"
-                      className="font-mono"
-                    />
-                  </FormControl>
-                </FormItem>
+                <FormField
+                  control={form.control}
+                  name="valor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Valor (R$)
+                        <RequiredFieldIndicator required={true} />
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={moneyValue}
+                          onChange={(event) =>
+                            handleMoneyChange(event.target.value, field.onChange)
+                          }
+                          onBlur={field.onBlur}
+                          placeholder="R$ 0,00"
+                          className="font-mono"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
