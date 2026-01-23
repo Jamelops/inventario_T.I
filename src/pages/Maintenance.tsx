@@ -3,7 +3,7 @@ import { Plus, Calendar, User, MapPin, Clock, Info, Loader2, Download } from 'lu
 import { useNavigate } from 'react-router-dom';
 import { useMaintenanceTasks } from '@/hooks/useMaintenanceTasks';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PriorityBadge } from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ export default function Maintenance() {
   const { maintenanceTasks = [], loading, moveMaintenanceTask, updateMaintenanceTask } = useMaintenanceTasks();
   const { canEdit } = useAuth();
   const navigate = useNavigate();
-  const toast = useToast();
+  const { toast } = useToast();
   const userCanEdit = canEdit();
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -82,7 +82,11 @@ export default function Maintenance() {
       }
       
       if (!userCanEdit) {
-        toast.error('Você não tem permissão para editar tarefas');
+        toast({
+          title: 'Erro',
+          description: 'Você não tem permissão para editar tarefas',
+          variant: 'destructive',
+        });
         return;
       }
       
@@ -100,7 +104,11 @@ export default function Maintenance() {
       
     } catch (error) {
       console.error('Erro ao fazer drop:', error);
-      toast.error('Erro ao mover tarefa');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao mover tarefa',
+        variant: 'destructive',
+      });
     }
   };
 

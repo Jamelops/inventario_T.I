@@ -1,8 +1,8 @@
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
 export function ToastExample() {
-  const toast = useToast();
+  const { toast } = useToast();
 
   return (
     <div className="flex flex-col gap-3 p-6 bg-card rounded-lg border">
@@ -13,28 +13,49 @@ export function ToastExample() {
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         <Button
-          onClick={() => toast.success('Sucesso! Operação realizada com éxito.')}
+          onClick={() =>
+            toast({
+              title: 'Sucesso',
+              description: 'Sucesso! Operação realizada com êxito.',
+            })
+          }
           className="bg-emerald-600 hover:bg-emerald-700"
         >
           Success
         </Button>
 
         <Button
-          onClick={() => toast.error('Erro! Ocorreu um problema na operação.')}
+          onClick={() =>
+            toast({
+              title: 'Erro',
+              description: 'Erro! Ocorreu um problema na operação.',
+              variant: 'destructive',
+            })
+          }
           className="bg-red-600 hover:bg-red-700"
         >
           Error
         </Button>
 
         <Button
-          onClick={() => toast.warning('Atenção! Verifique seus dados antes de continuar.')}
+          onClick={() =>
+            toast({
+              title: 'Atenção',
+              description: 'Atenção! Verifique seus dados antes de continuar.',
+            })
+          }
           className="bg-amber-600 hover:bg-amber-700"
         >
           Warning
         </Button>
 
         <Button
-          onClick={() => toast.info('Informação: Seu cadastro foi atualizado.')}
+          onClick={() =>
+            toast({
+              title: 'Informação',
+              description: 'Informação: Seu cadastro foi atualizado.',
+            })
+          }
           className="bg-blue-600 hover:bg-blue-700"
         >
           Info
@@ -43,14 +64,27 @@ export function ToastExample() {
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         <Button
-          onClick={() => toast.success('Toast de 10 segundos', 10000)}
+          onClick={() =>
+            toast({
+              title: 'Sucesso',
+              description: 'Toast de 10 segundos',
+              duration: 10000,
+            })
+          }
           variant="outline"
         >
           Success (10s)
         </Button>
 
         <Button
-          onClick={() => toast.error('Toast permanente', 0)}
+          onClick={() =>
+            toast({
+              title: 'Erro',
+              description: 'Toast permanente',
+              variant: 'destructive',
+              duration: 0,
+            })
+          }
           variant="outline"
         >
           Error (Permanente)
@@ -59,14 +93,14 @@ export function ToastExample() {
 
       <div className="mt-4 p-4 bg-muted rounded-lg text-sm">
         <p className="font-mono text-xs">
-          {`const toast = useToast();
-toast.success("Mensagem de sucesso");
-toast.error("Mensagem de erro");
-toast.warning("Mensagem de aviso");
-toast.info("Mensagem de informação");
+          {`const { toast } = useToast();
+toast({ title: "Sucesso", description: "Mensagem de sucesso" });
+toast({ title: "Erro", description: "Mensagem de erro", variant: "destructive" });
+toast({ title: "Atenção", description: "Mensagem de aviso" });
+toast({ title: "Informação", description: "Mensagem de informação" });
 
 // Com duração customizada:
-toast.success("Mensagem", 5000); // 5 segundos`}
+toast({ title: "Sucesso", description: "Mensagem", duration: 5000 }); // 5 segundos`}
         </p>
       </div>
     </div>

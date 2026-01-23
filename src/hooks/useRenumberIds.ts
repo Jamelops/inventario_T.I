@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { useToast } from './useToast';
+import { toast } from '@/hooks/use-toast';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -24,7 +24,6 @@ export const useRenumberIds = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const toast = useToast();
 
   const renumber = async () => {
     setIsLoading(true);
@@ -41,12 +40,18 @@ export const useRenumberIds = () => {
       if (fetchError) throw fetchError;
 
       if (!sections || sections.length === 0) {
-        toast.warning('Nenhuma seção encontrada');
+        toast({
+          title: 'Atenção',
+          description: 'Nenhuma seção encontrada',
+        });
         setIsLoading(false);
         return;
       }
 
-      toast.info(`Encontradas ${sections.length} seções. Processando...`);
+      toast({
+        title: 'Processando',
+        description: `Encontradas ${sections.length} seções. Processando...`,
+      });
 
       // Criar mapa de IDs antigos -> novos
       const idMap: Record<string, number> = {};
@@ -67,7 +72,10 @@ export const useRenumberIds = () => {
         updatedCount++;
       }
 
-      toast.success(`✅ ${updatedCount} seções renumeradas`);
+      toast({
+        title: 'Sucesso',
+        description: `✅ ${updatedCount} seções renumeradas`,
+      });
 
       // Atualizar referências em outras tabelas
       const { data: references, error: refFetchError } = await supabase
@@ -89,15 +97,25 @@ export const useRenumberIds = () => {
             referencesUpdated++;
           }
         }
-        toast.success(`✅ ${referencesUpdated} referências atualizadas`);
+        toast({
+          title: 'Sucesso',
+          description: `✅ ${referencesUpdated} referências atualizadas`,
+        });
       }
 
       setSuccess(true);
-      toast.success('🎉 Renumeração concluída com sucesso!');
+      toast({
+        title: 'Sucesso',
+        description: '🎉 Renumeração concluída com sucesso!',
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(errorMessage);
-      toast.error(`❌ Erro: ${errorMessage}`);
+      toast({
+        title: 'Erro',
+        description: `❌ Erro: ${errorMessage}`,
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }

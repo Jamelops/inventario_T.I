@@ -1,32 +1,48 @@
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
 export function ToastDebugger() {
-  const toast = useToast();
+  const { toast } = useToast();
 
   const handleTestSuccess = () => {
-    console.log('%c[ToastDebugger] Chamando toast.success()', 'color: green; font-weight: bold;');
-    toast.success('✅ Teste de sucesso!');
+    console.log('%c[ToastDebugger] Chamando toast() sucesso', 'color: green; font-weight: bold;');
+    toast({
+      title: 'Sucesso',
+      description: '✅ Teste de sucesso!',
+    });
   };
 
   const handleTestError = () => {
-    console.log('%c[ToastDebugger] Chamando toast.error()', 'color: red; font-weight: bold;');
-    toast.error('❌ Teste de erro!');
+    console.log('%c[ToastDebugger] Chamando toast() erro', 'color: red; font-weight: bold;');
+    toast({
+      title: 'Erro',
+      description: '❌ Teste de erro!',
+      variant: 'destructive',
+    });
   };
 
   const handleTestWarning = () => {
-    console.log('%c[ToastDebugger] Chamando toast.warning()', 'color: orange; font-weight: bold;');
-    toast.warning('⚠️ Teste de aviso!');
+    console.log('%c[ToastDebugger] Chamando toast() aviso', 'color: orange; font-weight: bold;');
+    toast({
+      title: 'Atenção',
+      description: '⚠️ Teste de aviso!',
+    });
   };
 
   const handleTestInfo = () => {
-    console.log('%c[ToastDebugger] Chamando toast.info()', 'color: blue; font-weight: bold;');
-    toast.info('ℹ️ Teste de informação!');
+    console.log('%c[ToastDebugger] Chamando toast() info', 'color: blue; font-weight: bold;');
+    toast({
+      title: 'Informação',
+      description: 'ℹ️ Teste de informação!',
+    });
   };
 
   const handleTestEmpty = () => {
-    console.log('%c[ToastDebugger] Chamando toast.success com string vazia', 'color: gray; font-weight: bold;');
-    toast.success('');
+    console.log('%c[ToastDebugger] Chamando toast() com mensagem vazia', 'color: gray; font-weight: bold;');
+    toast({
+      title: 'Sucesso',
+      description: '',
+    });
   };
 
   return (

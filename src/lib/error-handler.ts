@@ -4,7 +4,7 @@
  * Maps backend errors to user-friendly messages
  */
 
-import { useToast } from '@/hooks/useToast';
+import { toast } from '@/hooks/use-toast';
 
 export interface ApiError {
   message: string;
@@ -122,8 +122,11 @@ export const handleApiError = (
 
   // Show toast notification
   if (showToast) {
-    const { toast } = useToast();
-    toast.error(userMessage);
+    toast({
+      title: 'Erro',
+      description: userMessage,
+      variant: 'destructive',
+    });
   }
 
   return apiError;

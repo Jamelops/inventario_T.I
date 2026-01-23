@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { useToast } from './useToast';
+import { toast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/DataContext';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -43,7 +43,6 @@ const CATEGORY_PREFIXES: Record<string, string> = {
 
 export const useHumanizedAssetIds = () => {
   const { assets } = useData();
-  const toast = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
 
   /**
@@ -143,7 +142,10 @@ export const useHumanizedAssetIds = () => {
       let updated = 0;
       let failed = 0;
 
-      toast.info('🔄 Sincronizando IDs humanizados...');
+      toast({
+        title: 'Sincronizando',
+        description: '🔄 Sincronizando IDs humanizados...',
+      });
 
       for (const [assetId, data] of Object.entries(idMap)) {
         const { error } = await supabase
@@ -163,15 +165,25 @@ export const useHumanizedAssetIds = () => {
       }
 
       if (failed === 0) {
-        toast.success(`✅ ${updated} ativos sincronizados com sucesso!`);
+        toast({
+          title: 'Sucesso',
+          description: `✅ ${updated} ativos sincronizados com sucesso!`,
+        });
         return true;
       } else {
-        toast.warning(`⚠️ ${updated} sincronizados, ${failed} falharam`);
+        toast({
+          title: 'Atenção',
+          description: `⚠️ ${updated} sincronizados, ${failed} falharam`,
+        });
         return false;
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast.error(`❌ Erro: ${message}`);
+      toast({
+        title: 'Erro',
+        description: `❌ Erro: ${message}`,
+        variant: 'destructive',
+      });
       return false;
     } finally {
       setIsGenerating(false);
