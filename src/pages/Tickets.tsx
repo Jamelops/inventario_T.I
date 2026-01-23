@@ -45,7 +45,7 @@ import { TicketKanban } from "@/components/tickets/TicketKanban";
 import { SLAIndicator } from "@/components/tickets/SLAIndicator";
 import { useTickets } from "@/hooks/useTicketsContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Ticket,
   TicketStatus,
@@ -61,7 +61,7 @@ export default function Tickets() {
   const navigate = useNavigate();
   const { tickets = [], suppliers = [], getSupplierById, changeTicketStatus } = useTickets();
   const { profile } = useAuth();
-  const toast = useToast();
+  const { toast } = useToast();
 
   const [search, setSearch] = useState("");
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
@@ -90,7 +90,11 @@ export default function Tickets() {
 
   const handleStatusChange = async (ticketId: string, newStatus: TicketStatus) => {
     if (!profile) {
-      toast.error('Erro ao identificar o usuário');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao identificar o usuário',
+        variant: 'destructive',
+      });
       return;
     }
     await changeTicketStatus(ticketId, newStatus, profile?.user_id || '', profile?.username || 'Usuário');
